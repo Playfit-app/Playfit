@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from .serializers import CustomUserSerializer
+from .models import CustomUser
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -22,14 +23,19 @@ class LoginView(APIView):
 
     def post(self, request):
         username = request.data.get('username')
+        email = request.data.get('email')
         password = request.data.get('password')
         user = authenticate(username=username, password=password)
 
-        if user is not None:
-            token, _ = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key}, status=status.HTTP_200_OK)
+        if user is None:
+            try:
+                user = CustomUser.objects.get(email=email)
+                user = authenticate(username=user.username, password=password)
+            except CustomUser.DoesNotExist:
+                return Response({'error': "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({'error': "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({'token': token.key}, status=status.HTTP_200_OK)
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]

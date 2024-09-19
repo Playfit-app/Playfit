@@ -29,6 +29,32 @@ pip install -r requirements.txt
 
 > Make sure to install the dependencies in the virtual environment
 
+## Create a .env file
+
+```bash
+touch .env
+```
+
+> Make sure to create the .env file in the same directory as the manage.py file
+
+> Add the following environment variables to the .env file
+
+```env
+SECRET_KEY=your_secret_key
+DEBUG=True
+```
+
+> Replace your_secret_key with a secret key.
+> Set DEBUG to True for development and False for production.
+
+## Generate a secret key
+
+```bash
+python3 manage.py shell -c 'from django.core.management import utils; print(utils.get_random_secret_key())'
+```
+
+> Copy the secret key and replace your_secret_key in the .env file
+
 ## Create the database
 
 ```bash

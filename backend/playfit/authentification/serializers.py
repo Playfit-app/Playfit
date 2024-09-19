@@ -1,3 +1,4 @@
+import django.contrib.auth.password_validation as validators
 from rest_framework import serializers
 from .models import CustomUser
 
@@ -21,3 +22,23 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+    def validate(self, value):
+        user = CustomUser(
+            email=value['email'],
+            username=value['username'],
+            first_name=value['first_name'],
+            last_name=value['last_name'],
+            date_of_birth=value['date_of_birth'],
+            height=value['height'],
+            weight=value['weight']
+        )
+        password = value['password']
+        errors = dict()
+        try:
+            validators.validate_password(password=password, user=user)
+        except serializers.ValidationError as e:
+            errors['password'] = list(e.messages)
+        if errors:
+            raise serializers.ValidationError(errors)
+        return value

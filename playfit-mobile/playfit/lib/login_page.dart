@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:playfit/auth_service.dart';
+import 'package:playfit/home_page.dart';
+import 'package:playfit/registration_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,10 +21,17 @@ class _LoginPageState extends State<LoginPage> {
       _loginController.text,
       _passwordController.text,
     );
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const HomePage()),
+    );
   }
 
   void _navigateToCreateAccount(BuildContext context) {
-    Navigator.pushNamed(context, '/register');
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const CreateAccountPage()),
+    );
   }
 
   @override

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:playfit/auth_service.dart';
+import 'package:playfit/home_page.dart';
+import 'package:playfit/login_page.dart';
 
 class CreateAccountPage extends StatefulWidget {
   const CreateAccountPage({super.key});
 
   @override
-  _CreateAccountPageState createState() => _CreateAccountPageState();
+  CreateAccountPageState createState() => CreateAccountPageState();
 }
 
-class _CreateAccountPageState extends State<CreateAccountPage> {
+class CreateAccountPageState extends State<CreateAccountPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -31,10 +33,17 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       _heightController.text,
       _weightController.text,
     );
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const HomePage()),
+    );
   }
 
-  void _goBackToLogin(BuildContext context) {
-    Navigator.pop(context); // This will take the user back to the previous screen (login page)
+  void _navigateToLogin(BuildContext context) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
   }
 
   @override
@@ -100,7 +109,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               ElevatedButton(
                 onPressed: _createAccount,
                 style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50), // Full width button
+                  minimumSize:
+                      const Size(double.infinity, 50), // Full width button
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
@@ -112,7 +122,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               ),
               const SizedBox(height: 20),
               TextButton(
-                onPressed: () => _goBackToLogin(context),
+                onPressed: () => _navigateToLogin(context),
                 child: const Text(
                   'Already have an account? Please login',
                   style: TextStyle(color: Colors.blue, fontSize: 16),

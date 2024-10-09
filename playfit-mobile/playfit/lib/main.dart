@@ -22,10 +22,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      // Set the login page as the initial page when the app opens
-      // home: const LoginPage(),
-      initialRoute: '/profile',
-      // Define routes for navigation
+      home: const LoginPage(),
+      initialRoute: '/login',
       routes: {
         '/register': (context) =>
             const CreateAccountPage(), // Route to registration page

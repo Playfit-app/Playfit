@@ -16,6 +16,28 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, username, password, **extra_fields)
 
 class CustomUser(AbstractUser):
+    BODYWEIGHT_STRENGTH = "bodyWeightStrength"
+    FAT_LOSS_CARDIO = "fatLossCardio"
+    ENDURANCE = "endurance"
+
+    GOALS_CHOICES = [
+        (BODYWEIGHT_STRENGTH, "Bodyweight Strength"),
+        (FAT_LOSS_CARDIO, "Fat Loss or Cardio"),
+        (ENDURANCE, "Endurance"),
+    ]
+
+    GENDER_CHOICES = [
+        ("male", "Male"),
+        ("female", "Female"),
+        ("other", "Other"),
+    ]
+
+    FITNESS_LEVEL_CHOICES = [
+        ("beginner", "Beginner"),
+        ("intermediate", "Intermediate"),
+        ("advanced", "Advanced"),
+    ]
+
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150, unique=True)
     password = models.CharField(max_length=150)
@@ -24,6 +46,10 @@ class CustomUser(AbstractUser):
     date_of_birth = models.DateField()
     height = models.DecimalField(max_digits=5, decimal_places=2)
     weight = models.DecimalField(max_digits=5, decimal_places=2)
+    goals = models.CharField(max_length=50, choices=GOALS_CHOICES, default=BODYWEIGHT_STRENGTH)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default="male")
+    fitness_level = models.CharField(max_length=20, choices=FITNESS_LEVEL_CHOICES, default="beginner")
+    physical_particularities = models.TextField(blank=True)
     last_login = models.DateTimeField(auto_now=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
@@ -33,7 +59,10 @@ class CustomUser(AbstractUser):
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email', 'password', 'first_name', 'last_name', 'date_of_birth', 'height', 'weight']
+    REQUIRED_FIELDS = [
+        'email', 'password', 'first_name', 'last_name', 'date_of_birth', 'height', 'weight',
+        'goals', 'gender', 'fitness_level', 'physical_particularities'
+    ]
 
     def __str__(self):
         return self.username

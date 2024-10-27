@@ -7,6 +7,8 @@ class AppStyles {
   static const Color red = Color.fromARGB(255, 231, 29, 54);
   static const Color brown = Color.fromARGB(255, 169, 153, 133);
   static const Color beige = Color.fromARGB(255, 218, 210, 188);
+  static const Color primaryColor = Color.fromARGB(255, 129, 0, 0);
+  static const Color backgroundColor = Color.fromARGB(255, 238, 235, 221);
 
   // Text styles
   static TextStyle bodyRegular = GoogleFonts.amaranth(

@@ -10,15 +10,10 @@ class AuthentificationTests(APITestCase):
             email="test@test.com",
             username="test",
             password="test12345",
-            first_name="Test",
-            last_name="User",
             date_of_birth="1990-01-01",
             height=180,
             weight=80,
-            gender="male",
-            fitness_level="beginner",
             goals="bodyWeightStrength",
-            physical_particularities=""
         )
 
     def test_register(self):
@@ -27,15 +22,10 @@ class AuthentificationTests(APITestCase):
             'email': 'test2@test.com',
             'username': 'test2',
             'password': 'test12345678910',
-            'first_name': 'Test',
-            'last_name': 'User',
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
-            'gender': "male",
-            'fitness_level': "beginner",
             'goals': "bodyWeightStrength",
-            'physical_particularities': ""
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -47,15 +37,10 @@ class AuthentificationTests(APITestCase):
             'email': 'test@test.com',
             'username': 'test2',
             'password': 'test12345',
-            'first_name': 'Test',
-            'last_name': 'User',
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
-            'gender': "male",
-            'fitness_level': "beginner",
             'goals': "bodyWeightStrength",
-            'physical_particularities': ""
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -67,15 +52,10 @@ class AuthentificationTests(APITestCase):
             'email': 'test2@test.com',
             'username': 'test',
             'password': 'test12345',
-            'first_name': 'Test',
-            'last_name': 'User',
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
-            'gender': 'male',
-            'fitness_level': 'beginner',
             'goals': 'bodyWeightStrength',
-            'physical_particularities': ''
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -87,15 +67,10 @@ class AuthentificationTests(APITestCase):
             'email': 'test2@test.com',
             'username': 'test2',
             'password': 'password',
-            'first_name': 'Test',
-            'last_name': 'User',
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
-            'gender': 'male',
-            'fitness_level': 'beginner',
             'goals': 'bodyWeightStrength',
-            'physical_particularities': ''
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -107,15 +82,10 @@ class AuthentificationTests(APITestCase):
             'email': 'test2@test.com',
             'username': 'test2',
             'password': 'yes',
-            'first_name': 'Test',
-            'last_name': 'User',
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
-            'gender': 'male',
-            'fitness_level': 'beginner',
             'goals': 'bodyWeightStrength',
-            'physical_particularities': ''
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -127,15 +97,10 @@ class AuthentificationTests(APITestCase):
             'email': 'test2@test.com',
             'username': 'test2',
             'password': 'test2',
-            'first_name': 'Test',
-            'last_name': 'User',
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
-            'gender': 'male',
-            'fitness_level': 'beginner',
             'goals': 'bodyWeightStrength',
-            'physical_particularities': ''
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -147,55 +112,10 @@ class AuthentificationTests(APITestCase):
             'email': 'test2@test.com',
             'username': 'test2',
             'password': 'test12345',
-            'first_name': 'Test',
-            'last_name': 'User',
             'date_of_birth': 'invalid',
             'height': 180,
             'weight': 80,
-            'gender': "male",
-            'fitness_level': "beginner",
             'goals': "bodyWeightStrength",
-            'physical_particularities': ""
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(CustomUser.objects.count(), 1)
-
-    def test_register_with_invalid_gender(self):
-        url = reverse('register')
-        data = {
-            'email': 'test2@test.com',
-            'username': 'test2',
-            'password': 'test12345',
-            'first_name': 'Test',
-            'last_name': 'User',
-            'date_of_birth': '1990-01-01',
-            'height': 180,
-            'weight': 80,
-            'gender': 'invalid',
-            'fitness_level': 'beginner',
-            'goals': 'bodyWeightStrength',
-            'physical_particularities': ''
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(CustomUser.objects.count(), 1)
-
-    def test_register_with_invalid_fitness_level(self):
-        url = reverse('register')
-        data = {
-            'email': 'test2@test.com',
-            'username': 'test2',
-            'password': 'test12345',
-            'first_name': 'Test',
-            'last_name': 'User',
-            'date_of_birth': '1990-01-01',
-            'height': 180,
-            'weight': 80,
-            'gender': "male",
-            'fitness_level': "invalid",
-            'goals': "bodyWeightStrength",
-            'physical_particularities': ""
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -207,15 +127,10 @@ class AuthentificationTests(APITestCase):
             'email': 'test2@test.com',
             'username': 'test2',
             'password': 'test12345',
-            'first_name': 'Test',
-            'last_name': 'User',
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
-            'gender': "male",
-            'fitness_level': "beginner",
             'goals': "invalid",
-            'physical_particularities': ""
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

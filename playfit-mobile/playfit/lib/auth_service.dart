@@ -43,8 +43,6 @@ class AuthService {
       String email,
       String username,
       String password,
-      String firstName,
-      String lastName,
       String dateOfBirth,
       String height,
       String weight) async {
@@ -53,8 +51,6 @@ class AuthService {
         'email': email,
         'username': username,
         'password': password,
-        'first_name': firstName,
-        'last_name': lastName,
         'date_of_birth': dateOfBirth,
         'height': height,
         'weight': weight,

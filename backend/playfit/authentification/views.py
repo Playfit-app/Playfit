@@ -18,16 +18,7 @@ class RegisterView(APIView):
             201: openapi.Response("User registered successfully", CustomUserSerializer),
             400: "Invalid data",
         },
-        operation_description="Register a new user with username, email, height, weight, date of birth, and password.",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'username': openapi.Schema(type=openapi.TYPE_STRING),
-                'email': openapi.Schema(type=openapi.TYPE_STRING),
-                'password': openapi.Schema(type=openapi.TYPE_STRING),
-            },
-            required=['username', 'email', 'height', 'weight', 'date_of_birth', 'password']
-        )
+        operation_description="Register a new user with username, email, height, weight, date of birth, and password."
     )
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
@@ -47,7 +38,7 @@ class LoginView(APIView):
         responses={
             200: openapi.Response("User logged in successfully"),
             400: "Invalid credentials",
-        }
+        },
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={

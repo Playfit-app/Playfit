@@ -16,16 +16,48 @@ class CreateAccountPage extends StatefulWidget {
 class CreateAccountPageState extends State<CreateAccountPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _birthDateController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
-  final TextEditingController _objectiveController = TextEditingController();
+  // final TextEditingController _objectiveController = TextEditingController();
   final AuthService authService = AuthService();
 
   int _currentStep = 0;
+  bool _isStep1Valid = false;
+  bool _isStep2Valid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _usernameController.addListener(_validateStep1);
+    _passwordController.addListener(_validateStep1);
+    _confirmPasswordController.addListener(_validateStep1);
+    _emailController.addListener(_validateStep1);
+    _birthDateController.addListener(_validateStep2);
+    _heightController.addListener(_validateStep2);
+    _weightController.addListener(_validateStep2);
+    // _objectiveController.addListener(_validateStep2);
+  }
+
+  void _validateStep1() {
+    setState(() {
+      _isStep1Valid = _usernameController.text.isNotEmpty &&
+          _passwordController.text.isNotEmpty &&
+          _confirmPasswordController.text.isNotEmpty &&
+          _emailController.text.isNotEmpty;
+    });
+  }
+
+  void _validateStep2() {
+    setState(() {
+      _isStep2Valid = _birthDateController.text.isNotEmpty &&
+          _heightController.text.isNotEmpty &&
+          _weightController.text.isNotEmpty;
+          // _objectiveController.text.isNotEmpty;
+    });
+  }
 
   void _createAccount() async {
     var result = await authService.register(
@@ -75,24 +107,20 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          AppStyles.backgroundColor, // Use the background color from styles
+      backgroundColor: AppStyles.backgroundColor,
       body: Center(
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Progress Bar
               Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0, vertical: 10.0),
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
                 child: LinearProgressIndicator(
-                  value: (_currentStep) / 2, // Progress value between 0 and 1
+                  value: (_currentStep) / 2,
                   backgroundColor: Colors.grey[300],
-                  color: const Color(0xFF8B0000), // Dark red color
+                  color: const Color(0xFF8B0000),
                 ),
               ),
-              // Mascot Image at the top
               Padding(
                 padding: const EdgeInsets.only(bottom: 20.0),
                 child: Image.asset(
@@ -109,21 +137,18 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              // Dynamic content based on the current step
               if (_currentStep == 0) _buildStep1(),
               if (_currentStep == 1) _buildStep2(),
               const SizedBox(height: 20),
-              // Navigation Buttons
               if (_currentStep < 1)
                 ElevatedButton(
-                  onPressed: _nextStep,
+                  onPressed: _isStep1Valid ? _nextStep : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF8B0000), // Dark red color
+                    backgroundColor: const Color(0xFF8B0000),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(100.0),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 50, vertical: 15),
+                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   ),
                   child: const Text(
                     'Suivant',
@@ -132,14 +157,13 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                 )
               else
                 ElevatedButton(
-                  onPressed: () => _createAccount(),
+                  onPressed: _isStep2Valid ? _createAccount : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF8B0000), // Dark red color
+                    backgroundColor: const Color(0xFF8B0000),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(100.0),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 50, vertical: 15),
+                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   ),
                   child: const Text(
                     'Créer mon compte',
@@ -147,7 +171,6 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                   ),
                 ),
               const SizedBox(height: 15),
-              // Back button if not on the first step
               if (_currentStep > 0)
                 TextButton(
                   onPressed: _previousStep,
@@ -161,8 +184,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const LoginPage()),
+                      MaterialPageRoute(builder: (context) => const LoginPage()),
                     );
                   },
                   child: const Text(
@@ -191,7 +213,6 @@ class CreateAccountPageState extends State<CreateAccountPage> {
     );
   }
 
-  // Step 1: Username, Password, and Confirm Password
   Widget _buildStep1() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40.0),
@@ -219,12 +240,11 @@ class CreateAccountPageState extends State<CreateAccountPage> {
           const SizedBox(height: 10),
           TextField(
             controller: _emailController,
-            obscureText: true,
             decoration: InputDecoration(
               hintText: 'Adresse e-mail',
               filled: true,
               fillColor: Colors.white,
-              prefixIcon: const Icon(Icons.lock_outline),
+              prefixIcon: const Icon(Icons.email),
               suffixIcon: _emailController.text.isNotEmpty
                   ? IconButton(
                       icon: const Icon(Icons.close),
@@ -284,7 +304,6 @@ class CreateAccountPageState extends State<CreateAccountPage> {
     );
   }
 
-  // Step 2: Height, Weight, and Objective
   Widget _buildStep2() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40.0),
@@ -292,7 +311,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
         children: [
           TextField(
             controller: _birthDateController,
-            readOnly: true, // Make the TextField read-only
+            readOnly: true,
             decoration: InputDecoration(
               hintText: 'Date de naissance',
               filled: true,
@@ -318,8 +337,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
               );
 
               if (pickedDate != null) {
-                String formattedDate =
-                    DateFormat('yyyy-MM-dd').format(pickedDate);
+                String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
                 _birthDateController.text = formattedDate;
               }
             },
@@ -372,26 +390,26 @@ class CreateAccountPageState extends State<CreateAccountPage> {
               FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
             ],
           ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: _objectiveController,
-            decoration: InputDecoration(
-              hintText: 'Objectif',
-              filled: true,
-              fillColor: Colors.white,
-              prefixIcon: const Icon(Icons.flag),
-              suffixIcon: _objectiveController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => _objectiveController.clear(),
-                    )
-                  : null,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
-                borderSide: BorderSide.none,
-              ),
-            ),
-          ),
+          // const SizedBox(height: 10),
+          // TextField(
+          //   controller: _objectiveController,
+          //   decoration: InputDecoration(
+          //     hintText: 'Objectif',
+          //     filled: true,
+          //     fillColor: Colors.white,
+          //     prefixIcon: const Icon(Icons.flag),
+          //     suffixIcon: _objectiveController.text.isNotEmpty
+          //         ? IconButton(
+          //             icon: const Icon(Icons.close),
+          //             onPressed: () => _objectiveController.clear(),
+          //           )
+          //         : null,
+          //     border: OutlineInputBorder(
+          //       borderRadius: BorderRadius.circular(100.0),
+          //       borderSide: BorderSide.none,
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

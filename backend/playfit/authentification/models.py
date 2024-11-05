@@ -40,6 +40,8 @@ class CustomUser(AbstractUser):
 
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150, unique=True)
+    first_name = models.CharField(max_length=150, null=True, blank=True)
+    last_name = models.CharField(max_length=150, null=True, blank=True)
     password = models.CharField(max_length=150)
     date_of_birth = models.DateField()
     height = models.DecimalField(max_digits=5, decimal_places=2)
@@ -58,7 +60,7 @@ class CustomUser(AbstractUser):
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = [
-        'email', 'password', 'date_of_birth', 'height', 'weight', 'goals'
+        'email', 'password', 'date_of_birth', 'height', 'weight',
     ]
 
     def __str__(self):

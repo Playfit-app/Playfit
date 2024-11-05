@@ -18,6 +18,8 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('email', models.EmailField(max_length=254, unique=True)),
                 ('username', models.CharField(max_length=150, unique=True)),
+                ('first_name', models.CharField(blank=True, null=True, max_length=150)),
+                ('last_name', models.CharField(blank=True, null=True, max_length=150)),
                 ('password', models.CharField(max_length=150)),
                 ('date_of_birth', models.DateField()),
                 ('height', models.DecimalField(decimal_places=2, max_digits=5)),

@@ -38,17 +38,16 @@ class AuthService {
     }
     return {'status': 'error', 'message': 'Unexpected error'};
   }
-
   Future<Map<String, String>> register(
       BuildContext context,
       String email,
       String username,
       String password,
       String dateOfBirth,
-      String height,
-      String weight) async {
+      double height,
+      double weight) async {
     try {
-      final data = <String, String>{
+      final data = <String, dynamic>{
         'email': email,
         'username': username,
         'password': password,
@@ -59,7 +58,8 @@ class AuthService {
       final response = await http
           .post(
             Uri.parse('${baseUrl}register/'),
-            body: data,
+            body: jsonEncode(data),
+            headers: {'Content-Type': 'application/json'},
           )
           .timeout(const Duration(seconds: 5));
 
@@ -72,7 +72,7 @@ class AuthService {
           return {'status': 'success', 'message': 'Register successful'};
         }
       } else {
-        return {'status': 'error', 'message': body["error"]};
+        return {'status': 'error', 'message': body};
       }
     } catch (error) {
       return {'status': 'error', 'message': error.toString()};

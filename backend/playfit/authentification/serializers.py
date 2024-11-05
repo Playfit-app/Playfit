@@ -8,7 +8,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = [
-            'email', 'username', 'password', 'date_of_birth', 'height', 'weight', 'goals',
+            'email', 'username', 'password', 'date_of_birth', 'height', 'weight',
         ]
 
     def create(self, validated_data):
@@ -18,7 +18,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
             date_of_birth=validated_data['date_of_birth'],
             height=validated_data['height'],
             weight=validated_data['weight'],
-            goals=validated_data['goals'],
         )
         user.set_password(validated_data['password'])
         user.save()
@@ -31,7 +30,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
             date_of_birth=value['date_of_birth'],
             height=value['height'],
             weight=value['weight'],
-            goals=value['goals'],
         )
         password = value['password']
         errors = dict()

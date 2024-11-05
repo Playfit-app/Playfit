@@ -62,12 +62,12 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   void _createAccount() async {
     var result = await authService.register(
       context,
+      _emailController.text,
       _usernameController.text,
       _passwordController.text,
-      _confirmPasswordController.text,
       _birthDateController.text,
-      _heightController.text,
-      _weightController.text,
+      double.parse(_heightController.text),
+      double.parse(_weightController.text),
       // _objectiveController.text,
     );
     if (!mounted) return;

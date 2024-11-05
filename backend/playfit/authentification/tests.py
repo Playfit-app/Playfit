@@ -13,7 +13,6 @@ class AuthentificationTests(APITestCase):
             date_of_birth="1990-01-01",
             height=180,
             weight=80,
-            goals="bodyWeightStrength",
         )
 
     def test_register(self):
@@ -25,7 +24,6 @@ class AuthentificationTests(APITestCase):
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
-            'goals': "bodyWeightStrength",
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -40,7 +38,6 @@ class AuthentificationTests(APITestCase):
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
-            'goals': "bodyWeightStrength",
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -55,7 +52,6 @@ class AuthentificationTests(APITestCase):
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
-            'goals': 'bodyWeightStrength',
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -70,7 +66,6 @@ class AuthentificationTests(APITestCase):
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
-            'goals': 'bodyWeightStrength',
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -85,7 +80,6 @@ class AuthentificationTests(APITestCase):
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
-            'goals': 'bodyWeightStrength',
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -100,7 +94,6 @@ class AuthentificationTests(APITestCase):
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
-            'goals': 'bodyWeightStrength',
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -115,22 +108,6 @@ class AuthentificationTests(APITestCase):
             'date_of_birth': 'invalid',
             'height': 180,
             'weight': 80,
-            'goals': "bodyWeightStrength",
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(CustomUser.objects.count(), 1)
-
-    def test_register_with_invalid_goals(self):
-        url = reverse('register')
-        data = {
-            'email': 'test2@test.com',
-            'username': 'test2',
-            'password': 'test12345',
-            'date_of_birth': '1990-01-01',
-            'height': 180,
-            'weight': 80,
-            'goals': "invalid",
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

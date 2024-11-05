@@ -6,10 +6,20 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from .serializers import CustomUserSerializer
 from .models import CustomUser
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
+    @swagger_auto_schema(
+        request_body=CustomUserSerializer,
+        responses={
+            201: openapi.Response("User registered successfully", CustomUserSerializer),
+            400: "Invalid data",
+        },
+        operation_description="Register a new user with username, email, height, weight, date of birth, and password."
+    )
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
@@ -23,6 +33,22 @@ class RegisterView(APIView):
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
+    @swagger_auto_schema(
+        operation_description="User login with username or email and password.",
+        responses={
+            200: openapi.Response("User logged in successfully"),
+            400: "Invalid credentials",
+        },
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING),
+                'email': openapi.Schema(type=openapi.TYPE_STRING),
+                'password': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+            required=['username', 'password']
+        )
+    )
     def post(self, request):
         username = request.data.get('username')
         email = request.data.get('email')
@@ -42,6 +68,13 @@ class LoginView(APIView):
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="User logout.",
+        responses={
+            200: openapi.Response("User logged out successfully"),
+            400: "Invalid credentials",
+        }
+    )
     def post(self, request):
         token = Token.objects.get(user=request.user)
         token.delete()

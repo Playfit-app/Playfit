@@ -41,15 +41,13 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150, unique=True)
     password = models.CharField(max_length=150)
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=50)
     date_of_birth = models.DateField()
     height = models.DecimalField(max_digits=5, decimal_places=2)
     weight = models.DecimalField(max_digits=5, decimal_places=2)
     goals = models.CharField(max_length=50, choices=GOALS_CHOICES, default=BODYWEIGHT_STRENGTH)
-    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default="male")
-    fitness_level = models.CharField(max_length=20, choices=FITNESS_LEVEL_CHOICES, default="beginner")
-    physical_particularities = models.TextField(blank=True)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True)
+    fitness_level = models.CharField(max_length=20, choices=FITNESS_LEVEL_CHOICES, null=True)
+    physical_particularities = models.TextField(null=True)
     last_login = models.DateTimeField(auto_now=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
@@ -60,8 +58,7 @@ class CustomUser(AbstractUser):
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = [
-        'email', 'password', 'first_name', 'last_name', 'date_of_birth', 'height', 'weight',
-        'goals', 'gender', 'fitness_level', 'physical_particularities'
+        'email', 'password', 'date_of_birth', 'height', 'weight', 'goals'
     ]
 
     def __str__(self):

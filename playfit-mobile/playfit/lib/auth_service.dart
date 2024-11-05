@@ -8,7 +8,7 @@ class AuthService {
   final String? baseUrl = '${dotenv.env['SERVER_BASE_URL']}api/auth/';
   final FlutterSecureStorage storage = const FlutterSecureStorage();
 
-  Future<void> login(
+  Future<Map<String, String>> login(
       BuildContext context, String username, String password) async {
     try {
       final data = <String, String>{
@@ -22,23 +22,24 @@ class AuthService {
           )
           .timeout(const Duration(seconds: 5));
 
+      var body = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        var data = jsonDecode(response.body);
-        String token = data['token'];
+        String token = body['token'];
         await storage.write(key: 'token', value: token);
 
         if (context.mounted) {
-          Navigator.pushReplacementNamed(context, '/home');
+          return {'status': 'success', 'message': 'Login successful'};
         }
       } else {
-        // Show error message
+        return {'status': 'error', 'message': body["error"]};
       }
     } catch (error) {
-      // Show error message
+      return {'status': 'error', 'message': error.toString()};
     }
+    return {'status': 'error', 'message': 'Unexpected error'};
   }
 
-  Future<void> register(
+  Future<Map<String, String>> register(
       BuildContext context,
       String email,
       String username,
@@ -62,15 +63,20 @@ class AuthService {
           )
           .timeout(const Duration(seconds: 5));
 
+      var body = jsonDecode(response.body);
       if (response.statusCode == 201) {
+        String token = body['token'];
+        await storage.write(key: 'token', value: token);
+
         if (context.mounted) {
-          Navigator.pushReplacementNamed(context, '/login');
+          return {'status': 'success', 'message': 'Register successful'};
         }
       } else {
-        // Show error message
+        return {'status': 'error', 'message': body["error"]};
       }
     } catch (error) {
-      // Show error message
+      return {'status': 'error', 'message': error.toString()};
     }
+    return {'status': 'error', 'message': 'Unexpected error'};
   }
 }

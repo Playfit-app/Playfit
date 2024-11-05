@@ -27,8 +27,8 @@ class CreateAccountPageState extends State<CreateAccountPage> {
 
   int _currentStep = 0;
 
-  void _createAccount() {
-    authService.register(
+  void _createAccount() async {
+    var result = await authService.register(
       context,
       _usernameController.text,
       _passwordController.text,
@@ -38,10 +38,20 @@ class CreateAccountPageState extends State<CreateAccountPage> {
       _weightController.text,
       // _objectiveController.text,
     );
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomePage()),
-    );
+    if (!mounted) return;
+    if (result["status"] == 'success') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result["message"]!),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _nextStep() {
@@ -309,7 +319,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
 
               if (pickedDate != null) {
                 String formattedDate =
-                    DateFormat('dd-MM-yyyy').format(pickedDate);
+                    DateFormat('yyyy-MM-dd').format(pickedDate);
                 _birthDateController.text = formattedDate;
               }
             },

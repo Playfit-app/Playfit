@@ -17,16 +17,26 @@ class _LoginPageState extends State<LoginPage> {
   final AuthService authService = AuthService();
 
   // ignore: unused_element
-  void _login() {
-    authService.login(
+  void _login() async {
+    var result = await authService.login(
       context,
       _loginController.text,
       _passwordController.text,
     );
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomePage()),
-    );
+    if (!mounted) return;
+    if (result["status"] == 'success') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result["message"]!),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _navigateToCreateAccount(BuildContext context) {
@@ -114,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
               // Login Button
               ElevatedButton(
                 onPressed: () {
-                  // Handle login logic here
+                  _login();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppStyles.primaryColor,

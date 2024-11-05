@@ -19,6 +19,15 @@ class RegisterView(APIView):
             400: "Invalid data",
         },
         operation_description="Register a new user with username, email, height, weight, date of birth, and password.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING),
+                'email': openapi.Schema(type=openapi.TYPE_STRING),
+                'password': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+            required=['username', 'email', 'height', 'weight', 'date_of_birth', 'password']
+        )
     )
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
@@ -34,8 +43,20 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(
-        operation_description="Tentative de connexion d'un utilisateur",
-        responses={200: openapi.Response('L''utilisateur est connecté')}
+        operation_description="User login with username or email and password.",
+        responses={
+            200: openapi.Response("User logged in successfully"),
+            400: "Invalid credentials",
+        }
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING),
+                'email': openapi.Schema(type=openapi.TYPE_STRING),
+                'password': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+            required=['username', 'password']
+        )
     )
     def post(self, request):
         username = request.data.get('username')
@@ -56,6 +77,13 @@ class LoginView(APIView):
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="User logout.",
+        responses={
+            200: openapi.Response("User logged out successfully"),
+            400: "Invalid credentials",
+        }
+    )
     def post(self, request):
         token = Token.objects.get(user=request.user)
         token.delete()

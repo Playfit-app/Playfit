@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:playfit/auth_service.dart';
 import 'package:playfit/home_page.dart';
-import 'package:playfit/registration_page.dart';
+import 'package:playfit/authentification/registration_page.dart';
 import 'package:playfit/styles/styles.dart';
 
 class LoginPage extends StatefulWidget {

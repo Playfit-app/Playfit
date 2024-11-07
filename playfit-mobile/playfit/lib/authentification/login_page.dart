@@ -15,6 +15,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _loginController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService authService = AuthService();
+  String _errorMessage = '';
 
   // ignore: unused_element
   void _login() async {
@@ -30,12 +31,9 @@ class _LoginPageState extends State<LoginPage> {
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result["message"]!),
-          backgroundColor: Colors.red,
-        ),
-      );
+      setState(() {
+        _errorMessage = result["message"]!;
+      });
     }
   }
 
@@ -72,6 +70,20 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 20),
+              // Display error message if it exists
+              if (_errorMessage.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                  child: Text(
+                    _errorMessage,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              const SizedBox(height: 10),
               // Username TextField
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40.0),

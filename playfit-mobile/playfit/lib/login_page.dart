@@ -15,21 +15,52 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _loginController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService authService = AuthService();
+  bool _isGoogleSignInLoading = false;
 
   // ignore: unused_element
   void _login() async {
-    var result = await authService.login(
-      context,
-      _loginController.text,
-      _passwordController.text,
-    );
-    if (!mounted) return;
+    setState(() {
+      _isGoogleSignInLoading = true;
+    });
+    try {
+      var result = await authService.login(
+        context,
+        _loginController.text,
+        _passwordController.text,
+      );
+      if (!mounted) return;
+      if (result["status"] == 'success') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result["message"]!),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isGoogleSignInLoading = false;
+      });
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    // Send the ID token to the backend for verification and login
+    var result = await authService.loginWithGoogle(context);
+    if (!mounted) return; // Ensure the widget is still mounted
     if (result["status"] == 'success') {
+      // Navigate to the HomePage on successful login
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
     } else {
+      // Display an error message if login failed
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result["message"]!),
@@ -154,13 +185,17 @@ class _LoginPageState extends State<LoginPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: GestureDetector(
-                  onTap: () {
-                    // Handle Google login logic here
-                  },
-                  child: Image.asset(
-                    'assets/images/google.png',
-                    height: 50,
-                  ),
+                  onTap: _isGoogleSignInLoading
+                      ? null
+                      : () async {
+                          await _handleGoogleSignIn();
+                        },
+                  child: _isGoogleSignInLoading
+                      ? const CircularProgressIndicator()
+                      : Image.asset(
+                          'assets/images/google.png',
+                          height: 50,
+                        ),
                 ),
               ),
             ],

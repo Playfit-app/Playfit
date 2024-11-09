@@ -95,8 +95,6 @@ class AuthService {
       GoogleSignInAccount? account = await googleSignIn.signIn();
       if (account != null) {
         GoogleSignInAuthentication googleAuth = await account.authentication;
-        print(
-            'Google Auth: ${googleAuth.accessToken}, ID Token: ${googleAuth.idToken}');
         final String? idToken = googleAuth.accessToken;
 
         if (idToken != null) {

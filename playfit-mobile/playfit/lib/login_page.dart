@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:playfit/auth_service.dart';
 import 'package:playfit/home_page.dart';
@@ -182,22 +183,23 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               // Divider and Google Login
               const Divider(),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                child: GestureDetector(
-                  onTap: _isGoogleSignInLoading
-                      ? null
-                      : () async {
-                          await _handleGoogleSignIn();
-                        },
-                  child: _isGoogleSignInLoading
-                      ? const CircularProgressIndicator()
-                      : Image.asset(
-                          'assets/images/google.png',
-                          height: 50,
-                        ),
-                ),
-              ),
+              Platform.isAndroid?
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: GestureDetector(
+                    onTap: _isGoogleSignInLoading
+                        ? null
+                        : () async {
+                            await _handleGoogleSignIn();
+                          },
+                    child: _isGoogleSignInLoading
+                        ? const CircularProgressIndicator()
+                        : Image.asset(
+                            'assets/images/google.png',
+                            height: 50,
+                          ),
+                  ),
+                ):Container()
             ],
           ),
         ),

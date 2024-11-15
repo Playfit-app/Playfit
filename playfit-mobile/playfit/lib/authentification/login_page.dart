@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:playfit/auth_service.dart';
 import 'package:playfit/home_page.dart';
@@ -16,21 +17,52 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   final AuthService authService = AuthService();
   String _errorMessage = '';
+  bool _isGoogleSignInLoading = false;
 
   // ignore: unused_element
   void _login() async {
-    var result = await authService.login(
-      context,
-      _loginController.text,
-      _passwordController.text,
-    );
-    if (!mounted) return;
+    setState(() {
+      _isGoogleSignInLoading = true;
+    });
+    try {
+      var result = await authService.login(
+        context,
+        _loginController.text,
+        _passwordController.text,
+      );
+      if (!mounted) return;
+      if (result["status"] == 'success') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result["message"]!),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isGoogleSignInLoading = false;
+      });
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    // Send the ID token to the backend for verification and login
+    var result = await authService.loginWithGoogle(context);
+    if (!mounted) return; // Ensure the widget is still mounted
     if (result["status"] == 'success') {
+      // Navigate to the HomePage on successful login
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
     } else {
+      // Display an error message if login failed
       setState(() {
         _errorMessage = result["message"]!;
       });
@@ -163,18 +195,24 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               // Divider and Google Login
               const Divider(),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                child: GestureDetector(
-                  onTap: () {
-                    // Handle Google login logic here
-                  },
-                  child: Image.asset(
-                    'assets/images/google.png',
-                    height: 50,
-                  ),
-                ),
-              ),
+              Platform.isAndroid
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: GestureDetector(
+                        onTap: _isGoogleSignInLoading
+                            ? null
+                            : () async {
+                                await _handleGoogleSignIn();
+                              },
+                        child: _isGoogleSignInLoading
+                            ? const CircularProgressIndicator()
+                            : Image.asset(
+                                'assets/images/google.png',
+                                height: 50,
+                              ),
+                      ),
+                    )
+                  : Container(),
             ],
           ),
         ),

@@ -4,6 +4,18 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
 }
+import java.util.Properties
+
+def loadEnvProperties() {
+    def envFile = rootProject.file("../.env")
+    def properties = new Properties()
+    if (envFile.exists()) {
+        envFile.withInputStream { properties.load(it) }
+    }
+    return properties
+}
+
+def env = loadEnvProperties()
 
 android {
     namespace = "com.example.playfit"
@@ -28,6 +40,14 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        if (!env["GOOGLE_CLIENT_ID"]) {
+            throw new GradleException("GOOGLE_CLIENT_ID is not set in .env file")
+        }
+
+        manifestPlaceholders = [
+            GOOGLE_CLIENT_ID: env["GOOGLE_CLIENT_ID"],
+            applicationName: "android.app.Application"
+        ]
     }
 
     buildTypes {

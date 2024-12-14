@@ -28,23 +28,24 @@ class PoseDetector {
     'right_ankle': 16,
   };
 
+  List<List<double>> keypoints = [];
+
   Future<void> loadModel() async {
     _interpreter = await Interpreter.fromAsset(
-        'assets/movenet-singlepose-lightning-tflite-float16.tflite');
+        'assets/model/movenet-singlepose-lightning-tflite-float16.tflite');
   }
 
   Future<bool> runPoseDetection(CameraImage image) async {
     Stopwatch stopwatch = Stopwatch()..start();
 
     final inputBuffer = convertCameraImage(image);
-
     var outputShape = _interpreter.getOutputTensor(0).shape;
     var outputBuffer = List.filled(outputShape.reduce((a, b) => a * b), 0.0)
         .reshape(outputShape);
 
     _interpreter.run(inputBuffer, outputBuffer);
 
-    var keypoints = outputBuffer[0][0];
+    keypoints = outputBuffer[0][0];
 
     bool result = processKeypoints(keypoints);
 
@@ -59,26 +60,48 @@ class PoseDetector {
 
     final img.Image resizedImage =
         img.copyResize(convertedImage, width: 192, height: 192);
-
-    return resizedImage.data!.buffer.asUint8List();
+    
+    return resizedImage.getBytes(order: img.ChannelOrder.rgb);
   }
 
-  bool processKeypoints(List<List<double>> keypoints) {
-    final leftKnee = keypoints[keypointMap['left_knee'] ?? 0];
-    final leftHip = keypoints[keypointMap['left_hip'] ?? 0];
-    final leftAnkle = keypoints[keypointMap['left_ankle'] ?? 0];
+  bool processKeypoints(List<List<double>> _keypoints) {
+    final leftKnee = _keypoints[keypointMap['left_knee'] ?? 0];
+    final leftHip = _keypoints[keypointMap['left_hip'] ?? 0];
+    final leftAnkle = _keypoints[keypointMap['left_ankle'] ?? 0];
 
+    final rightKnee = _keypoints[keypointMap['right_knee'] ?? 0];
+    final rightHip = _keypoints[keypointMap['right_hip'] ?? 0];
+    final rightAnkle = _keypoints[keypointMap['right_ankle'] ?? 0];
+
+    // print("Keypoints = $_keypoints");
+
+    // Calculer les angles pour les deux jambes
     final double leftAngle = calculateAngle(leftKnee, leftHip, leftAnkle);
-    // print("Left knee angle: $leftAngle");
+    final double rightAngle = calculateAngle(rightKnee, rightHip, rightAnkle);
 
-    return leftAngle > 160;
+    print("Left knee angle: $leftAngle");
+    print("Right knee angle: $rightAngle");
 
-    // final rightKnee = keypoints[keypointMap['right_knee'] ?? 0];
-    // final rightHip = keypoints[keypointMap['right_hip'] ?? 0];
-    // final rightAnkle = keypoints[keypointMap['right_ankle'] ?? 0];
+    // Définir des seuils d'angles pour un squat valide
+    final double minAngle = 90.0;
+    final double maxAngle = 140.0;
 
-    // final double rightAngle = calculateAngle(rightKnee, rightHip, rightAnkle);
-    // print("Right knee angle: $rightAngle");
+    // Vérifier si les angles des deux genoux sont dans la plage d'un squat
+    bool isSquatting = leftAngle >= minAngle && leftAngle <= maxAngle &&
+                      rightAngle >= minAngle && rightAngle <= maxAngle;
+
+    // Vérification si les hanches sont suffisamment basses (en fonction de la position verticale)
+    final double hipHeightThreshold = 0.5; // Par exemple, si la hauteur des hanches par rapport aux genoux est faible
+    final double leftHipHeight = leftHip[1];  // Utilisation de la coordonnée Y pour mesurer la hauteur
+    final double rightHipHeight = rightHip[1];
+
+    if (isSquatting) {
+      print("Squat detected!");
+      return true;
+    }
+
+    print("Not a squat.");
+    return false;
   }
 
   double calculateAngle(List<double> a, List<double> b, List<double> c) {
@@ -98,4 +121,5 @@ class PoseDetector {
     final angleRad = acos(dotProduct / (magnitudeBA * magnitudeBC));
     return angleRad * 180 / pi;
   }
+
 }

@@ -33,16 +33,12 @@ class _CameraViewState extends State<CameraView> {
     _controller.startImageStream((image) async {
       // Convert the image to a format suitable for the model (e.g., 640x640). Every 2 seconds, the model will run inference on the image.
       if (DateTime.now().second % 2 == 0) {
-        if (image.format.group == ImageFormatGroup.yuv420) {
           bool result = await model.runPoseDetection(image);
           if (result) {
             // If the model detects a squat, increment the squat count
             squatCount++;
             print('Squat count: $squatCount');
           }
-        } else {
-          print('Invalid image format');
-        }
       }
     });
     setState(() {});
@@ -62,4 +58,3 @@ class _CameraViewState extends State<CameraView> {
     );
   }
 }
-

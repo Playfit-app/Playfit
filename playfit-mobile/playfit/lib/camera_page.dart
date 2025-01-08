@@ -90,4 +90,11 @@ class _CameraViewState extends State<CameraView> {
           : const Center(child: CircularProgressIndicator()),
     );
   }
+
+  @override
+  void dispose() {
+    _workoutAnalyzer.dispose();
+    _controller?.dispose();
+    super.dispose();
+  }
 }

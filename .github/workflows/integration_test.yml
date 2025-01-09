@@ -23,6 +23,9 @@ jobs:
       - name: Run tests
         run: python manage.py test
         working-directory: ./backend/playfit
+        env:
+          SECRET_KEY: ${{ secrets.BACKEND_SECRET_KEY }}
+          DEBUG: 'False'
 
   flutter_tests:
     name: Run Flutter tests
@@ -36,7 +39,7 @@ jobs:
           flutter-version: 3.19.0
       - name: Install dependencies
         run: flutter pub get
-        working-directory: ./frontend
+        working-directory: ./playfit-mobile/playfit
       - name: Run tests
         run: flutter test
-        working-directory: ./frontend/playfit
+        working-directory: ./playfit-mobile/playfit

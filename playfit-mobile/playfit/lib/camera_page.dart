@@ -72,7 +72,7 @@ class _CameraViewState extends State<CameraView> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Squat: ${workoutCounts[WorkoutType.squat]}',
+                              'Count: ${workoutCounts[WorkoutType.squat]}',
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 24,

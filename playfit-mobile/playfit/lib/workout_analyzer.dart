@@ -5,6 +5,8 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 enum WorkoutType {
   squat,
   jumpingJack,
+  pushUp,
+  pullUp,
 }
 
 class WorkoutAnalyzer {
@@ -16,10 +18,14 @@ class WorkoutAnalyzer {
   ValueNotifier<Map<WorkoutType, int>> workoutCounts = ValueNotifier({
     WorkoutType.squat: 0,
     WorkoutType.jumpingJack: 0,
+    WorkoutType.pushUp: 0,
+    WorkoutType.pullUp: 0,
   });
   final Map<WorkoutType, bool> _workoutStatus = {
     WorkoutType.squat: false,
     WorkoutType.jumpingJack: false,
+    WorkoutType.pushUp: false,
+    WorkoutType.pullUp: false,
   };
 
   Future<void> detectWorkout(InputImage inputImage, WorkoutType workout) async {
@@ -38,6 +44,12 @@ class WorkoutAnalyzer {
           break;
         case WorkoutType.jumpingJack:
           detectJumpingJack(pose);
+          break;
+        case WorkoutType.pushUp:
+          detectPushUp(pose);
+          break;
+        case WorkoutType.pullUp:
+          detectPullUp(pose);
           break;
       }
     } catch (e) {
@@ -67,10 +79,7 @@ class WorkoutAnalyzer {
 
     if (leftKneeAngle <= 90 || rightKneeAngle <= 90) {
       if (!_workoutStatus[WorkoutType.squat]!) {
-        workoutCounts.value = {
-          ...workoutCounts.value,
-          WorkoutType.squat: workoutCounts.value[WorkoutType.squat]! + 1,
-        };
+        incrementWorkoutCount(WorkoutType.squat);
         _workoutStatus[WorkoutType.squat] = true;
       }
     } else {
@@ -113,15 +122,83 @@ class WorkoutAnalyzer {
         armsUp &&
         legsApart) {
       if (!_workoutStatus[WorkoutType.jumpingJack]!) {
-        workoutCounts.value = {
-          ...workoutCounts.value,
-          WorkoutType.jumpingJack:
-              workoutCounts.value[WorkoutType.jumpingJack]! + 1,
-        };
+        incrementWorkoutCount(WorkoutType.jumpingJack);
         _workoutStatus[WorkoutType.jumpingJack] = true;
       }
     } else {
       _workoutStatus[WorkoutType.jumpingJack] = false;
+    }
+  }
+
+  void detectPushUp(Pose pose) {
+    final leftWrist = pose.landmarks[PoseLandmarkType.leftWrist];
+    final rightWrist = pose.landmarks[PoseLandmarkType.rightWrist];
+    final leftElbow = pose.landmarks[PoseLandmarkType.leftElbow];
+    final rightElbow = pose.landmarks[PoseLandmarkType.rightElbow];
+    final leftShoulder = pose.landmarks[PoseLandmarkType.leftShoulder];
+    final rightShoulder = pose.landmarks[PoseLandmarkType.rightShoulder];
+
+    if (leftWrist == null ||
+        rightWrist == null ||
+        leftElbow == null ||
+        rightElbow == null ||
+        leftShoulder == null ||
+        rightShoulder == null) {
+      return;
+    }
+
+    final leftElbowAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
+    final rightElbowAngle =
+        calculateAngle(rightShoulder, rightElbow, rightWrist);
+
+    // final chestY = (leftShoulder.y + rightShoulder.y) / 2;
+    // const double groundThreshold = 400;
+    const double elbowAngleThreshold = 90;
+
+    if (leftElbowAngle <= elbowAngleThreshold &&
+        rightElbowAngle <= elbowAngleThreshold) {
+      debugPrint('Elbow angle: $leftElbowAngle, $rightElbowAngle');
+      // debugPrint('Chest Y: $chestY');
+      if (!_workoutStatus[WorkoutType.pushUp]!) {
+        incrementWorkoutCount(WorkoutType.pushUp);
+        _workoutStatus[WorkoutType.pushUp] = true;
+      }
+    } else {
+      _workoutStatus[WorkoutType.pushUp] = false;
+    }
+  }
+
+  void detectPullUp(Pose pose) {
+    final leftWrist = pose.landmarks[PoseLandmarkType.leftWrist];
+    final rightWrist = pose.landmarks[PoseLandmarkType.rightWrist];
+    final leftElbow = pose.landmarks[PoseLandmarkType.leftElbow];
+    final rightElbow = pose.landmarks[PoseLandmarkType.rightElbow];
+    final leftShoulder = pose.landmarks[PoseLandmarkType.leftShoulder];
+    final rightShoulder = pose.landmarks[PoseLandmarkType.rightShoulder];
+
+    if (leftShoulder == null ||
+        rightShoulder == null ||
+        leftElbow == null ||
+        rightElbow == null ||
+        leftWrist == null ||
+        rightWrist == null) {
+      return;
+    }
+
+    final leftElbowAngle = calculateAngle(leftWrist, leftElbow, leftShoulder);
+    final rightElbowAngle =
+        calculateAngle(rightWrist, rightElbow, rightShoulder);
+
+    const double elbowAngleThreshold = 40.0;
+
+    if ((leftElbowAngle <= elbowAngleThreshold &&
+        rightElbowAngle <= elbowAngleThreshold)) {
+      if (!_workoutStatus[WorkoutType.pullUp]!) {
+        incrementWorkoutCount(WorkoutType.pullUp);
+        _workoutStatus[WorkoutType.pullUp] = true;
+      }
+    } else {
+      _workoutStatus[WorkoutType.pullUp] = false;
     }
   }
 
@@ -143,6 +220,13 @@ class WorkoutAnalyzer {
     final angle = acos(cosine) * 180 / pi;
 
     return angle;
+  }
+
+  void incrementWorkoutCount(WorkoutType workoutType) {
+    workoutCounts.value = {
+      ...workoutCounts.value,
+      workoutType: workoutCounts.value[workoutType]! + 1,
+    };
   }
 
   void dispose() {

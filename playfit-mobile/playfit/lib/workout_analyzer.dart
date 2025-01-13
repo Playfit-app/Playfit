@@ -77,13 +77,18 @@ class WorkoutAnalyzer {
     final leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
     final rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
 
-    if (leftKneeAngle <= 90 || rightKneeAngle <= 90) {
+    const double downThreshold = 90;
+    const double upThreshold = 160;
+
+    if (leftKneeAngle <= downThreshold && rightKneeAngle <= downThreshold) {
       if (!_workoutStatus[WorkoutType.squat]!) {
-        incrementWorkoutCount(WorkoutType.squat);
         _workoutStatus[WorkoutType.squat] = true;
       }
-    } else {
-      _workoutStatus[WorkoutType.squat] = false;
+    } else if (leftKneeAngle >= upThreshold && rightKneeAngle >= upThreshold) {
+      if (_workoutStatus[WorkoutType.squat]!) {
+        incrementWorkoutCount(WorkoutType.squat);
+        _workoutStatus[WorkoutType.squat] = false;
+      }
     }
   }
 
@@ -104,29 +109,25 @@ class WorkoutAnalyzer {
       return;
     }
 
-    // Determine if the detected pose is a jumping jack
-    final shoulderDistance = (leftShoulder.x - rightShoulder.x).abs();
+    // final shoulderDistance = (leftShoulder.x - rightShoulder.x).abs();
     final hipDistance = (leftHip.x - rightHip.x).abs();
     final ankleDistance = (leftAnkle.x - rightAnkle.x).abs();
 
-    // Define criteria for detecting jumping jack more robustly
-    final shoulderToHipRatio = shoulderDistance / hipDistance;
-    final ankleToHipRatio = ankleDistance / hipDistance;
+    // const double armsUpThreshold = 1.5;
+    const double legsApartMultiplier = 1.5;
 
-    // Additional checks for jumping jack movement (optional)
     bool armsUp = leftShoulder.y < leftHip.y && rightShoulder.y < rightHip.y;
-    bool legsApart = ankleDistance > hipDistance * 1.5;
+    bool legsApart = ankleDistance > hipDistance * legsApartMultiplier;
 
-    if (shoulderToHipRatio > 1.5 &&
-        ankleToHipRatio < 2.0 &&
-        armsUp &&
-        legsApart) {
+    if (armsUp && legsApart) {
       if (!_workoutStatus[WorkoutType.jumpingJack]!) {
-        incrementWorkoutCount(WorkoutType.jumpingJack);
         _workoutStatus[WorkoutType.jumpingJack] = true;
       }
     } else {
-      _workoutStatus[WorkoutType.jumpingJack] = false;
+      if (_workoutStatus[WorkoutType.jumpingJack]!) {
+        incrementWorkoutCount(WorkoutType.jumpingJack);
+        _workoutStatus[WorkoutType.jumpingJack] = false;
+      }
     }
   }
 
@@ -151,20 +152,19 @@ class WorkoutAnalyzer {
     final rightElbowAngle =
         calculateAngle(rightShoulder, rightElbow, rightWrist);
 
-    // final chestY = (leftShoulder.y + rightShoulder.y) / 2;
-    // const double groundThreshold = 400;
-    const double elbowAngleThreshold = 90;
+    const double downThreshold = 90;
+    const double upThreshold = 160;
 
-    if (leftElbowAngle <= elbowAngleThreshold &&
-        rightElbowAngle <= elbowAngleThreshold) {
-      debugPrint('Elbow angle: $leftElbowAngle, $rightElbowAngle');
-      // debugPrint('Chest Y: $chestY');
+    if (leftElbowAngle <= downThreshold && rightElbowAngle <= downThreshold) {
       if (!_workoutStatus[WorkoutType.pushUp]!) {
-        incrementWorkoutCount(WorkoutType.pushUp);
         _workoutStatus[WorkoutType.pushUp] = true;
       }
-    } else {
-      _workoutStatus[WorkoutType.pushUp] = false;
+    } else if (leftElbowAngle >= upThreshold &&
+        rightElbowAngle >= upThreshold) {
+      if (_workoutStatus[WorkoutType.pushUp]!) {
+        incrementWorkoutCount(WorkoutType.pushUp);
+        _workoutStatus[WorkoutType.pushUp] = false;
+      }
     }
   }
 

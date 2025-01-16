@@ -27,6 +27,7 @@ class WorkoutAnalyzer {
     WorkoutType.pushUp: false,
     WorkoutType.pullUp: false,
   };
+  Map<PoseLandmarkType, PoseLandmark> _lastLandmarks = {};
 
   Future<void> detectWorkout(InputImage inputImage, WorkoutType workout) async {
     try {
@@ -50,6 +51,8 @@ class WorkoutAnalyzer {
           break;
         case WorkoutType.pullUp:
           detectPullUp(pose);
+          break;
+        default:
           break;
       }
     } catch (e) {
@@ -189,16 +192,28 @@ class WorkoutAnalyzer {
     final rightElbowAngle =
         calculateAngle(rightWrist, rightElbow, rightShoulder);
 
-    const double elbowAngleThreshold = 40.0;
+    const double upThreshold = 60.0;
+    const double downThreshold = 160.0;
+    const double shoulderYMovementThreshold = 100;
 
-    if ((leftElbowAngle <= elbowAngleThreshold &&
-        rightElbowAngle <= elbowAngleThreshold)) {
+    if (leftElbowAngle <= upThreshold &&
+        rightElbowAngle <= upThreshold &&
+        (leftShoulder.y - _lastLandmarks[PoseLandmarkType.leftShoulder]!.y)
+                .abs() >
+            shoulderYMovementThreshold &&
+        (rightShoulder.y - _lastLandmarks[PoseLandmarkType.rightShoulder]!.y)
+                .abs() >
+            shoulderYMovementThreshold) {
       if (!_workoutStatus[WorkoutType.pullUp]!) {
-        incrementWorkoutCount(WorkoutType.pullUp);
         _workoutStatus[WorkoutType.pullUp] = true;
       }
-    } else {
-      _workoutStatus[WorkoutType.pullUp] = false;
+    } else if (leftElbowAngle >= downThreshold &&
+        rightElbowAngle >= downThreshold) {
+      _lastLandmarks = pose.landmarks;
+      if (_workoutStatus[WorkoutType.pullUp]!) {
+        incrementWorkoutCount(WorkoutType.pullUp);
+        _workoutStatus[WorkoutType.pullUp] = false;
+      }
     }
   }
 

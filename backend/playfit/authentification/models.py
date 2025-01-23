@@ -11,6 +11,12 @@ class CustomUserManager(BaseUserManager):
         user = self.model(email=email, username=username, **extra_fields)
         user.set_password(password)
         user.save()
+
+        UserConsent.objects.create(
+            user=user,
+            terms_and_conditions=True,
+            privacy_policy=True
+        )
         return user
 
     def create_superuser(self, email, username, password, **extra_fields):
@@ -111,3 +117,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         self.physical_particularities = None
         self.is_active = False
         self.save()
+
+class UserConsent(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    terms_and_conditions = models.BooleanField(default=False)
+    privacy_policy = models.BooleanField(default=False)
+    marketing = models.BooleanField(default=False)
+    consent_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Consent for {self.user.username} - {self.consent_date}"

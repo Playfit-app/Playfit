@@ -4,15 +4,15 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, login
-from .serializers import CustomUserSerializer
-from .models import CustomUser
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from social_django.utils import load_strategy
 from social_core.backends.google import GoogleOAuth2
 from social_core.exceptions import AuthForbidden
-from .utils import generate_username_with_number, get_user_birthdate
 from utilities.encrypted_fields import hash
+from .models import CustomUser
+from .serializers import CustomUserSerializer, CustomUserRetrieveSerializer, CustomUserUpdateSerializer
+from .utils import generate_username_with_number, get_user_birthdate
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -155,9 +155,25 @@ class UserView(APIView):
     @swagger_auto_schema(
         operation_description="Get user data.",
         responses={
-            200: openapi.Response("User data", CustomUserSerializer),
+            200: openapi.Response("User data", CustomUserRetrieveSerializer),
         }
     )
     def get(self, request):
-        serializer = CustomUserSerializer(request.user)
+        serializer = CustomUserRetrieveSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=CustomUserUpdateSerializer,
+        operation_description="Update user data.",
+        responses={
+            200: openapi.Response("User data updated", CustomUserUpdateSerializer),
+            400: "Invalid data",
+        }
+    )
+    def patch(self, request):
+        serializer = CustomUserUpdateSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

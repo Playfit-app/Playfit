@@ -54,3 +54,55 @@ class CustomUserSerializer(serializers.ModelSerializer):
         if not value['terms_and_conditions'] or not value['privacy_policy']:
             raise serializers.ValidationError("You must accept the terms and conditions and privacy policy to register.")
         return value
+
+class UserConsentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserConsent
+        fields = ['terms_and_conditions', 'privacy_policy', 'marketing']
+
+class CustomUserRetrieveSerializer(serializers.ModelSerializer):
+    consent = UserConsentSerializer(source='userconsent', read_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = [
+            'email', 'username', 'first_name', 'last_name', 'date_of_birth', 'height', 'weight',
+            'goals', 'gender', 'fitness_level', 'physical_particularities', 'date_joined',
+            'last_login', 'registration_method', 'consent'
+        ]
+
+class CustomUserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = [
+            'username', 'first_name', 'last_name', 'height', 'weight',
+            'goals', 'gender', 'fitness_level', 'physical_particularities'
+        ]
+        extra_kwargs = {
+            'username': {'required': False},
+            'first_name': {'required': False},
+            'last_name': {'required': False},
+            'height': {'required': False},
+            'weight': {'required': False},
+            'goals': {'required': False},
+            'gender': {'required': False},
+            'fitness_level': {'required': False},
+            'physical_particularities': {'required': False},
+        }
+
+    def validate(self, data):
+        if 'username' in data and CustomUser.objects.filter(username=data['username']).exclude(id=self.instance.id).exists():
+            raise serializers.ValidationError({'username': 'Username already exists'})
+        if 'height' in data and (data['height'] < 100 or data['height'] > 250):
+            raise serializers.ValidationError({'height': 'Height must be between 100 and 250 cm'})
+        if 'weight' in data and (data['weight'] < 30 or data['weight'] > 250):
+            raise serializers.ValidationError({'weight': 'Weight must be between 30 and 250 kg'})
+        if 'goals' in data and data['goals'] not in [CustomUser.BODYWEIGHT_STRENGTH, CustomUser.FAT_LOSS_CARDIO, CustomUser.ENDURANCE]:
+            raise serializers.ValidationError({'goals': 'Invalid goals value'})
+        if 'gender' in data and data['gender'] not in ["Male", "Female", "Other"]:
+            raise serializers.ValidationError({'gender': 'Invalid gender value'})
+        if 'fitness_level' in data and data['fitness_level'] not in ["Beginner", "Intermediate", "Advanced"]:
+            raise serializers.ValidationError({'fitness_level': 'Invalid fitness level value'})
+        if 'physical_particularities' in data and len(data['physical_particularities']) > 1000:
+            raise serializers.ValidationError({'physical_particularities': 'Physical particularities must be less than 1000 characters'})
+        return data

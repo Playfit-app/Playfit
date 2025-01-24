@@ -24,6 +24,9 @@ class AuthentificationTests(APITestCase):
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
+            'terms_and_conditions': True,
+            'privacy_policy': True,
+            'marketing': False,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -38,6 +41,9 @@ class AuthentificationTests(APITestCase):
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
+            'terms_and_conditions': True,
+            'privacy_policy': True,
+            'marketing': False,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -52,6 +58,9 @@ class AuthentificationTests(APITestCase):
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
+            'terms_and_conditions': True,
+            'privacy_policy': True,
+            'marketing': False,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -66,6 +75,9 @@ class AuthentificationTests(APITestCase):
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
+            'terms_and_conditions': True,
+            'privacy_policy': True,
+            'marketing': False,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -80,6 +92,9 @@ class AuthentificationTests(APITestCase):
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
+            'terms_and_conditions': True,
+            'privacy_policy': True,
+            'marketing': False,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -94,6 +109,9 @@ class AuthentificationTests(APITestCase):
             'date_of_birth': '1990-01-01',
             'height': 180,
             'weight': 80,
+            'terms_and_conditions': True,
+            'privacy_policy': True,
+            'marketing': False,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -108,6 +126,9 @@ class AuthentificationTests(APITestCase):
             'date_of_birth': 'invalid',
             'height': 180,
             'weight': 80,
+            'terms_and_conditions': True,
+            'privacy_policy': True,
+            'marketing': False,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const LoginPage(),
-      initialRoute: '/camera',
+      initialRoute: '/login',
       routes: {
         '/register': (context) =>
             const CreateAccountPage(), // Route to registration page

@@ -97,8 +97,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             except ValueError:
                 raise ValidationError("Invalid date format. Please use YYYY-MM-DD.")
 
-        if self.date_of_birth >= datetime.date.today() - datetime.timedelta(days=365*14):
-            raise ValidationError("You must be at least 14 years old to register.")
+        if self.date_of_birth >= datetime.date.today() - datetime.timedelta(days=365*18):
+            raise ValidationError("You must be at least 18 years old to register.")
 
         if isinstance(self.date_of_birth, datetime.date):
             self.date_of_birth = self.date_of_birth.isoformat()

@@ -3,13 +3,14 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
-from utilities.encrypted_field import get_fernet, EncryptedCharField, EncryptedEmailField, EncryptedDateField, EncryptedTextField
+from utilities.encrypted_fields import hash, get_fernet, EncryptedCharField, EncryptedEmailField, EncryptedDateField, EncryptedTextField
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, username, password, **extra_fields):
         email = self.normalize_email(email)
         user = self.model(email=email, username=username, **extra_fields)
         user.set_password(password)
+        user.email_hash = hash(email)
         user.save()
 
         UserConsent.objects.create(
@@ -54,6 +55,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     ]
 
     email = EncryptedEmailField(unique=True)
+    email_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
     username = models.CharField(max_length=150, unique=True)
     first_name = EncryptedCharField(max_length=150, null=True, blank=True)
     last_name = EncryptedCharField(max_length=150, null=True, blank=True)
@@ -102,11 +104,14 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             self.date_of_birth = self.date_of_birth.isoformat()
 
     def save(self, *args, **kwargs):
+        if self.email:
+            self.email_hash = hash(self.email)
         self.full_clean()
         super().save(*args, **kwargs)
 
     def anonynimze_user(self):
         self.email = get_fernet().encrypt(f"deleted_{self.id}@example.com".encode()).decode()
+        self.email_hash = hash(self.email)
         self.username = None
         self.first_name = None
         self.last_name = None

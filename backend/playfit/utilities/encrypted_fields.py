@@ -1,7 +1,12 @@
 import base64
+import hashlib
 from django.db import models
 from cryptography.fernet import Fernet
 from django.conf import settings
+
+def hash(string: str) -> str:
+    normalized_string = string.strip().lower().encode()
+    return hashlib.sha256(normalized_string).hexdigest()
 
 def get_fernet():
     key = settings.CRYPTOGRAPHY_KEY or settings.SECRET_KEY

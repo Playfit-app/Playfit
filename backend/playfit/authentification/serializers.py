@@ -24,6 +24,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             weight=validated_data['weight'],
         )
         user.set_password(validated_data['password'])
+        user.email_hash = hash(validated_data['email'])
         user.save()
 
         UserConsent.objects.create(

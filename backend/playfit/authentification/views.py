@@ -12,6 +12,7 @@ from social_django.utils import load_strategy
 from social_core.backends.google import GoogleOAuth2
 from social_core.exceptions import AuthForbidden
 from .utils import generate_username_with_number, get_user_birthdate
+from utilities.encrypted_fields import hash
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -101,6 +102,7 @@ class GoogleOAuthLoginView(APIView):
         email = user_data.get('email')
         user = CustomUser.objects.create_user(
             email=email,
+            email_hash=hash(email),
             username=generate_username_with_number(user_data.get('name') or email.split('@')[0]),
             password=None,
             registration_method='google',
@@ -126,7 +128,7 @@ class GoogleOAuthLoginView(APIView):
                 return Response({'status': 'error', 'message': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
             try:
-                user = CustomUser.objects.get(email=email)
+                user = CustomUser.objects.get(email_hash=hash(email))
                 if user.registration_method in ['google', 'email']:
                     login(request, user)
                     django_token, _ = Token.objects.get_or_create(user=user)

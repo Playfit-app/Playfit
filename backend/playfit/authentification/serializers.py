@@ -106,3 +106,11 @@ class CustomUserUpdateSerializer(serializers.ModelSerializer):
         if 'physical_particularities' in data and len(data['physical_particularities']) > 1000:
             raise serializers.ValidationError({'physical_particularities': 'Physical particularities must be less than 1000 characters'})
         return data
+
+class CustomUserDeleteSerializer(serializers.Serializer):
+    confirm = serializers.BooleanField(write_only=True)
+
+    def validate(self, data):
+        if not data['confirm']:
+            raise serializers.ValidationError({'confirm': 'You must confirm the deletion'})
+        return data

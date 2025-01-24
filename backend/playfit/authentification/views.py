@@ -11,7 +11,7 @@ from social_core.backends.google import GoogleOAuth2
 from social_core.exceptions import AuthForbidden
 from utilities.encrypted_fields import hash
 from .models import CustomUser
-from .serializers import CustomUserSerializer, CustomUserRetrieveSerializer, CustomUserUpdateSerializer
+from .serializers import CustomUserSerializer, CustomUserRetrieveSerializer, CustomUserUpdateSerializer, CustomUserDeleteSerializer
 from .utils import generate_username_with_number, get_user_birthdate
 
 class RegisterView(APIView):
@@ -175,5 +175,21 @@ class UserView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        request_body=CustomUserDeleteSerializer,
+        operation_description="Delete (anonymize) the current user's data.",
+        responses={
+            200: openapi.Response("User data deleted"),
+            400: "Invalid data",
+        }
+    )
+    def delete(self, request):
+        serializer = CustomUserDeleteSerializer(request.user, data=request.data)
+        if serializer.is_valid():
+            request.user.anonynimze_user()
+            return Response({'message': 'Your data has been anonymized successfully.'}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

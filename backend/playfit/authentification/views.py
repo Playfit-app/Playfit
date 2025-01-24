@@ -61,7 +61,9 @@ class LoginView(APIView):
 
         if user is None:
             try:
-                user = CustomUser.objects.get(email=email)
+                if not email:
+                    raise CustomUser.DoesNotExist
+                user = CustomUser.objects.get(email_hash=hash(email))
                 user = authenticate(username=user.username, password=password)
             except CustomUser.DoesNotExist:
                 return Response({'error': "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
@@ -146,3 +148,16 @@ class GoogleOAuthLoginView(APIView):
                 return Response({'status': 'success', 'message': 'Account created and logged in', 'token': django_token.key}, status=status.HTTP_200_OK)
         except AuthForbidden:
             return Response({'status': 'error', 'message': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Get user data.",
+        responses={
+            200: openapi.Response("User data", CustomUserSerializer),
+        }
+    )
+    def get(self, request):
+        serializer = CustomUserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)

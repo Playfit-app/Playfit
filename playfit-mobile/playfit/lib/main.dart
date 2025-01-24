@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:playfit/login_page.dart';
-import 'package:playfit/registration_page.dart';
+import 'package:playfit/authentification/login_page.dart';
+import 'package:playfit/authentification/registration_page.dart';
 import 'package:playfit/home_page.dart';
 import 'package:playfit/profile_page.dart';
 import 'package:playfit/camera_page.dart';

@@ -1,18 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:playfit/components/form/checkbox.dart';
+import 'package:playfit/authentification/gdpr_consent_form.dart';
 
 class RegistrationStep2 extends StatefulWidget {
   final TextEditingController birthDateController;
   final TextEditingController heightController;
   final TextEditingController weightController;
+  bool isConsentGiven;
+  bool isMarketingConsentGiven;
+  final Function(bool?) onConsentChanged;
+  final Function(bool?) onMarketingConsentChanged;
   // final TextEditingController _objectiveController;
 
-  const RegistrationStep2({
+  RegistrationStep2({
     super.key,
     required this.birthDateController,
     required this.heightController,
     required this.weightController,
+    required this.isConsentGiven,
+    required this.isMarketingConsentGiven,
+    required this.onConsentChanged,
+    required this.onMarketingConsentChanged,
     // required this._objectiveController,
   });
 
@@ -74,8 +84,8 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
                   DateTime.now().subtract(Duration(days: age * 365)))) {
                 age--;
               }
-              if (age < 14) {
-                return 'Vous devez avoir au moins 14 ans';
+              if (age < 18) {
+                return 'Vous devez avoir au moins 18 ans';
               }
               return null;
             },
@@ -145,6 +155,45 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
               }
               return null;
             },
+          ),
+          const SizedBox(height: 10),
+          // Consent form as dialog
+          ElevatedButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return GdprConsentForm(
+                    isConsentGiven: widget.isConsentGiven,
+                    isMarketingConsentGiven: widget.isMarketingConsentGiven,
+                  );
+                },
+              );
+            },
+            child: const Text('Consentement RGPD'),
+          ),
+          const SizedBox(height: 10),
+          CheckboxFormField(
+            title: const Text(
+              'J’accepte le formulaire de consentement RGPD et la Politique de Confidentialité (Obligatoire).',
+              style: TextStyle(fontSize: 8),
+            ),
+            onChanged: widget.onConsentChanged,
+            initialValue: widget.isConsentGiven,
+            validator: (value) {
+              if (value == false) {
+                return 'Veuillez accepter le consentement RGPD';
+              }
+              return null;
+            },
+          ),
+          CheckboxFormField(
+            title: const Text(
+              'J’accepte de recevoir des e-mails marketing concernant des promotions, événements ou rappels liés à l’application (Facultatif).',
+              style: TextStyle(fontSize: 8),
+            ),
+            onChanged: widget.onMarketingConsentChanged,
+            initialValue: widget.isMarketingConsentGiven,
           ),
         ],
       ),

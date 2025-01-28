@@ -4,6 +4,11 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from social_django.utils import load_strategy
@@ -193,3 +198,63 @@ class UserView(APIView):
             return Response({'message': 'Your data has been anonymized successfully.'}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Send a password reset email to the current user.",
+        responses={
+            200: openapi.Response("Password reset email sent"),
+        }
+    )
+    def post(self, request):
+        user = request.user
+        token_generator = PasswordResetTokenGenerator()
+        token = token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.id))
+        reset_link = f"playfit/reset-password?uid={uid}&token={token}"
+
+        send_mail(
+            subject="Réinitialisation du mot de passe",
+            message=f"Pour réinitialiser votre mot de passe, cliquez sur le lien suivant : {reset_link}",
+            from_email="no-reply@playfit.com",
+            recipient_list=[user.email],
+        )
+        return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Reset the user's password.",
+        responses={
+            200: openapi.Response("Password reset successfully"),
+            400: "Invalid data",
+        }
+    )
+    def post(self, request):
+        uid = request.data.get('uid')
+        token = request.data.get('token')
+        password = request.data.get('password')
+
+        if not uid or not token or not password:
+            return Response({'error': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user_id = urlsafe_base64_decode(uid).decode()
+            user = CustomUser.objects.get(id=user_id)
+        except (UnicodeDecodeError, CustomUser.DoesNotExist):
+            return Response({'error': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
+
+        token_generator = PasswordResetTokenGenerator()
+        if not token_generator.check_token(user, token):
+            return Response({'error': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user.set_password(password)
+            user.save()
+        except ValueError:
+            return Response({'error': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'message': 'Password reset successfully'}, status=status.HTTP_200_OK)

@@ -1,5 +1,7 @@
 import random
 import requests
+import base64
+import struct
 
 from .models import CustomUser
 
@@ -28,3 +30,9 @@ def get_user_birthdate(access_token: str) -> str:
                     birth_date = f"{birthday['date']['year']}-{birthday['date']['month']:02}-{birthday['date']['day']:02}"
                     return birth_date
     return None
+
+def generate_uid_from_id(id: int) -> str:
+    return base64.urlsafe_b64encode(struct.pack("I", id)).decode().rstrip("=")
+
+def get_id_from_uid(uid: str) -> int:
+    return struct.unpack("I", base64.urlsafe_b64decode(uid + "=="))[0]

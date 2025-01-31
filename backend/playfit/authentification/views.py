@@ -4,20 +4,23 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
+from django.core.exceptions import ValidationError
+from django.template.loader import render_to_string
 from django.conf import settings
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes
+from django.views import View
+from django.shortcuts import render
+from django.contrib.auth.password_validation import validate_password
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from social_django.utils import load_strategy
 from social_core.backends.google import GoogleOAuth2
 from social_core.exceptions import AuthForbidden
 from utilities.encrypted_fields import hash
+from utilities.expiring_password_reset_token import ExpiringPasswordResetTokenGenerator
 from .models import CustomUser
 from .serializers import CustomUserSerializer, CustomUserRetrieveSerializer, CustomUserUpdateSerializer, CustomUserDeleteSerializer
-from .utils import generate_username_with_number, get_user_birthdate
+from .utils import generate_username_with_number, get_user_birthdate, generate_uid_from_id, get_id_from_uid
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -197,9 +200,9 @@ class UserView(APIView):
             request.user.anonynimze_user()
             return Response({'message': 'Your data has been anonymized successfully.'}, status=status.HTTP_200_OK)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=400)
 
-class PasswordResetRequestView(APIView):
+class ResetPasswordRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
@@ -208,53 +211,71 @@ class PasswordResetRequestView(APIView):
             200: openapi.Response("Password reset email sent"),
         }
     )
-    def post(self, request):
+    def get(self, request):
         user = request.user
-        token_generator = PasswordResetTokenGenerator()
-        token = token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.id))
-        reset_link = f"playfit/reset-password?uid={uid}&token={token}"
+        token_generator = ExpiringPasswordResetTokenGenerator()
+        token = token_generator.make_signed_token(user)
+        uid = generate_uid_from_id(user.id)
+        reset_link = f"{settings.SERVER_BASE_URL}/api/auth/reset_password?uid={uid}&token={token}"
 
         send_mail(
             subject="Réinitialisation du mot de passe",
-            message=f"Pour réinitialiser votre mot de passe, cliquez sur le lien suivant : {reset_link}",
+            message="Si vous voyez ce message, c'est que votre client email ne supporte pas les messages HTML.",
+            html_message=render_to_string('authentification/reset_password_email.html', {'user': user, 'reset_link': reset_link}),
             from_email="no-reply@playfit.com",
             recipient_list=[user.email],
+
         )
         return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
 
-class PasswordResetConfirmView(APIView):
-    permission_classes = [AllowAny]
+class ResetPasswordView(View):
+    def get(self, request):
+        uid = request.GET.get('uid')
+        token = request.GET.get('token')
 
-    @swagger_auto_schema(
-        operation_description="Reset the user's password.",
-        responses={
-            200: openapi.Response("Password reset successfully"),
-            400: "Invalid data",
-        }
-    )
-    def post(self, request):
-        uid = request.data.get('uid')
-        token = request.data.get('token')
-        password = request.data.get('password')
-
-        if not uid or not token or not password:
-            return Response({'error': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
+        if not uid or not token:
+            return render(request, "authentification/reset_password.html", {'message': 'Lien non valide'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user_id = urlsafe_base64_decode(uid).decode()
+            user_id = get_id_from_uid(uid)
             user = CustomUser.objects.get(id=user_id)
         except (UnicodeDecodeError, CustomUser.DoesNotExist):
-            return Response({'error': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
+            return render(request, "authentification/reset_password.html", {'message': 'Lien non valide'}, status=status.HTTP_400_BAD_REQUEST)
 
-        token_generator = PasswordResetTokenGenerator()
-        if not token_generator.check_token(user, token):
-            return Response({'error': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
+        token_generator = ExpiringPasswordResetTokenGenerator()
+        if not token_generator.check_signed_token(user, token):
+            return render(request, "authentification/reset_password.html", {'message': 'Le lien a expiré'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return render(request, "authentification/reset_password.html", {'uid': uid, 'token': token}, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        uid = request.POST.get('uid')
+        token = request.POST.get('token')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if not uid or not token or not password:
+            return render(request, "authentification/reset_password.html", {'message': 'Données manquantes'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user.set_password(password)
-            user.save()
-        except ValueError:
-            return Response({'error': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
+            user_id = get_id_from_uid(uid)
+            user = CustomUser.objects.get(id=user_id)
+        except (UnicodeDecodeError, CustomUser.DoesNotExist):
+            return render(request, "authentification/reset_password.html", {'message': 'Données manquantes'}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({'message': 'Password reset successfully'}, status=status.HTTP_200_OK)
+        token_generator = ExpiringPasswordResetTokenGenerator()
+        if not token_generator.check_signed_token(user, token):
+            return render(request, "authentification/reset_password.html", {'message': 'Le lien a expiré'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if password != confirm_password:
+            return render(request, "authentification/reset_password.html", {'error': 'Les mots de passe ne correspondent pas'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            validate_password(password, user)
+        except ValidationError as e:
+            return render(request, "authentification/reset_password.html", {'error': e.messages[0]}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(password)
+        user.save()
+
+        return render(request, "authentification/reset_password.html", {'message': 'Mot de passe réinitialisé'}, status=status.HTTP_200_OK)

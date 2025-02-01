@@ -38,7 +38,7 @@ class RegisterView(APIView):
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
             try:
-                user = serializer.save()
+                user = serializer.create(serializer.validated_data)
                 token, _ = Token.objects.get_or_create(user=user)
                 return Response({'token': token.key}, status=status.HTTP_201_CREATED)
             except ValidationError as e:

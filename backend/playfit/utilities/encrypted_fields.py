@@ -1,19 +1,17 @@
-import base64
 import hashlib
 from django.db import models
-from cryptography.fernet import Fernet
 from django.conf import settings
+from cryptography.fernet import Fernet
 
 def hash(string: str) -> str:
     normalized_string = string.strip().lower().encode()
     return hashlib.sha256(normalized_string).hexdigest()
 
 def get_fernet():
-    key = settings.CRYPTOGRAPHY_KEY or settings.SECRET_KEY
+    key = settings.CRYPTOGRAPHY_KEY
 
-    if len(key) < 32:
-        raise ValueError("The key must be at least 32 bytes long.")
-    key = base64.urlsafe_b64encode(key[:32].encode())
+    if not key:
+        raise ValueError("CRYPTOGRAPHY_KEY is not set")
     return Fernet(key)
 
 class EncryptedField(models.Field):

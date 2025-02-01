@@ -3,11 +3,14 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
-from utilities.encrypted_fields import hash, get_fernet, EncryptedCharField, EncryptedEmailField, EncryptedDateField, EncryptedTextField
+from utilities.encrypted_fields import hash, EncryptedCharField, EncryptedEmailField, EncryptedDateField, EncryptedTextField
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, username, password, **extra_fields):
         email = self.normalize_email(email)
+        terms_and_conditions = extra_fields.pop('terms_and_conditions', True)
+        privacy_policy = extra_fields.pop('privacy_policy', True)
+        marketing = extra_fields.pop('marketing', False)
         user = self.model(email=email, username=username, **extra_fields)
         user.set_password(password)
         user.email_hash = hash(email)
@@ -15,8 +18,9 @@ class CustomUserManager(BaseUserManager):
 
         UserConsent.objects.create(
             user=user,
-            terms_and_conditions=True,
-            privacy_policy=True
+            terms_and_conditions=terms_and_conditions,
+            privacy_policy=privacy_policy,
+            marketing=marketing,
         )
         return user
 
@@ -106,14 +110,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             self.date_of_birth = self.date_of_birth.isoformat()
 
     def save(self, *args, **kwargs):
-        anonymize = kwargs.pop("anonymize", False)
-        if not anonymize and self.email:
-            self.email_hash = hash(self.email)
         self.full_clean()
         super().save(*args, **kwargs)
 
     def anonynimze_user(self):
-        self.email = get_fernet().encrypt(f"deleted_{self.id}@example.com".encode()).decode()
         self.username = None
         self.first_name = None
         self.last_name = None
@@ -123,7 +123,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         self.gender = None
         self.physical_particularities = None
         self.is_active = False
-        self.save(anonymize=True)
+        self.save()
 
 class UserConsent(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)

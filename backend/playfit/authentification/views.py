@@ -1,3 +1,4 @@
+import datetime
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,9 +18,9 @@ from social_django.utils import load_strategy
 from social_core.backends.google import GoogleOAuth2
 from social_core.exceptions import AuthForbidden
 from utilities.encrypted_fields import hash
-from utilities.expiring_password_reset_token import ExpiringPasswordResetTokenGenerator
+from utilities.expiring_password_reset_token import ExpiringPasswordResetTokenGenerator, get_email_from_signed_token
 from .models import CustomUser
-from .serializers import CustomUserSerializer, CustomUserRetrieveSerializer, CustomUserUpdateSerializer, CustomUserDeleteSerializer
+from .serializers import CustomUserSerializer, CustomUserRetrieveSerializer, CustomUserUpdateSerializer, CustomUserDeleteSerializer, AccountRecoveryRequestSerializer
 from .utils import generate_username_with_number, get_user_birthdate, generate_uid_from_id, get_id_from_uid
 
 class RegisterView(APIView):
@@ -298,3 +299,116 @@ class ResetPasswordView(View):
         user.save()
 
         return render(request, "authentification/reset_password.html", {'message': 'Mot de passe réinitialisé'}, status=status.HTTP_200_OK)
+
+class AccountRecoveryRequestView(APIView):
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Send an account recovery email to the user.",
+        request_body=AccountRecoveryRequestSerializer,
+        responses={
+            200: openapi.Response("Account recovery email sent"),
+            400: "Invalid data",
+        }
+    )
+    def post(self, request):
+        serializer = AccountRecoveryRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            try:
+                user = CustomUser.objects.get(email_hash=hash(email), is_active=False)
+            except CustomUser.DoesNotExist:
+                return Response({'error': 'No user found with this email'}, status=status.HTTP_400_BAD_REQUEST)
+
+            token = ExpiringPasswordResetTokenGenerator().make_email_signed_token(user, email)
+            uid = generate_uid_from_id(user.id)
+            reset_link = f"{settings.SERVER_BASE_URL}/api/auth/account_recovery?uid={uid}&token={token}"
+
+            send_mail(
+                subject="Récupération de compte",
+                message="Si vous voyez ce message, c'est que votre client email ne supporte pas les messages HTML.",
+                html_message=render_to_string('authentification/account_recovery_email.html', {'reset_link': reset_link}),
+                from_email="no-reply@playfit.com",
+                recipient_list=[email],
+            )
+            return Response({'message': 'Account recovery email sent'}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AccountRecoveryView(View):
+    def get(self, request):
+        uid = request.GET.get('uid')
+        token = request.GET.get('token')
+
+        if not uid or not token:
+            return render(request, "authentification/account_recovery.html", {'message': 'Lien non valide'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user_id = get_id_from_uid(uid)
+            user = CustomUser.objects.get(id=user_id)
+        except (UnicodeDecodeError, CustomUser.DoesNotExist):
+            return render(request, "authentification/account_recovery.html", {'message': 'Lien non valide'}, status=status.HTTP_400_BAD_REQUEST)
+
+        token_generator = ExpiringPasswordResetTokenGenerator()
+        if not token_generator.check_email_signed_token(user, user.email_hash, token):
+            return render(request, "authentification/account_recovery.html", {'message': 'Lien expiré'}, status=status.HTTP_400_BAD_REQUEST)
+
+        email = get_email_from_signed_token(token)
+
+        return render(request, "authentification/account_recovery.html", {'uid': uid, 'token': token, 'email': email}, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        uid = request.POST.get('uid')
+        token = request.POST.get('token')
+        email = request.POST.get('email')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        date_of_birth = request.POST.get('date_of_birth')
+        height = request.POST.get('height')
+        weight = request.POST.get('weight')
+
+        if not all([uid, token, email, username, password, confirm_password, date_of_birth, height, weight]):
+            return render(request, "authentification/account_recovery.html", {'error': 'Donnée(s) manquante(s)', 'email': email}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user_id = get_id_from_uid(uid)
+            user = CustomUser.objects.get(id=user_id)
+        except (UnicodeDecodeError, CustomUser.DoesNotExist):
+            return render(request, "authentification/account_recovery.html", {'message': 'Lien non valide'}, status=status.HTTP_400_BAD_REQUEST)
+
+        token_generator = ExpiringPasswordResetTokenGenerator()
+        if not token_generator.check_email_signed_token(user, user.email_hash, token):
+            return render(request, "authentification/account_recovery.html", {'message': 'Le lien a expiré'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if password != confirm_password:
+            return render(request, "authentification/account_recovery.html", {'error': 'Les mots de passe ne correspondent pas', 'email': email}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            validate_password(password, user)
+        except ValidationError as e:
+            return render(request, "authentification/account_recovery.html", {'error': e.messages[0], 'email': email}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            date_to_test = datetime.date.fromisoformat(date_of_birth)
+        except ValueError:
+            return render(request, "authentification/account_recovery.html", {'error': 'Format de la date invalide.', 'email': email}, status=status.HTTP_400_BAD_REQUEST)
+
+        if date_to_test >= datetime.date.today() - datetime.timedelta(days=365*18):
+            return render(request, "authentification/account_recovery.html", {'error': 'You must be at least 18 years old to register.', 'email': email}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user.email = email
+            user.username = username
+            user.set_password(password)
+            user.date_of_birth = date_of_birth
+            user.height = height
+            user.weight = weight
+            user.gender = "other"
+            user.registration_method = "email"
+            user.is_active = True
+            user.save()
+        except ValidationError as e:
+            return render(request, "authentification/account_recovery.html", {'error': e.messages[0], 'email': email}, status=status.HTTP_400_BAD_REQUEST)
+
+        return render(request, "authentification/account_recovery.html", {'message': 'Account recovered'}, status=status.HTTP_200_OK)

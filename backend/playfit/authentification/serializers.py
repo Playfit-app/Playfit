@@ -1,5 +1,6 @@
 import django.contrib.auth.password_validation as validators
 from rest_framework import serializers
+from utilities.encrypted_fields import hash
 from .models import CustomUser, UserConsent
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -113,4 +114,12 @@ class CustomUserDeleteSerializer(serializers.Serializer):
     def validate(self, data):
         if not data['confirm']:
             raise serializers.ValidationError({'confirm': 'You must confirm the deletion'})
+        return data
+
+class AccountRecoveryRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self, data):
+        if not CustomUser.objects.filter(email_hash=hash(data['email'])).exists():
+            raise serializers.ValidationError({'email': 'Email not found'})
         return data

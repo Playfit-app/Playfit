@@ -37,9 +37,12 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
-            token, _ = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key}, status=status.HTTP_201_CREATED)
+            try:
+                user = serializer.save()
+                token, _ = Token.objects.get_or_create(user=user)
+                return Response({'token': token.key}, status=status.HTTP_201_CREATED)
+            except ValidationError as e:
+                return Response({'error': e.messages[0]}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

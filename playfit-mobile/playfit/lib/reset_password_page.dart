@@ -25,7 +25,7 @@ class ResetPasswordRequestPage extends StatelessWidget {
               onPressed: () async {
                 final storage = const FlutterSecureStorage();
                 final token = await storage.read(key: 'token');
-                final response = await http.get(
+                final response = await http.post(
                   Uri.parse(
                       '${dotenv.env['SERVER_BASE_URL']}api/auth/reset_password_request/'),
                   headers: <String, String>{

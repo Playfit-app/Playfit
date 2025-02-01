@@ -203,16 +203,35 @@ class UserView(APIView):
         return Response(serializer.errors, status=400)
 
 class ResetPasswordRequestView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     @swagger_auto_schema(
-        operation_description="Send a password reset email to the current user.",
+        operation_description="Send a password reset email to the user.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'email': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+            required=['email']
+        ),
         responses={
             200: openapi.Response("Password reset email sent"),
+            400: openapi.Response("Email is required"),
         }
     )
-    def get(self, request):
+    def post(self, request):
         user = request.user
+
+        if not user:
+            email = request.POST.get('email')
+            if not email:
+                return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+            try:
+                user = CustomUser.objects.get(email_hash=hash(email))
+            except CustomUser.DoesNotExist:
+                return Response({'error': 'No user found with this email'}, status=status.HTTP_400_BAD_REQUEST)
+
         token_generator = ExpiringPasswordResetTokenGenerator()
         token = token_generator.make_signed_token(user)
         uid = generate_uid_from_id(user.id)

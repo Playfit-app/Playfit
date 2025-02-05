@@ -245,7 +245,7 @@ class ResetPasswordRequestView(APIView):
             subject="Réinitialisation du mot de passe",
             message="Si vous voyez ce message, c'est que votre client email ne supporte pas les messages HTML.",
             html_message=render_to_string('authentification/reset_password_email.html', {'user': user, 'reset_link': reset_link}),
-            from_email="no-reply@playfit.com",
+            from_email="playfit.helper@gmail.com",
             recipient_list=[user.email],
 
         )
@@ -331,7 +331,7 @@ class AccountRecoveryRequestView(APIView):
                 subject="Récupération de compte",
                 message="Si vous voyez ce message, c'est que votre client email ne supporte pas les messages HTML.",
                 html_message=render_to_string('authentification/account_recovery_email.html', {'reset_link': reset_link}),
-                from_email="no-reply@playfit.com",
+                from_email="playfit.helper@gmail.com",
                 recipient_list=[email],
             )
             return Response({'message': 'Account recovery email sent'}, status=status.HTTP_200_OK)

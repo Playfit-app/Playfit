@@ -83,11 +83,11 @@ class CustomUserUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'weight': 'Weight must be between 30 and 250 kg'})
         if 'goals' in data and data['goals'] not in [CustomUser.BODYWEIGHT_STRENGTH, CustomUser.FAT_LOSS_CARDIO, CustomUser.ENDURANCE]:
             raise serializers.ValidationError({'goals': 'Invalid goals value'})
-        if 'gender' in data and data['gender'] not in ["Male", "Female", "Other"]:
+        if 'gender' in data and data['gender'] not in ["male", "female", "other"]:
             raise serializers.ValidationError({'gender': 'Invalid gender value'})
-        if 'fitness_level' in data and data['fitness_level'] not in ["Beginner", "Intermediate", "Advanced"]:
+        if 'fitness_level' in data and data['fitness_level'] not in ["beginner", "intermediate", "advanced"]:
             raise serializers.ValidationError({'fitness_level': 'Invalid fitness level value'})
-        if 'physical_particularities' in data and len(data['physical_particularities']) > 1000:
+        if 'physical_particularities' in data and data['physical_particularities'] and len(data['physical_particularities']) > 1000:
             raise serializers.ValidationError({'physical_particularities': 'Physical particularities must be less than 1000 characters'})
         return data
 

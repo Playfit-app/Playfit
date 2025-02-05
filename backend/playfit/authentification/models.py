@@ -3,11 +3,14 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
-from utilities.encrypted_fields import hash, get_fernet, EncryptedCharField, EncryptedEmailField, EncryptedDateField, EncryptedTextField
+from utilities.encrypted_fields import hash, EncryptedCharField, EncryptedEmailField, EncryptedDateField, EncryptedTextField
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, username, password, **extra_fields):
         email = self.normalize_email(email)
+        terms_and_conditions = extra_fields.pop('terms_and_conditions', True)
+        privacy_policy = extra_fields.pop('privacy_policy', True)
+        marketing = extra_fields.pop('marketing', False)
         user = self.model(email=email, username=username, **extra_fields)
         user.set_password(password)
         user.email_hash = hash(email)
@@ -15,8 +18,9 @@ class CustomUserManager(BaseUserManager):
 
         UserConsent.objects.create(
             user=user,
-            terms_and_conditions=True,
-            privacy_policy=True
+            terms_and_conditions=terms_and_conditions,
+            privacy_policy=privacy_policy,
+            marketing=marketing,
         )
         return user
 
@@ -56,12 +60,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     email = EncryptedEmailField(unique=True)
     email_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
-    username = models.CharField(max_length=150, unique=True)
+    username = models.CharField(max_length=150, unique=True, null=True, blank=True)
     first_name = EncryptedCharField(max_length=150, null=True, blank=True)
     last_name = EncryptedCharField(max_length=150, null=True, blank=True)
     date_of_birth = EncryptedDateField(max_length=10, null=True, blank=True)
-    height = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(100.0), MaxValueValidator(250.0)], null=True)
-    weight = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(30.0), MaxValueValidator(250.0)], null=True)
+    height = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(100.0), MaxValueValidator(250.0)], null=True, blank=True)
+    weight = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(30.0), MaxValueValidator(250.0)], null=True, blank=True)
     goals = models.CharField(max_length=50, choices=GOALS_CHOICES, default=BODYWEIGHT_STRENGTH)
     gender = EncryptedCharField(max_length=10, choices=GENDER_CHOICES, default="other", null=True, blank=True)
     fitness_level = models.CharField(max_length=20, choices=FITNESS_LEVEL_CHOICES, default="beginner")
@@ -81,7 +85,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     ]
 
     def __str__(self):
-        return self.username
+        return self.username if self.username else f"Anonymous User {self.id}"
 
     def has_perm(self, perm, obj=None):
         return self.is_superuser
@@ -91,6 +95,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def clean(self):
         super().clean()
+        if not self.is_active:
+            return
         if isinstance(self.date_of_birth, str):
             try:
                 self.date_of_birth = datetime.date.fromisoformat(self.date_of_birth)
@@ -104,14 +110,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             self.date_of_birth = self.date_of_birth.isoformat()
 
     def save(self, *args, **kwargs):
-        if self.email:
-            self.email_hash = hash(self.email)
         self.full_clean()
         super().save(*args, **kwargs)
 
     def anonynimze_user(self):
-        self.email = get_fernet().encrypt(f"deleted_{self.id}@example.com".encode()).decode()
-        self.email_hash = hash(self.email)
         self.username = None
         self.first_name = None
         self.last_name = None

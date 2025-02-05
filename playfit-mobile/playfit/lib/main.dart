@@ -4,6 +4,7 @@ import 'package:playfit/authentification/login_page.dart';
 import 'package:playfit/authentification/registration_page.dart';
 import 'package:playfit/home_page.dart';
 import 'package:playfit/profile_page.dart';
+import 'package:playfit/reset_password_page.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -25,11 +26,11 @@ class MyApp extends StatelessWidget {
       home: const LoginPage(),
       initialRoute: '/login',
       routes: {
-        '/register': (context) =>
-            const CreateAccountPage(), // Route to registration page
-        '/login': (context) => const LoginPage(), // Route to login page
-        '/home': (context) => const HomePage(), // Route to home page
-        '/profile': (context) => const ProfilePage(), // Route to profile page
+        '/register': (context) => const CreateAccountPage(),
+        '/login': (context) => const LoginPage(),
+        '/home': (context) => const HomePage(),
+        '/profile': (context) => const ProfilePage(),
+        '/reset-password-request': (context) => ResetPasswordRequestPage(),
       },
     );
   }

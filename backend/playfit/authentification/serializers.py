@@ -1,5 +1,6 @@
 import django.contrib.auth.password_validation as validators
 from rest_framework import serializers
+from utilities.encrypted_fields import hash
 from .models import CustomUser, UserConsent
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -16,24 +17,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        user = CustomUser(
-            email=validated_data['email'],
-            username=validated_data['username'],
-            date_of_birth=validated_data['date_of_birth'],
-            height=validated_data['height'],
-            weight=validated_data['weight'],
-        )
-        user.set_password(validated_data['password'])
-        user.email_hash = hash(validated_data['email'])
-        user.save()
-
-        UserConsent.objects.create(
-            user=user,
-            terms_and_conditions=validated_data['terms_and_conditions'],
-            privacy_policy=validated_data['privacy_policy'],
-            marketing=validated_data['marketing']
-        )
-        return user
+        return CustomUser.objects.create_user(**validated_data)
 
     def validate(self, value):
         user = CustomUser(
@@ -113,4 +97,12 @@ class CustomUserDeleteSerializer(serializers.Serializer):
     def validate(self, data):
         if not data['confirm']:
             raise serializers.ValidationError({'confirm': 'You must confirm the deletion'})
+        return data
+
+class AccountRecoveryRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self, data):
+        if not CustomUser.objects.filter(email_hash=hash(data['email'])).exists():
+            raise serializers.ValidationError({'email': 'Email not found'})
         return data

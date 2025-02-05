@@ -7,9 +7,8 @@ from authentification.models import CustomUser
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         try:
-            one_year_ago = now()
-            # users_to_email = CustomUser.objects.filter(last_login__lt=one_year_ago - timedelta(days=30), is_active=False)
-            users_to_email = CustomUser.objects.filter(last_login__lt=one_year_ago, is_active=False)
+            one_year_ago = now() - timedelta(days=365)
+            users_to_email = CustomUser.objects.filter(last_login__lt=one_year_ago - timedelta(days=30), is_active=False)
 
             for user in users_to_email:
                 send_mail(
@@ -20,8 +19,8 @@ class Command(BaseCommand):
                 )
                 self.stdout.write(f"Email sent to {user.email}")
 
-            # users_to_delete = CustomUser.objects.filter(last_login__lt=one_year_ago, is_active=False).delete()
-            # self.stdout.write(f"{users_to_delete} users deleted")
+            users_to_delete = CustomUser.objects.filter(last_login__lt=one_year_ago, is_active=False).delete()
+            self.stdout.write(f"{users_to_delete} users deleted")
         except Exception as e:
             self.stderr.write(f"An error occurred: {e}")
             self.stdout.write(f"An error occurred: {e}")

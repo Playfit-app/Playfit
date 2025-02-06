@@ -1,5 +1,5 @@
 from django.test import TestCase
-from authentification.utils import generate_username_with_number, get_user_birthdate, generate_uid_from_id, get_id_from_uid
+from authentification.utils import generate_username_with_number, generate_uid_from_id, get_id_from_uid
 from authentification.models import CustomUser
 
 class GenerateUsernameTestCase(TestCase):

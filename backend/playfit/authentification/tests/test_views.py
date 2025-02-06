@@ -1,9 +1,7 @@
-from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 from authentification.models import CustomUser
-from authentification.views import ResetPasswordView, AccountRecoveryView
 
 class RegisterViewTests(APITestCase):
     def setUp(self):

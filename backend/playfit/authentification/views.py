@@ -90,7 +90,7 @@ class LogoutView(APIView):
         operation_description="User logout.",
         responses={
             200: openapi.Response("User logged out successfully"),
-            400: "Invalid credentials",
+            401: "Invalid credentials",
         }
     )
     def post(self, request):
@@ -99,7 +99,7 @@ class LogoutView(APIView):
             token.delete()
             return Response({'success': "Successfully logged out"}, status=status.HTTP_200_OK)
         except Token.DoesNotExist:
-            return Response({'error': "Token not found or already logged out"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
 class GoogleOAuthLoginView(APIView):
     permission_classes = [AllowAny]

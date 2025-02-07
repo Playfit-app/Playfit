@@ -25,11 +25,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='customuser',
             name='height',
-            field=models.DecimalField(decimal_places=2, max_digits=5, validators=[django.core.validators.MinValueValidator(100), django.core.validators.MaxValueValidator(250)]),
+            field=models.DecimalField(decimal_places=2, max_digits=5, validators=[django.core.validators.MinValueValidator(100.0), django.core.validators.MaxValueValidator(250.0)]),
         ),
         migrations.AlterField(
             model_name='customuser',
             name='weight',
-            field=models.DecimalField(decimal_places=2, max_digits=5, validators=[django.core.validators.MinValueValidator(30), django.core.validators.MaxValueValidator(250)]),
+            field=models.DecimalField(decimal_places=2, max_digits=5, validators=[django.core.validators.MinValueValidator(30.0), django.core.validators.MaxValueValidator(250.0)]),
         ),
     ]

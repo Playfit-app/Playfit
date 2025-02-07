@@ -24,8 +24,11 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   final TextEditingController _birthDateController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
+  bool isConsentGiven = false;
+  bool isMarketingConsentGiven = false;
   // final TextEditingController _objectiveController = TextEditingController();
   final AuthService authService = AuthService();
+  bool _isGoogleSignInLoading = false;
 
   int _currentStep = 0;
   bool _isStep1Valid = false;
@@ -50,6 +53,8 @@ class CreateAccountPageState extends State<CreateAccountPage> {
       _birthDateController.text,
       double.parse(_heightController.text),
       double.parse(_weightController.text),
+      isConsentGiven,
+      isMarketingConsentGiven,
       // _objectiveController.text,
     );
     if (!mounted) return;
@@ -138,6 +143,18 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                     birthDateController: _birthDateController,
                     heightController: _heightController,
                     weightController: _weightController,
+                    isConsentGiven: isConsentGiven,
+                    isMarketingConsentGiven: isMarketingConsentGiven,
+                    onConsentChanged: (value) {
+                      setState(() {
+                        isConsentGiven = value!;
+                      });
+                    },
+                    onMarketingConsentChanged: (value) {
+                      setState(() {
+                        isMarketingConsentGiven = value!;
+                      });
+                    },
                     // _objectiveController: _objectiveController,
                   ),
                   onChanged: () => _validateStep(_step2FormKey),
@@ -203,9 +220,30 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10.0),
                   child: GestureDetector(
-                    onTap: () {
-                      // Handle Google registration logic here
-                    },
+                    onTap: _isGoogleSignInLoading
+                        ? null
+                        : () async {
+                            setState(() {
+                              _isGoogleSignInLoading = true;
+                            });
+                            var result =
+                                await authService.loginWithGoogle(context);
+                            if (!mounted) return;
+                            if (result["status"] == 'success') {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const HomePage()),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(result["message"]!),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          },
                     child: Image.asset(
                       'assets/images/google.png',
                       height: 50,

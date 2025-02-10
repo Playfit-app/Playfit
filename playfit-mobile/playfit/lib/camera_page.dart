@@ -58,30 +58,46 @@ class _CameraViewState extends State<CameraView> {
         title: const Text('Pose Estimation'),
       ),
       body: _controller != null && _controller!.value.isInitialized
-          ? Stack(
+          ? Column(
               children: [
-                CameraPreview(_controller!),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ValueListenableBuilder<Map<WorkoutType, int>>(
-                      valueListenable: _workoutAnalyzer.workoutCounts,
-                      builder: (context, workoutCounts, child) {
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Count: ${workoutCounts[WorkoutType.squat]}',
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
+                // Camera preview taking half of the screen
+                Expanded(
+                  flex: 1,
+                  child: CameraPreview(_controller!),
+                ),
+                // Workout count and additional UI
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    color: Colors.white,
+                    alignment: Alignment.center,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: ValueListenableBuilder<Map<WorkoutType, int>>(
+                        valueListenable: _workoutAnalyzer.workoutCounts,
+                        builder: (context, workoutCounts, child) {
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Squat Count: ${workoutCounts[WorkoutType.squat] ?? 0}',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ],
-                        );
-                      },
+                              const SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: () {
+                                  // Add functionality here
+                                },
+                                child: const Text('Analyze Again'),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),

@@ -10,6 +10,7 @@ class ProfilePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppStyles.grey,
       body: SafeArea(
+        child: SingleChildScrollView( // Wrap with scrolling
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -33,6 +34,7 @@ class ProfilePage extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

@@ -28,9 +28,9 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
           TextFormField(
             controller: widget.usernameController,
             decoration: InputDecoration(
-              hintText: 'Nom d\'utilisateur',
+              labelText: 'Nom d\'utilisateur',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.person),
               suffixIcon: widget.usernameController.text.isNotEmpty
                   ? IconButton(
@@ -39,7 +39,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(10.0),
                 borderSide: BorderSide.none,
               ),
             ),
@@ -53,13 +53,13 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               return null;
             },
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 30),
           TextFormField(
             controller: widget.emailController,
             decoration: InputDecoration(
-              hintText: 'Adresse e-mail',
+              labelText: 'Adresse e-mail',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.email),
               suffixIcon: widget.emailController.text.isNotEmpty
                   ? IconButton(
@@ -68,7 +68,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(10.0),
                 borderSide: BorderSide.none,
               ),
             ),
@@ -84,14 +84,14 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               return null;
             },
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 30),
           TextFormField(
             controller: widget.passwordController,
             obscureText: true,
             decoration: InputDecoration(
-              hintText: 'Mot de passe',
+              labelText: 'Mot de passe',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: widget.passwordController.text.isNotEmpty
                   ? IconButton(
@@ -100,7 +100,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(10.0),
                 borderSide: BorderSide.none,
               ),
             ),
@@ -118,14 +118,14 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               return null;
             },
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 30),
           TextFormField(
             controller: widget.confirmPasswordController,
             obscureText: true,
             decoration: InputDecoration(
-              hintText: 'Confirmez le mot de passe',
+              labelText: 'Confirmez le mot de passe',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: widget.confirmPasswordController.text.isNotEmpty
                   ? IconButton(
@@ -134,7 +134,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(10.0),
                 borderSide: BorderSide.none,
               ),
             ),

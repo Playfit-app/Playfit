@@ -41,9 +41,9 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             controller: widget.birthDateController,
             readOnly: true,
             decoration: InputDecoration(
-              hintText: 'Date de naissance',
+              labelText: 'Date de naissance',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.calendar_today),
               suffixIcon: widget.birthDateController.text.isNotEmpty
                   ? IconButton(
@@ -52,7 +52,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(10.0),
                 borderSide: BorderSide.none,
               ),
             ),
@@ -95,9 +95,9 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             controller: widget.heightController,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              hintText: 'Taille (cm)',
+              labelText: 'Taille (cm)',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.height),
               suffixIcon: widget.heightController.text.isNotEmpty
                   ? IconButton(
@@ -106,7 +106,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(10.0),
                 borderSide: BorderSide.none,
               ),
             ),
@@ -128,9 +128,9 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             controller: widget.weightController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
-              hintText: 'Poids (kg)',
+              labelText: 'Poids (kg)',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.monitor_weight),
               suffixIcon: widget.weightController.text.isNotEmpty
                   ? IconButton(
@@ -139,7 +139,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(10.0),
                 borderSide: BorderSide.none,
               ),
             ),

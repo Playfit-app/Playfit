@@ -56,7 +56,9 @@ class AuthService {
       String password,
       String dateOfBirth,
       double height,
-      double weight) async {
+      double weight,
+      bool isConsentGiven,
+      bool isMarketingConsentGiven) async {
     try {
       final data = <String, dynamic>{
         'email': email,
@@ -65,6 +67,9 @@ class AuthService {
         'date_of_birth': dateOfBirth,
         'height': height,
         'weight': weight,
+        'terms_and_conditions': isConsentGiven,
+        'privacy_policy': isConsentGiven,
+        'marketing': isMarketingConsentGiven,
       };
       final response = await http.post(
         Uri.parse('${baseUrl}register/'),

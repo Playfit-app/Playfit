@@ -9,9 +9,9 @@ class ExerciseSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['difficulty'] not in ['beginner', 'intermediate', 'advanced']:
-            raise serializers.ValidationError("Invalid difficulty level.")
+            raise serializers.ValidationError({"difficulty": "Invalid difficulty."})
         if len(data['name']) > 30:
-            raise serializers.ValidationError("Name must be less than 30 characters.")
+            raise serializers.ValidationError({"name": "Name is too long."})
         return data
 
 class WorkoutSessionSerializer(serializers.ModelSerializer):
@@ -21,7 +21,9 @@ class WorkoutSessionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['date'] > datetime.date.today():
-            raise serializers.ValidationError("Invalid date.")
+            raise serializers.ValidationError({"date": "Invalid date."})
+        if data['duration'] <= datetime.timedelta(minutes=0):
+            raise serializers.ValidationError({"duration": "Invalid duration."})
         return data
 
     def save(self, user):
@@ -39,13 +41,13 @@ class WorkoutSessionExerciseSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['sets'] <= 0:
-            raise serializers.ValidationError("Invalid number of sets.")
+            raise serializers.ValidationError({"sets": "Invalid number of sets."})
         if data['repetitions'] <= 0:
-            raise serializers.ValidationError("Invalid number of repetitions.")
-        if data['exercise'].difficulty == 'beginner' and data['weight']:
-            raise serializers.ValidationError("Beginner exercises should not have weight.")
-        if data['exercise'].difficulty != 'beginner' and data['weight'] <= 0:
-            raise serializers.ValidationError("Invalid weight.")
+            raise serializers.ValidationError({"repetitions": "Invalid number of repetitions."})
+        if data['exercise'].difficulty == 'beginner' and ('weight' in data and data['weight'] is not None and data['weight'] > 0):
+            raise serializers.ValidationError({"weight": "Beginner exercises should not have weight."})
+        if data['exercise'].difficulty != 'beginner' and ('weight' not in data or data['weight'] is None or data['weight'] <= 0):
+            raise serializers.ValidationError({"weight": "Invalid weight."})
         return data
 
     def save(self):

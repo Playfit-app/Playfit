@@ -45,7 +45,7 @@ class ExerciseView(APIView):
         operation_description="Add a new exercise",
         request_body=ExerciseSerializer,
         responses={
-            200: openapi.Response("New exercise", ExerciseSerializer),
+            201: openapi.Response("New exercise", ExerciseSerializer),
             403: openapi.Response("Forbidden", "You are not authorized to add new exercises")
         }
     )
@@ -65,7 +65,7 @@ class ExerciseView(APIView):
             "description": exercise.description,
             "video_url": exercise.video_url,
             "difficulty": exercise.difficulty
-        }, status=status.HTTP_200_OK)
+        }, status=status.HTTP_201_CREATED)
 
 class WorkoutSessionView(APIView):
     permission_classes = [IsAuthenticated]
@@ -115,7 +115,7 @@ class WorkoutSessionView(APIView):
         operation_description="Add a new workout session with its exercises for the current user",
         request_body=WorkoutSessionSerializer,
         responses={
-            200: openapi.Response("New workout session", "Workout session added successfully"),
+            201: openapi.Response("New workout session", "Workout session added successfully"),
             400: openapi.Response("Bad request", "Invalid workout session data")
         }
     )
@@ -129,6 +129,11 @@ class WorkoutSessionView(APIView):
             return Response(workout_session_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         workout_session = workout_session_serializer.save(user=request.user)
+
+        if "exercises" not in request.data or not isinstance(request.data["exercises"], list) or len(request.data["exercises"]) == 0:
+            workout_session.delete()
+            return Response("Invalid workout session data", status=status.HTTP_400_BAD_REQUEST)
+
         for exercise in request.data["exercises"]:
             try:
                 exercise_obj = Exercise.objects.get(name=exercise["name"])
@@ -153,4 +158,4 @@ class WorkoutSessionView(APIView):
 
             exercise_serializer.save()
 
-        return Response("Workout session added successfully", status=status.HTTP_200_OK)
+        return Response("Workout session added successfully", status=status.HTTP_201_CREATED)

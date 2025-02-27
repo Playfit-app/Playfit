@@ -28,7 +28,7 @@ class FollowCreateView(CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         user = request.user
-        user_to_follow = get_object_or_404(User, id=request.data.get('id'))
+        user_to_follow = get_object_or_404(CustomUser, id=request.data.get('id'))
         if user == user_to_follow:
             return Response({'detail': 'You cannot follow yourself'}, status=status.HTTP_400_BAD_REQUEST)
         follow = Follow.objects.filter(follower=user, following=user_to_follow)
@@ -43,7 +43,7 @@ class FollowDeleteView(DestroyAPIView):
 
     def delete(self, request, *args, **kwargs):
         user = request.user
-        user_to_unfollow = get_object_or_404(User, id=kwargs['id'])
+        user_to_unfollow = get_object_or_404(CustomUser, id=kwargs['id'])
         follow = get_object_or_404(Follow, follower=user, following=user_to_unfollow)
         follow.delete()
         return Response({'detail': 'User unfollowed'}, status=status.HTTP_204_NO_CONTENT)

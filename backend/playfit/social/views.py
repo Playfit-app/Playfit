@@ -2,27 +2,25 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListAPIView, CreateAPIView, DestroyAPIView, get_object_or_404
-from django.contrib.auth import get_user_model
+from authentification.models import CustomUser
 from .models import Follow
 from .serializers import UserSerializer
-
-User = get_user_model()
 
 class FollowersListView(ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        return User.objects.filter(following__follower=user)
+        user: CustomUser = self.request.user
+        return user.get_followers()
 
 class FollowingListView(ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        return User.objects.filter(followers__following=user)
+        user: CustomUser = self.request.user
+        return user.get_following()
 
 class FollowCreateView(CreateAPIView):
     serializer_class = UserSerializer

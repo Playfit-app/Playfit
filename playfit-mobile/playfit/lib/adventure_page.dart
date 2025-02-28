@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
@@ -7,128 +9,130 @@ class AdventurePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: GameWidget(
-        game: AdventureGame(),
+    return SingleChildScrollView(
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height,
+        child: GameWidget(
+          game: AdventureGame(screenSize: MediaQuery.of(context).size),
+        ),
       ),
     );
   }
 }
 
 class AdventureGame extends FlameGame {
-  late SpriteComponent character;
-  late List<LevelCircle> levelCircles;
+  final Size screenSize;
+  late SpriteComponent _player;
 
-  @override
-  Color backgroundColor() => const Color(0xFF87CEEB);
+  AdventureGame({required this.screenSize});
+  final List<Vector2> _checkpoints = [
+    Vector2(0, 0),
+    Vector2(300, 100),
+    Vector2(500, 220),
+    Vector2(700, 300),
+    Vector2(900, 400),
+    Vector2(1100, 500),
+    Vector2(1000, 600),
+    Vector2(800, 700),
+    Vector2(600, 800),
+    Vector2(400, 900),
+    Vector2(200, 1000),
+    Vector2(0, 1100),
+  ];
+  int _currentCheckpoint = 1;
 
   @override
   Future<void> onLoad() async {
-    super.onLoad();
+    // _player = SpriteComponent.fromImage(
+    //   await images.load('character.png'),
+    //   size: Vector2(410, 732),
+    // );
+    // add(_player);
+  }
 
-    // Add the road FIRST so it's drawn below other elements
-    final road = RoadComponent(size); // Pass game size to road
-    add(road);
-
-    // Add buildings, tree, and light post in separate places
-    addBuilding(Vector2(size.x * 0.15, size.y * 0.2)); // Left side
-    addBuilding(Vector2(size.x * 0.73, size.y * 0.55)); // Right side
-    addTree(Vector2(size.x * 0.8, size.y * 0.3)); // Right side
-    addLight(Vector2(size.x * 0.2, size.y * 0.7)); // Lower left side
-
-    // Add interactive level circles (checkpoints)
-    levelCircles = [
-      LevelCircle(Vector2(size.x * 0.37, size.y * 0.63), 1, 'checkpointNotPass.png'),
-      LevelCircle(Vector2(size.x * 0.53, size.y * 0.43), 2, 'checkpointNotPass.png'),
-      LevelCircle(Vector2(size.x * 0.47, size.y * 0.07), 3, 'checkpointNotPass.png'),
-
-    ];
-    for (var circle in levelCircles) {
-      add(circle);
+  void moveToNextCheckpoint() {
+    if (_currentCheckpoint < _checkpoints.length - 1) {
+      _currentCheckpoint++;
     }
-
-    // Add the character on the road
-    character = SpriteComponent()
-      ..sprite = await loadSprite('characterMap.png')
-      ..size = Vector2(80, 120)
-      ..position = Vector2(size.x * 0.37, size.y * 0.8); // Adjusted character position
-    add(character);
   }
 
-  // Helper methods to add assets in correct positions
-  void addBuilding(Vector2 position) async {
-    final building = SpriteComponent()
-      ..sprite = await loadSprite('building.png')
-      ..position = position
-      ..size = Vector2(100, 200);
-    add(building);
+  void renderRoad(Canvas canvas) {
+    final greyPaint = Paint()
+      ..color = const Color.fromARGB(255, 129, 147, 167)
+      ..strokeWidth = 50
+      ..style = PaintingStyle.stroke;
+    final whitePaint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
+    final greyPath = Path();
+    final whitePath = Path();
+
+    //M259.577 758
+    //C251.577 635 -20.9231 668 33.0769 583
+    //C87.0769 498 307.577 583 313.577 470
+    //C319.577 357 15.5769 375.5 67.5769 258.5
+    //C119.577 141.5 243.577 245.5 291.577 162.5
+    //C339.577 79.5 171.077 24.5 171.077 0
+
+    greyPath.moveTo(259.577, 758);
+    greyPath.cubicTo(251.577, 635, -20.9231, 668, 33.0769, 583);
+    greyPath.cubicTo(87.0769, 498, 307.577, 583, 313.577, 470);
+    greyPath.cubicTo(319.577, 357, 15.5769, 375.5, 67.5769, 258.5);
+    greyPath.cubicTo(119.577, 141.5, 243.577, 245.5, 291.577, 162.5);
+    greyPath.cubicTo(339.577, 79.5, 171.077, 24.5, 171.077, 0);
+
+    //M235.577 758
+    //C227.577 635 -44.9231 668 9.07689 583
+    //C63.0769 498 283.577 583 289.577 470
+    //C295.577 357 -8.4231 375.5 43.5769 258.5
+    //C95.5769 141.5 219.577 245.5 267.577 162.5
+    //C315.577 79.5 147.077 24.5 147.077 0
+
+    double offset = 22;
+    whitePath.moveTo(235.577 + offset, 758);
+    whitePath.cubicTo(
+        227.577 + offset, 635, -44.9231 + offset, 668, 9.07689 + offset, 583);
+    whitePath.cubicTo(
+        63.0769 + offset, 498, 283.577 + offset, 583, 289.577 + offset, 470);
+    whitePath.cubicTo(295.577 + offset, 357, -8.4231 + offset, 375.5,
+        43.5769 + offset, 258.5);
+    whitePath.cubicTo(95.5769 + offset, 141.5, 219.577 + offset, 245.5,
+        267.577 + offset, 162.5);
+    whitePath.cubicTo(
+        315.577 + offset, 79.5, 147.077 + offset, 24.5, 147.077 + offset, 0);
+
+    // Close the path
+    greyPath.close();
+    whitePath.close();
+
+    canvas.drawPath(greyPath, greyPaint);
+    drawDashedPath(canvas, whitePath, whitePaint);
   }
 
-  void addTree(Vector2 position) async {
-    final tree = SpriteComponent()
-      ..sprite = await loadSprite('tree.png')
-      ..position = position
-      ..size = Vector2(50, 100);
-    add(tree);
-  }
-
-  void addLight(Vector2 position) async {
-    final light = SpriteComponent()
-      ..sprite = await loadSprite('light.png')
-      ..position = position
-      ..size = Vector2(30, 60);
-    add(light);
-  }
-}
-
-// Interactive level circles (checkpoints)
-class LevelCircle extends SpriteComponent {
-  final String assetName;
-
-  LevelCircle(Vector2 position, int levelNumber, this.assetName) {
-    this.position = position;
-    size = Vector2(50, 50);
-  }
-
-  @override
-  Future<void> onLoad() async {
-    sprite = await Sprite.load(assetName);
-  }
-}
-
-// Road Component (Now Works Properly)
-class RoadComponent extends PositionComponent {
-  final Vector2 gameSize;
-
-  RoadComponent(this.gameSize) {
-    size = Vector2(gameSize.x, gameSize.y); // Set size properly
+  void drawDashedPath(Canvas canvas, Path path, Paint paint) {
+    PathMetrics pathMetrics = path.computeMetrics();
+    for (PathMetric pathMetric in pathMetrics) {
+      double distance = 0.0;
+      while (distance < pathMetric.length) {
+        Path dashPath = pathMetric.extractPath(distance, distance + 10);
+        canvas.drawPath(dashPath, paint);
+        distance += 20;
+      }
+    }
   }
 
   @override
   void render(Canvas canvas) {
-    final paint = Paint()
-      ..color = const Color(0xFF4B4B4B) // Dark grey road
-      ..style = PaintingStyle.fill; // Solid shape
+    final background = Paint()
+      ..color = const Color.fromARGB(255, 197, 222, 250)
+      ..style = PaintingStyle.fill;
 
-    final path = Path();
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, screenSize.width, screenSize.height),
+      background,
+    );
 
-    // Define road width
-    const roadWidth = 120;
-
-    // Create a zigzag road shape
-    path.moveTo(gameSize.x * 0.5 - roadWidth / 2, gameSize.y); // Bottom left of road
-    path.lineTo(gameSize.x * 0.4 - roadWidth / 2, gameSize.y * 0.65);
-    path.lineTo(gameSize.x * 0.6 - roadWidth / 2, gameSize.y * 0.45);
-    path.lineTo(gameSize.x * 0.5 - roadWidth / 2, 0); // Top left of road
-
-    path.lineTo(gameSize.x * 0.5 + roadWidth / 2, 0); // Top right of road
-    path.lineTo(gameSize.x * 0.6 + roadWidth / 2, gameSize.y * 0.45);
-    path.lineTo(gameSize.x * 0.4 + roadWidth / 2, gameSize.y * 0.65);
-    path.lineTo(gameSize.x * 0.5 + roadWidth / 2, gameSize.y); // Bottom right of road
-
-    path.close();
-
-    canvas.drawPath(path, paint);
+    renderRoad(canvas);
   }
-
 }

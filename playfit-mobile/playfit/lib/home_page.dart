@@ -35,7 +35,6 @@ class _HomePageState extends State<HomePage> {
       extendBody: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        elevation: 4,
         title: const TopBar(),
         automaticallyImplyLeading: false,
       ),

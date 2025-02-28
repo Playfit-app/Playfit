@@ -9,13 +9,36 @@ class AdventurePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        child: GameWidget(
-          game: AdventureGame(screenSize: MediaQuery.of(context).size),
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height,
+            child: GameWidget(
+              game: AdventureGame(screenSize: MediaQuery.of(context).size),
+            ),
+          ),
         ),
-      ),
+        // White Gradient Overlay
+        Positioned(
+          top: -14,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: 292,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomLeft,
+                colors: [
+                  Colors.white,
+                  Colors.white.withValues(alpha: 0),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -124,6 +147,7 @@ class AdventureGame extends FlameGame {
 
   @override
   void render(Canvas canvas) {
+    super.render(canvas);
     final background = Paint()
       ..color = const Color.fromARGB(255, 197, 222, 250)
       ..style = PaintingStyle.fill;

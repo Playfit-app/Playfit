@@ -66,13 +66,13 @@ class CustomUserSerializerTest(TestCase):
         data["terms_and_conditions"] = False
         serializer = CustomUserSerializer(data=data)
         self.assertFalse(serializer.is_valid())
-        self.assertIn("non_field_errors", serializer.errors)
+        self.assertIn("terms_and_conditions", serializer.errors)
 
         data["terms_and_conditions"] = True
         data["privacy_policy"] = False
         serializer = CustomUserSerializer(data=data)
         self.assertFalse(serializer.is_valid())
-        self.assertIn("non_field_errors", serializer.errors)
+        self.assertIn("privacy_policy", serializer.errors)
 
 class UserConsentSerializerTest(TestCase):
     @classmethod

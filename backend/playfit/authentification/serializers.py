@@ -36,7 +36,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         if errors:
             raise serializers.ValidationError(errors)
         if not value['terms_and_conditions'] or not value['privacy_policy']:
-            raise serializers.ValidationError("You must accept the terms and conditions and privacy policy to register.")
+            raise serializers.ValidationError({'terms_and_conditions': 'You must accept the terms and conditions', 'privacy_policy': 'You must accept the privacy policy'})
         return value
 
 class UserConsentSerializer(serializers.ModelSerializer):

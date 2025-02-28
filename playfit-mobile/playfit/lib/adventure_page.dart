@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:playfit/components/checkpoint.dart';
 
 class AdventurePage extends StatelessWidget {
   const AdventurePage({super.key});
@@ -49,18 +50,12 @@ class AdventureGame extends FlameGame {
 
   AdventureGame({required this.screenSize});
   final List<Vector2> _checkpoints = [
-    Vector2(0, 0),
-    Vector2(300, 100),
-    Vector2(500, 220),
-    Vector2(700, 300),
-    Vector2(900, 400),
-    Vector2(1100, 500),
-    Vector2(1000, 600),
-    Vector2(800, 700),
-    Vector2(600, 800),
-    Vector2(400, 900),
-    Vector2(200, 1000),
-    Vector2(0, 1100),
+    Vector2(343, 160),
+    Vector2(120, 260),
+    Vector2(220, 380),
+    Vector2(355, 460),
+    Vector2(220, 550),
+    Vector2(95, 645),
   ];
   int _currentCheckpoint = 1;
 
@@ -71,6 +66,17 @@ class AdventureGame extends FlameGame {
     //   size: Vector2(410, 732),
     // );
     // add(_player);
+
+    debugPrint('Checkpoints: $_checkpoints');
+    for (int i = 0; i < _checkpoints.length; i++) {
+      add(Checkpoint(
+        checkpointPosition: _checkpoints[i],
+        onTap: () {
+          // moveToNextCheckpoint();
+          debugPrint('Checkpoint tapped');
+        },
+      ));
+    }
   }
 
   void moveToNextCheckpoint() {
@@ -149,7 +155,6 @@ class AdventureGame extends FlameGame {
 
   @override
   void render(Canvas canvas) {
-    super.render(canvas);
     final background = Paint()
       ..color = const Color.fromARGB(255, 197, 222, 250)
       ..style = PaintingStyle.fill;
@@ -160,5 +165,6 @@ class AdventureGame extends FlameGame {
     );
 
     renderRoad(canvas);
+    super.render(canvas);
   }
 }

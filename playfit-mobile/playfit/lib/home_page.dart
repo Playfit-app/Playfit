@@ -13,19 +13,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // ignore: prefer_final_fields
-  int _selectedIndex = 0;
+  int _currentIndex = 0;
 
   final List<Widget> _pages = [
-      const AdventurePage(),
-      const MissionsPage(),
-      const BoutiquePage(),
-      const ProfilePage(),
-    ];
+    const AdventurePage(),
+    const MissionsPage(),
+    const BoutiquePage(),
+    const ProfilePage(),
+  ];
 
-    void _onItemTapped(int index) {
+  void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      _currentIndex = index;
     });
   }
 
@@ -38,32 +37,70 @@ class _HomePageState extends State<HomePage> {
         title: const TopBar(),
         automaticallyImplyLeading: false,
       ),
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.purple,
-        unselectedItemColor: Colors.grey,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore),
-            label: 'Aventure',
+      body: _pages[_currentIndex],
+      bottomNavigationBar: SizedBox(
+        height: 100,
+        child: ClipPath(
+          clipper: NavBarClipper(),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: BottomNavigationBar(
+              backgroundColor: Colors.white,
+              type: BottomNavigationBarType.fixed,
+              selectedItemColor: const Color.fromARGB(255, 74, 68, 89),
+              unselectedItemColor: const Color.fromARGB(255, 74, 68, 89),
+              currentIndex: _currentIndex,
+              onTap: _onItemTapped,
+              showSelectedLabels: false,
+              showUnselectedLabels: false,
+              items: [
+                _buildNavBarItem(Icons.fitness_center, 0),
+                _buildNavBarItem(Icons.list_alt, 1),
+                _buildNavBarItem(Icons.shopping_cart, 2),
+                _buildNavBarItem(Icons.person, 3),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            label: 'Missions',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.store),
-            label: 'Boutique',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
+        ),
       ),
     );
   }
+
+  BottomNavigationBarItem _buildNavBarItem(IconData icon, int index) {
+    bool isSelected = _currentIndex == index;
+
+    return BottomNavigationBarItem(
+      icon: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color.fromARGB(128, 197, 222, 250)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Icon(
+          icon,
+          color: const Color.fromARGB(255, 74, 68, 89),
+        ),
+      ),
+      label: '',
+    );
+  }
+}
+
+class NavBarClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+
+    path.lineTo(0, 0);
+    path.quadraticBezierTo(size.width / 2, 40, size.width, 0);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(NavBarClipper oldClipper) => false;
 }

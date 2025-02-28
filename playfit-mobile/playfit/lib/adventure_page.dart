@@ -98,12 +98,18 @@ class AdventureGame extends FlameGame {
     //C119.577 141.5 243.577 245.5 291.577 162.5
     //C339.577 79.5 171.077 24.5 171.077 0
 
-    greyPath.moveTo(259.577, 758);
-    greyPath.cubicTo(251.577, 635, -20.9231, 668, 33.0769, 583);
-    greyPath.cubicTo(87.0769, 498, 307.577, 583, 313.577, 470);
-    greyPath.cubicTo(319.577, 357, 15.5769, 375.5, 67.5769, 258.5);
-    greyPath.cubicTo(119.577, 141.5, 243.577, 245.5, 291.577, 162.5);
-    greyPath.cubicTo(339.577, 79.5, 171.077, 24.5, 171.077, 0);
+    double offsetGrey = 22;
+    greyPath.moveTo(259.577 + offsetGrey, 758);
+    greyPath.cubicTo(251.577 + offsetGrey, 635, -20.9231 + offsetGrey, 668,
+        33.0769 + offsetGrey, 583);
+    greyPath.cubicTo(87.0769 + offsetGrey, 498, 307.577 + offsetGrey, 583,
+        313.577 + offsetGrey, 470);
+    greyPath.cubicTo(319.577 + offsetGrey, 357, 15.5769 + offsetGrey, 375.5,
+        67.5769 + offsetGrey, 258.5);
+    greyPath.cubicTo(119.577 + offsetGrey, 141.5, 243.577 + offsetGrey, 245.5,
+        291.577 + offsetGrey, 162.5);
+    greyPath.cubicTo(339.577 + offsetGrey, 79.5, 171.077 + offsetGrey, 24.5,
+        171.077 + offsetGrey, 0);
 
     //M235.577 758
     //C227.577 635 -44.9231 668 9.07689 583
@@ -112,22 +118,18 @@ class AdventureGame extends FlameGame {
     //C95.5769 141.5 219.577 245.5 267.577 162.5
     //C315.577 79.5 147.077 24.5 147.077 0
 
-    double offset = 22;
-    whitePath.moveTo(235.577 + offset, 758);
-    whitePath.cubicTo(
-        227.577 + offset, 635, -44.9231 + offset, 668, 9.07689 + offset, 583);
-    whitePath.cubicTo(
-        63.0769 + offset, 498, 283.577 + offset, 583, 289.577 + offset, 470);
-    whitePath.cubicTo(295.577 + offset, 357, -8.4231 + offset, 375.5,
-        43.5769 + offset, 258.5);
-    whitePath.cubicTo(95.5769 + offset, 141.5, 219.577 + offset, 245.5,
-        267.577 + offset, 162.5);
-    whitePath.cubicTo(
-        315.577 + offset, 79.5, 147.077 + offset, 24.5, 147.077 + offset, 0);
-
-    // Close the path
-    greyPath.close();
-    whitePath.close();
+    double offsetWhite = offsetGrey + 22;
+    whitePath.moveTo(235.577 + offsetWhite, 758);
+    whitePath.cubicTo(227.577 + offsetWhite, 635, -44.9231 + offsetWhite, 668,
+        9.07689 + offsetWhite, 583);
+    whitePath.cubicTo(63.0769 + offsetWhite, 498, 283.577 + offsetWhite, 583,
+        289.577 + offsetWhite, 470);
+    whitePath.cubicTo(295.577 + offsetWhite, 357, -8.4231 + offsetWhite, 375.5,
+        43.5769 + offsetWhite, 258.5);
+    whitePath.cubicTo(95.5769 + offsetWhite, 141.5, 219.577 + offsetWhite,
+        245.5, 267.577 + offsetWhite, 162.5);
+    whitePath.cubicTo(315.577 + offsetWhite, 79.5, 147.077 + offsetWhite, 24.5,
+        147.077 + offsetWhite, 0);
 
     canvas.drawPath(greyPath, greyPaint);
     drawDashedPath(canvas, whitePath, whitePaint);

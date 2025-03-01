@@ -3,7 +3,8 @@ import 'dart:ui';
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
-import 'package:playfit/components/checkpoint.dart';
+import 'package:playfit/components/adventure/checkpoint.dart';
+import 'package:playfit/components/adventure/decoration.dart';
 
 class AdventurePage extends StatelessWidget {
   const AdventurePage({super.key});
@@ -50,14 +51,52 @@ class AdventureGame extends FlameGame {
 
   AdventureGame({required this.screenSize});
   final List<Vector2> _checkpoints = [
-    Vector2(343, 160),
-    Vector2(120, 260),
-    Vector2(220, 380),
-    Vector2(355, 460),
-    Vector2(220, 550),
     Vector2(95, 645),
+    Vector2(220, 550),
+    Vector2(355, 460),
+    Vector2(220, 380),
+    Vector2(120, 260),
+    Vector2(343, 160),
   ];
-  int _currentCheckpoint = 1;
+  final Map<String, List<dynamic>> _decorations = {
+    'monument': [
+      {
+        'name': 'paris/eiffel_tower',
+        'position': Vector2(300, 130),
+        'size': Vector2(98, 208),
+      }
+    ],
+    'house': [
+      {
+        'name': 'paris/apt',
+        'position': Vector2(0, 50),
+        'size': Vector2(110, 177),
+      },
+      {
+        'name': 'paris/apt',
+        'position': Vector2(0, 360),
+        'size': Vector2(110, 177),
+      },
+      {
+        'name': 'paris/apt',
+        'position': Vector2(70, 360),
+        'size': Vector2(110, 177),
+      },
+      {
+        'name': 'paris/apt',
+        'position': Vector2(280, 540),
+        'size': Vector2(110, 177),
+      },
+    ],
+    'tree': [
+      Vector2(70, 70),
+      Vector2(240, 200),
+      Vector2(205, 220),
+      Vector2(270, 240),
+      Vector2(200, 530),
+    ],
+  };
+  int _currentCheckpoint = 0;
 
   @override
   Future<void> onLoad() async {
@@ -67,7 +106,6 @@ class AdventureGame extends FlameGame {
     // );
     // add(_player);
 
-    debugPrint('Checkpoints: $_checkpoints');
     for (int i = 0; i < _checkpoints.length; i++) {
       add(Checkpoint(
         checkpointPosition: _checkpoints[i],
@@ -76,6 +114,30 @@ class AdventureGame extends FlameGame {
           debugPrint('Checkpoint tapped');
         },
       ));
+    }
+
+    for (String key in _decorations.keys) {
+      for (int i = 0; i < _decorations[key]!.length; i++) {
+        if (key == 'tree') {
+          add(DecorationSpriteComponent(
+            imagePath: '$key.png',
+            position: _decorations[key]?[i],
+            size: Vector2(79, 118),
+          ));
+        } else if (key == 'monument') {
+          add(DecorationSpriteComponent(
+            imagePath: '${_decorations[key]?[i]['name']}.png',
+            position: _decorations[key]?[i]['position'],
+            size: _decorations[key]?[i]['size'],
+          ));
+        } else if (key == 'house') {
+          add(DecorationSpriteComponent(
+            imagePath: '${_decorations[key]?[i]['name']}.png',
+            position: _decorations[key]?[i]['position'],
+            size: _decorations[key]?[i]['size'],
+          ));
+        }
+      }
     }
   }
 

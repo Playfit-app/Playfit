@@ -48,9 +48,11 @@ class AdventurePage extends StatelessWidget {
 class AdventureGame extends FlameGame {
   final Size screenSize;
   late SpriteComponent _player;
+  late SpriteComponent _playerComment;
 
   AdventureGame({required this.screenSize});
   final List<Vector2> _checkpoints = [
+    Vector2(280, 720),
     Vector2(95, 645),
     Vector2(220, 550),
     Vector2(355, 460),
@@ -100,12 +102,6 @@ class AdventureGame extends FlameGame {
 
   @override
   Future<void> onLoad() async {
-    // _player = SpriteComponent.fromImage(
-    //   await images.load('character.png'),
-    //   size: Vector2(410, 732),
-    // );
-    // add(_player);
-
     for (int i = 0; i < _checkpoints.length; i++) {
       add(Checkpoint(
         checkpointPosition: _checkpoints[i],
@@ -138,6 +134,39 @@ class AdventureGame extends FlameGame {
           ));
         }
       }
+    }
+
+    _player = SpriteComponent(
+      sprite: await Sprite.load('character.png'),
+      size: Vector2(410, 732),
+      position: Vector2(_checkpoints[0].x - 50, _checkpoints[0].y - 120),
+      scale: Vector2(0.15, 0.15),
+    );
+    _playerComment = SpriteComponent(
+      sprite: await Sprite.load('comments.png'),
+      size: Vector2(90, 90),
+      position: Vector2(_player.position.x, _player.position.y - 80),
+      scale: Vector2(1, 1),
+    );
+    updatePlayerDirection();
+    add(_player);
+    add(_playerComment);
+  }
+
+  void updatePlayerDirection() {
+    if ((_currentCheckpoint == 0 ||
+            _currentCheckpoint == 3 ||
+            _currentCheckpoint == 4 ||
+            _currentCheckpoint == 6) &&
+        _player.transform.scale.x > 0) {
+      _player.transform.flipHorizontally();
+      _player.position.x += 57;
+    } else if ((_currentCheckpoint == 1 ||
+            _currentCheckpoint == 2 ||
+            _currentCheckpoint == 4 ||
+            _currentCheckpoint == 5) &&
+        _player.transform.scale.x < 0) {
+      _player.transform.flipHorizontally();
     }
   }
 

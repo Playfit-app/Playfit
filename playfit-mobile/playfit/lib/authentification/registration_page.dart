@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:playfit/auth_service.dart';
+import 'package:playfit/services/auth_service.dart';
 import 'package:playfit/authentification/registration_step1.dart';
 import 'package:playfit/authentification/registration_step2.dart';
 import 'package:playfit/home_page.dart';

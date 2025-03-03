@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
     'django.contrib.staticfiles',
+    'channels',
     'rest_framework',
     'rest_framework.authtoken',
     'authentification',
@@ -89,7 +91,15 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'playfit.wsgi.application'
+# WSGI_APPLICATION = 'playfit.wsgi.application'
+ASGI_APPLICATION = 'playfit.asgi.application'
+
+# Channels
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer' # Use Redis in production
+    }
+}
 
 
 # Database

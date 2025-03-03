@@ -4,9 +4,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import (
     ListAPIView,
     CreateAPIView,
+    UpdateAPIView,
     DestroyAPIView,
     get_object_or_404,
 )
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 from authentification.models import CustomUser
 from .models import Follow, Post, Like, Comment, Notification
 from .serializers import (
@@ -17,6 +20,17 @@ from .serializers import (
     NotificationSerializer,
 )
 
+def send_notification(user, notification_data):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"notifications_{user.id}",
+        {
+            "type": "send_notification",
+            "message": {
+                "data": notification_data,
+            },
+        },
+    )
 
 class FollowersListView(ListAPIView):
     serializer_class = UserSerializer
@@ -55,6 +69,19 @@ class FollowCreateView(CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         Follow.objects.create(follower=user, following=user_to_follow)
+        notification = Notification.objects.create(
+            user=user_to_follow,
+            sender=user,
+            notification_type="follow",
+        )
+        send_notification(user_to_follow, {
+            'id': notification.id,
+            'sender': user.username,
+            'notification_type': notification.notification_type,
+            'created_at': notification.created_at,
+            'post': None,
+            'seen': notification.seen,
+        })
         return Response({"detail": "User followed"}, status=status.HTTP_201_CREATED)
 
 
@@ -82,6 +109,26 @@ class PostCreateView(CreateAPIView):
 
         if serializer.is_valid():
             serializer.save(user=user)
+            followers = list(user.get_followers())
+            notifications = [
+                Notification(
+                    user=follower,
+                    sender=user,
+                    notification_type="post",
+                    post=serializer.instance,
+                )
+                for follower in followers
+            ]
+            Notification.objects.bulk_create(notifications)
+            for follower in followers:
+                send_notification(follower, {
+                    'id': notifications[followers.index(follower)].id,
+                    'sender': user.username,
+                    'notification_type': notifications[followers.index(follower)].notification_type,
+                    'created_at': notifications[followers.index(follower)].created_at.isoformat(),
+                    'post': serializer.instance.id,
+                    'seen': notifications[followers.index(follower)].seen,
+                })
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -110,6 +157,20 @@ class LikePostView(CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         Like.objects.create(user=user, post=post)
+        notification = Notification.objects.create(
+            user=post.user,
+            sender=user,
+            notification_type="like",
+            post=post,
+        )
+        send_notification(post.user, {
+            'id': notification.id,
+            'sender': user.username,
+            'notification_type': notification.notification_type,
+            'created_at': notification.created_at,
+            'post': post.id,
+            'seen': notification.seen,
+        })
         return Response({"detail": "Post liked"}, status=status.HTTP_201_CREATED)
 
 class UnlikePostView(DestroyAPIView):
@@ -135,6 +196,20 @@ class CommentCreateView(CreateAPIView):
 
         if serializer.is_valid():
             serializer.save(user=user, post=post)
+            notification = Notification.objects.create(
+                user=post.user,
+                sender=user,
+                notification_type="comment",
+                post=post,
+            )
+            send_notification(post.user, {
+                'id': notification.id,
+                'sender': user.username,
+                'notification_type': notification.notification_type,
+                'created_at': notification.created_at,
+                'post': post.id,
+                'seen': notification.seen,
+            })
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -150,30 +225,11 @@ class CommentDeleteView(DestroyAPIView):
             {"detail": "Comment removed"}, status=status.HTTP_204_NO_CONTENT
         )
 
-class NotificationListView(ListAPIView):
+class NotificationReadAllView(UpdateAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return Notification.objects.filter(user=self.request.user).order_by("-created_at")
-
-class NotificationReadView(CreateAPIView):
-    serializer_class = NotificationSerializer
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        user = request.user
-        notification = get_object_or_404(Notification, user=user, id=request.data.get("id"))
-        notification.delete()
-        return Response(
-            {"detail": "Notification read"}, status=status.HTTP_200_OK
-        )
-
-class NotificationReadAllView(CreateAPIView):
-    serializer_class = NotificationSerializer
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         user = request.user
         user.notifications.all().delete()
         return Response(

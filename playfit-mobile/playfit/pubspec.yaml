@@ -46,6 +46,8 @@ dependencies:
   google_mlkit_pose_detection: ^0.13.0
   google_sign_in: ^6.2.2
   flame: ^1.23.0
+  web_socket_channel: ^3.0.2
+  provider: ^6.1.2
 
 dev_dependencies:
   flutter_test:

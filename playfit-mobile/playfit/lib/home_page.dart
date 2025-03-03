@@ -17,13 +17,13 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-      const AdventurePage(),
-      const MissionsPage(),
-      const BoutiquePage(),
-      const ProfilePage(),
-    ];
+    const AdventurePage(),
+    const MissionsPage(),
+    const BoutiquePage(),
+    const ProfilePage(),
+  ];
 
-    void _onItemTapped(int index) {
+  void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });

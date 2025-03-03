@@ -126,10 +126,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         self.save()
 
     def get_followers(self):
-        return self.followers.all()
+        return CustomUser.objects.filter(following__following=self)
 
     def get_following(self):
-        return self.following.all()
+        return CustomUser.objects.filter(followers__follower=self)
 
     def get_posts(self):
         return self.posts.all()

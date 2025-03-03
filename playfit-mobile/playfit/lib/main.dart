@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:playfit/providers/notification_provider.dart';
 import 'package:playfit/authentification/login_page.dart';
 import 'package:playfit/authentification/registration_page.dart';
 import 'package:playfit/home_page.dart';
@@ -9,7 +11,14 @@ import 'package:playfit/camera_page.dart';
 void main() async {
   await dotenv.load(fileName: ".env");
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => NotificationProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -24,7 +33,6 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const LoginPage(),
-      initialRoute: '/login',
       routes: {
         '/register': (context) =>
             const CreateAccountPage(), // Route to registration page

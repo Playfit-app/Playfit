@@ -10,8 +10,6 @@ from .views import (
     UnlikePostView,
     CommentCreateView,
     CommentDeleteView,
-    NotificationListView,
-    NotificationReadView,
     NotificationReadAllView,
 )
 
@@ -26,7 +24,5 @@ urlpatterns = [
     path('posts/create/', PostCreateView.as_view(), name='create_post'),
     path('posts/<int:id>/comment/', CommentCreateView.as_view(), name='comment'),
     path('comments/<int:id>/delete/', CommentDeleteView.as_view(), name='delete_comment'),
-    path('notifications/', NotificationListView.as_view(), name='notifications'),
-    path('notifications/read/<int:id>/', NotificationReadView.as_view(), name='read_notification'),
     path('notifications/read/all/', NotificationReadAllView.as_view(), name='read_all_notifications'),
 ]

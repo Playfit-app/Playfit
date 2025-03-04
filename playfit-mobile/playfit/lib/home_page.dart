@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:playfit/services/push_notification_service.dart';
 import 'adventure_page.dart';
 import 'missions_page.dart';
 import 'boutique_page.dart';
@@ -6,7 +7,11 @@ import 'profile_page.dart';
 import 'components/top_bar.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final bool firstLogin;
+  const HomePage({
+    super.key,
+    this.firstLogin = false,
+  });
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -22,6 +27,19 @@ class _HomePageState extends State<HomePage> {
     const BoutiquePage(),
     const ProfilePage(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.firstLogin) {
+      Future.delayed(const Duration(), () async {
+        final service = NotificationService();
+
+        await service.requestNotificationPermission();
+        await service.getToken();
+      });
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {

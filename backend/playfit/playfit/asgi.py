@@ -14,11 +14,10 @@ from django.contrib.staticfiles.handlers import ASGIStaticFilesHandler
 from channels.routing import ProtocolTypeRouter, URLRouter
 
 django.setup()
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'playfit.settings')
 
 from social.routing import websocket_urlpatterns  # noqa: E402
 from social.middleware import TokenAuthMiddleware # noqa: E402
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'playfit.settings')
 
 application = ProtocolTypeRouter({
     "http": ASGIStaticFilesHandler(get_asgi_application()),

@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    GCMDeviceCreateView,
     FollowersListView,
     FollowingListView,
     FollowCreateView,
@@ -14,6 +15,7 @@ from .views import (
 )
 
 urlpatterns = [
+    path('store-device-token/', GCMDeviceCreateView.as_view(), name='store_device_token'),
     path('followers/', FollowersListView.as_view(), name='followers'),
     path('following/', FollowingListView.as_view(), name='following'),
     path('follow/', FollowCreateView.as_view(), name='follow'),

@@ -1,6 +1,7 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from utilities.redis import redis_client
 from .models import Notification
 
 class NotificationConsumer(AsyncWebsocketConsumer):
@@ -9,12 +10,15 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         if self.user.is_authenticated:
             self.room_group_name = f"notifications_{self.user.id}"
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+
+            redis_client.set(f"user_{self.user.id}", self.channel_name)
             await self.accept()
         else:
             await self.close()
 
     async def disconnect(self, close_code):
         if self.user.is_authenticated:
+            redis_client.delete(f"user_{self.user.id}")
             await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):

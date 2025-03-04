@@ -10,7 +10,9 @@ from rest_framework.generics import (
 )
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from push_notifications.models import GCMDevice
 from authentification.models import CustomUser
+from utilities.redis import redis_client
 from .models import Follow, Post, Like, Comment, Notification
 from .serializers import (
     UserSerializer,
@@ -18,19 +20,55 @@ from .serializers import (
     LikeSerializer,
     CommentSerializer,
     NotificationSerializer,
+    GCMDeviceSerializer,
 )
+
+def send_push_notification(user, title, message):
+    devices = GCMDevice.objects.filter(user=user)
+
+    for device in devices:
+        device.send_message(title=title, message=message)
 
 def send_notification(user, notification_data):
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        f"notifications_{user.id}",
-        {
-            "type": "send_notification",
-            "message": {
-                "data": notification_data,
+    group_name = f"notifications_{user.id}"
+
+    if redis_client.exists(f"user_{user.id}"):
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            {
+                "type": "send_notification",
+                "message": {
+                    "data": notification_data,
+                },
             },
-        },
-    )
+        )
+    else:
+        message = ""
+
+        if notification_data["notification_type"] == "like":
+            message = f"{notification_data['sender']} liked your post"
+        elif notification_data["notification_type"] == "comment":
+            message = f"{notification_data['sender']} commented on your post"
+        elif notification_data["notification_type"] == "follow":
+            message = f"{notification_data['sender']} followed you"
+        elif notification_data["notification_type"] == "post":
+            message = f"{notification_data['sender']} posted"
+
+        send_push_notification(user, "Playfit", message)
+
+class GCMDeviceCreateView(CreateAPIView):
+    serializer_class = GCMDeviceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(user=user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class FollowersListView(ListAPIView):
     serializer_class = UserSerializer

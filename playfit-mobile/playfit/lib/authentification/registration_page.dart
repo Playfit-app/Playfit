@@ -61,7 +61,8 @@ class CreateAccountPageState extends State<CreateAccountPage> {
     if (result["status"] == 'success') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        MaterialPageRoute(
+            builder: (context) => const HomePage(firstLogin: true)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

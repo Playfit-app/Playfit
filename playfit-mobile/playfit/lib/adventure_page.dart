@@ -1,10 +1,11 @@
 import 'dart:ui';
-
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:playfit/components/adventure/checkpoint.dart';
 import 'package:playfit/components/adventure/decoration.dart';
+import 'package:playfit/components/adventure/workout_session_dialog.dart';
+import 'package:playfit/components/adventure/character.dart';
 
 class AdventurePage extends StatelessWidget {
   const AdventurePage({super.key});
@@ -17,7 +18,10 @@ class AdventurePage extends StatelessWidget {
           child: SizedBox(
             height: MediaQuery.of(context).size.height,
             child: GameWidget(
-              game: AdventureGame(screenSize: MediaQuery.of(context).size),
+              game: AdventureGame(
+                screenSize: MediaQuery.of(context).size,
+                context: context,
+              ),
             ),
           ),
         ),
@@ -47,10 +51,10 @@ class AdventurePage extends StatelessWidget {
 
 class AdventureGame extends FlameGame {
   final Size screenSize;
-  late SpriteComponent _player;
-  late SpriteComponent _playerComment;
+  late Character _player;
+  final BuildContext context;
 
-  AdventureGame({required this.screenSize});
+  AdventureGame({required this.screenSize, required this.context});
   final List<Vector2> _checkpoints = [
     Vector2(280, 720),
     Vector2(95, 645),
@@ -100,14 +104,25 @@ class AdventureGame extends FlameGame {
   };
   int _currentCheckpoint = 0;
 
+  // Get data from backend then show workout session dialog
+  void showWorkoutSessionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return const WorkoutSessionDialog();
+      },
+    );
+  }
+
   @override
   Future<void> onLoad() async {
     for (int i = 0; i < _checkpoints.length; i++) {
       add(Checkpoint(
         checkpointPosition: _checkpoints[i],
-        onTap: () {
-          // moveToNextCheckpoint();
-          debugPrint('Checkpoint tapped');
+        onTap: () async {
+          if (i == _currentCheckpoint) {
+            showWorkoutSessionDialog(context);
+          }
         },
       ));
     }
@@ -136,21 +151,13 @@ class AdventureGame extends FlameGame {
       }
     }
 
-    _player = SpriteComponent(
-      sprite: await Sprite.load('character.png'),
-      size: Vector2(410, 732),
-      position: Vector2(_checkpoints[0].x - 50, _checkpoints[0].y - 120),
-      scale: Vector2(0.15, 0.15),
+    _player = Character(
+      characterPosition:
+          Vector2(_checkpoints[0].x + 65, _checkpoints[0].y - 120),
+      onTap: showWorkoutSessionDialog,
+      context: context,
     );
-    _playerComment = SpriteComponent(
-      sprite: await Sprite.load('comments.png'),
-      size: Vector2(90, 90),
-      position: Vector2(_player.position.x, _player.position.y - 80),
-      scale: Vector2(1, 1),
-    );
-    updatePlayerDirection();
     add(_player);
-    add(_playerComment);
   }
 
   void updatePlayerDirection() {

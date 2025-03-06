@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:playfit/components/experience_circle.dart';
 import 'package:playfit/components/success.dart';
+import 'package:playfit/components/historic_chart.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -209,6 +210,7 @@ class ProfilePage extends StatelessWidget {
                             color: Color(0XFFFFE9CA),
                             borderRadius: BorderRadius.all(Radius.circular(20)),
                           ),
+                          child: HistoricChart(),
                         ),
                         const SizedBox(height: 10),
                         Row(

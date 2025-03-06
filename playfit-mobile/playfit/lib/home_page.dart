@@ -17,13 +17,13 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-      const AdventurePage(),
-      const MissionsPage(),
-      const BoutiquePage(),
-      const ProfilePage(),
-    ];
+    const AdventurePage(),
+    const MissionsPage(),
+    const BoutiquePage(),
+    const ProfilePage(),
+  ];
 
-    void _onItemTapped(int index) {
+  void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -32,12 +32,14 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        title: const TopBar(),
-        automaticallyImplyLeading: false,
-      ),
+      appBar: _selectedIndex == 0
+          ? AppBar(
+              backgroundColor: Colors.white,
+              elevation: 1,
+              title: const TopBar(),
+              automaticallyImplyLeading: false,
+            )
+          : null,
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,

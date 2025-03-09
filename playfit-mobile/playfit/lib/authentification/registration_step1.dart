@@ -21,11 +21,14 @@ class RegistrationStep1 extends StatefulWidget {
 class _RegistrationStep1State extends State<RegistrationStep1> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40.0),
-      child: Column(
-        children: [
-          TextFormField(
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+          child: TextFormField(
             controller: widget.usernameController,
             decoration: InputDecoration(
               labelText: 'Nom d\'utilisateur',
@@ -53,8 +56,11 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               return null;
             },
           ),
-          const SizedBox(height: 30),
-          TextFormField(
+        ),
+        SizedBox(height: screenHeight * 0.03),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+          child: TextFormField(
             controller: widget.emailController,
             decoration: InputDecoration(
               labelText: 'Adresse e-mail',
@@ -84,8 +90,11 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               return null;
             },
           ),
-          const SizedBox(height: 30),
-          TextFormField(
+        ),
+        const SizedBox(height: 30),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+          child: TextFormField(
             controller: widget.passwordController,
             obscureText: true,
             decoration: InputDecoration(
@@ -118,8 +127,11 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               return null;
             },
           ),
-          const SizedBox(height: 30),
-          TextFormField(
+        ),
+        const SizedBox(height: 30),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+          child: TextFormField(
             controller: widget.confirmPasswordController,
             obscureText: true,
             decoration: InputDecoration(
@@ -148,8 +160,8 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               return null;
             },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

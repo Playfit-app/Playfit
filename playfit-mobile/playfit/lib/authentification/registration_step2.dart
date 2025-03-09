@@ -33,11 +33,14 @@ class RegistrationStep2 extends StatefulWidget {
 class _RegistrationStep2State extends State<RegistrationStep2> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40.0),
-      child: Column(
-        children: [
-          TextFormField(
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+          child: TextFormField(
             controller: widget.birthDateController,
             readOnly: true,
             decoration: InputDecoration(
@@ -90,8 +93,11 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
               return null;
             },
           ),
-          const SizedBox(height: 30),
-          TextFormField(
+        ),
+        SizedBox(height: screenHeight * 0.03),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+          child: TextFormField(
             controller: widget.heightController,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
@@ -123,8 +129,11 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
               return null;
             },
           ),
-          const SizedBox(height: 30),
-          TextFormField(
+        ),
+        SizedBox(height: screenHeight * 0.03),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+          child: TextFormField(
             controller: widget.weightController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
@@ -156,23 +165,26 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
               return null;
             },
           ),
-          const SizedBox(height: 10),
-          // Consent form as dialog
-          ElevatedButton(
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return GdprConsentForm(
-                    isConsentGiven: widget.isConsentGiven,
-                    isMarketingConsentGiven: widget.isMarketingConsentGiven,
-                  );
-                },
-              );
-            },
-            child: const Text('Consentement RGPD'),
-          ),
-          CheckboxFormField(
+        ),
+        const SizedBox(height: 10),
+        // Consent form as dialog
+        ElevatedButton(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return GdprConsentForm(
+                  isConsentGiven: widget.isConsentGiven,
+                  isMarketingConsentGiven: widget.isMarketingConsentGiven,
+                );
+              },
+            );
+          },
+          child: const Text('Consentement RGPD'),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
+          child: CheckboxFormField(
             title: const Text(
               'J’accepte le formulaire de consentement RGPD et la Politique de Confidentialité (Obligatoire).',
               style: TextStyle(fontSize: 8),
@@ -186,7 +198,10 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
               return null;
             },
           ),
-          CheckboxFormField(
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
+          child: CheckboxFormField(
             title: const Text(
               'J’accepte de recevoir des e-mails marketing concernant des promotions, événements ou rappels liés à l’application (Facultatif).',
               style: TextStyle(fontSize: 8),
@@ -194,8 +209,8 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             onChanged: widget.onMarketingConsentChanged,
             initialValue: widget.isMarketingConsentGiven,
           ),
-        ],
-      ),
+        )
+      ],
     );
   }
 }

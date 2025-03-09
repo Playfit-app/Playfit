@@ -8,13 +8,13 @@ class RegistrationStep2 extends StatefulWidget {
   final TextEditingController birthDateController;
   final TextEditingController heightController;
   final TextEditingController weightController;
-  bool isConsentGiven;
-  bool isMarketingConsentGiven;
+  final bool isConsentGiven;
+  final bool isMarketingConsentGiven;
   final Function(bool?) onConsentChanged;
   final Function(bool?) onMarketingConsentChanged;
   // final TextEditingController _objectiveController;
 
-  RegistrationStep2({
+  const RegistrationStep2({
     super.key,
     required this.birthDateController,
     required this.heightController,

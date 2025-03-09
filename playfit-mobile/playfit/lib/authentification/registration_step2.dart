@@ -90,7 +90,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
               return null;
             },
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 30),
           TextFormField(
             controller: widget.heightController,
             keyboardType: TextInputType.number,
@@ -123,7 +123,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
               return null;
             },
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 30),
           TextFormField(
             controller: widget.weightController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -172,7 +172,6 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             },
             child: const Text('Consentement RGPD'),
           ),
-          const SizedBox(height: 10),
           CheckboxFormField(
             title: const Text(
               'J’accepte le formulaire de consentement RGPD et la Politique de Confidentialité (Obligatoire).',

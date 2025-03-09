@@ -109,144 +109,153 @@ class CreateAccountPageState extends State<CreateAccountPage> {
 
   @override
   Widget build(BuildContext context) {
-
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       // resizeToAvoidBottomInset: true, // Add this line
       body: Stack(
         children: [
-          Image.asset(
-            "assets/images/background_kickoff.png",
-            width: MediaQuery.of(context).size.width,
-            fit: BoxFit.cover,
-          ),
-          Column(
-            children: [
-              SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-              Image.asset(
-                "assets/images/mascot.png",
-                height: 200,
-              ),
-              Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(40),
-                    topRight: Radius.circular(40),
-                  ),
+          Positioned(
+            left: 0,
+            top: 0,
+            child: Container(
+              width: screenWidth,
+              height: 682,
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage("assets/images/background_kickoff.png"),
+                  fit: BoxFit.fill,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Créer un compte',
-                        style: GoogleFonts.amaranth(
-                          fontSize: 36,
-                          color: Colors.black,
-                          fontWeight: FontWeight.normal,
-                        ),
+              ),
+              child: Align(
+                alignment: const Alignment(0, -0.7),
+                child: Image.asset("assets/images/mascot.png"),
+              ),
+            ),
+          ),
+          AnimatedPositioned(
+            top: _isKeyboardVisible ? screenHeight * 0.15 : screenHeight * 0.35,
+            left: 0,
+            bottom: 0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: Container(
+              width: screenWidth,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(40),
+                  topRight: Radius.circular(40),
+                ),
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(top: 15),
+                child: Column(
+                  children: [
+                    Text(
+                      'Créer un compte',
+                      style: GoogleFonts.amaranth(
+                        fontSize: 36,
+                        color: Colors.black,
+                        fontWeight: FontWeight.normal,
                       ),
-                      const SizedBox(height: 20),
-                      LinearProgressIndicator(
-                        value: (_currentStep) / 3,
-                        backgroundColor: Colors.grey[300],
-                        color: const Color(0xFF8B0000),
+                    ),
+                    const SizedBox(height: 20),
+                    LinearProgressIndicator(
+                      value: (_currentStep) / 3,
+                      backgroundColor: Colors.grey[300],
+                      color: const Color(0xFF8B0000),
+                    ),
+                    const SizedBox(height: 20),
+                    if (_currentStep == 0)
+                      Form(
+                        key: _step1FormKey,
+                        child: RegistrationStep1(
+                          usernameController: _usernameController,
+                          emailController: _emailController,
+                          passwordController: _passwordController,
+                          confirmPasswordController: _confirmPasswordController,
+                        ),
+                        onChanged: () => _validateStep(_step1FormKey),
                       ),
-                      const SizedBox(height: 20),
-                      if (_currentStep == 0)
-                        Form(
-                          key: _step1FormKey,
-                          child: RegistrationStep1(
-                            usernameController: _usernameController,
-                            emailController: _emailController,
-                            passwordController: _passwordController,
-                            confirmPasswordController:
-                                _confirmPasswordController,
-                          ),
-                          onChanged: () => _validateStep(_step1FormKey),
+                    if (_currentStep == 1)
+                      Form(
+                        key: _step2FormKey,
+                        child: RegistrationStep2(
+                          birthDateController: _birthDateController,
+                          heightController: _heightController,
+                          weightController: _weightController,
+                          isConsentGiven: isConsentGiven,
+                          isMarketingConsentGiven: isMarketingConsentGiven,
+                          onConsentChanged: (value) {
+                            setState(() {
+                              isConsentGiven = value!;
+                            });
+                          },
+                          onMarketingConsentChanged: (value) {
+                            setState(() {
+                              isMarketingConsentGiven = value!;
+                            });
+                          },
                         ),
-                      if (_currentStep == 1)
-                        Form(
-                          key: _step2FormKey,
-                          child: RegistrationStep2(
-                            birthDateController: _birthDateController,
-                            heightController: _heightController,
-                            weightController: _weightController,
-                            isConsentGiven: isConsentGiven,
-                            isMarketingConsentGiven: isMarketingConsentGiven,
-                            onConsentChanged: (value) {
-                              setState(() {
-                                isConsentGiven = value!;
-                              });
-                            },
-                            onMarketingConsentChanged: (value) {
-                              setState(() {
-                                isMarketingConsentGiven = value!;
-                              });
-                            },
-                          ),
-                          onChanged: () => _validateStep(_step2FormKey),
-                        ),
-                      if (_currentStep == 2)
-                        Form(
-                          key: _step3FormKey,
-                          child: const RegistrationStep3(),
-                          onChanged: () => _validateStep(_step3FormKey),
-                        ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () {
-                          if (_currentStep == 0 && _isStep1Valid) {
-                            _nextStep();
-                          } else if (_currentStep == 1 && _isStep2Valid) {
-                            _nextStep(); // Move to Step 3 instead of creating an account
-                          } else if (_currentStep == 2) {
-                            _createAccount(); // Create account on Step 3 submission
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color.fromARGB(255, 248, 135, 31),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(100.0),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 50, vertical: 15),
-                        ),
-                        child: Text(
-                          _currentStep < 2 ? 'Suivant' : 'Créer mon compte',
-                          style: const TextStyle(
-                              fontSize: 18, color: Colors.white),
-                        ),
+                        onChanged: () => _validateStep(_step2FormKey),
                       ),
-                      if (_currentStep > 0)
-                        TextButton(
-                          onPressed: _previousStep,
-                          child: const Text(
-                            'Précédent',
-                            style: TextStyle(color: Colors.blueAccent),
-                          ),
+                    if (_currentStep == 2)
+                      Form(
+                        key: _step3FormKey,
+                        child: const RegistrationStep3(),
+                        onChanged: () => _validateStep(_step3FormKey),
+                      ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (_currentStep == 0 && _isStep1Valid) {
+                          _nextStep();
+                        } else if (_currentStep == 1 && _isStep2Valid) {
+                          _nextStep(); // Move to Step 3 instead of creating an account
+                        } else if (_currentStep == 2) {
+                          _createAccount(); // Create account on Step 3 submission
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color.fromARGB(255, 248, 135, 31),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100.0),
                         ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 50, vertical: 15),
+                      ),
+                      child: Text(
+                        _currentStep < 2 ? 'Suivant' : 'Créer mon compte',
+                        style:
+                            const TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                    ),
+                    if (_currentStep > 0)
                       TextButton(
-                        onPressed: () => Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const LoginPage()),
-                        ),
+                        onPressed: _previousStep,
                         child: const Text(
-                          'Déjà un compte ? Connectez-vous !',
+                          'Précédent',
                           style: TextStyle(color: Colors.blueAccent),
                         ),
                       ),
-                    ],
-                  ),
+                    TextButton(
+                      onPressed: () => Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LoginPage()),
+                      ),
+                      child: const Text(
+                        'Déjà un compte ? Connectez-vous !',
+                        style: TextStyle(color: Colors.blueAccent),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ],
       ),

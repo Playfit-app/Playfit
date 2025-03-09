@@ -30,7 +30,7 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
       padding: const EdgeInsets.symmetric(horizontal: 40.0),
       child: Column(
         children: [
-          const SizedBox(height: 10),
+          const SizedBox(height: 5),
           // Consent form as dialog
           const Text(
           "Choisi ton avatar",
@@ -39,7 +39,7 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 10),
         CarouselSlider(
           options: CarouselOptions(
             height: 250,

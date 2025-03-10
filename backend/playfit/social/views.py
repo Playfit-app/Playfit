@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListAPIView, CreateAPIView, DestroyAPIView, get_object_or_404
+from rest_framework.views import APIView
 from authentification.models import CustomUser
 from .models import Follow, CustomizationItem, Customization
 from .serializers import UserSerializer, CustomizationItemSerializer, CustomizationSerializer
@@ -19,13 +20,25 @@ class CustomizationItemByCategoryListView(ListAPIView):
         category = self.kwargs['category']
         return CustomizationItem.objects.filter(category=category)
 
-class CustomizationView(CreateAPIView):
-    serializer_class = CustomizationSerializer
+class CustomizationUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        user: CustomUser = self.request.user
-        return Customization.objects.filter(user=user)
+    def patch(self, request):
+        user: CustomUser = request.user
+        customization = Customization.objects.get(user=user)
+        serializer = CustomizationSerializer(customization, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+class CustomizationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user: CustomUser = request.user
+        customization = Customization.objects.get(user=user)
+        serializer = CustomizationSerializer(customization)
+        return Response(serializer.data)
 
 class FollowersListView(ListAPIView):
     serializer_class = UserSerializer

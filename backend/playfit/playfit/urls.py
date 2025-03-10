@@ -22,6 +22,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from authentification import urls as auth_urls
 from workout import urls as workout_urls
+from social import urls as social_urls
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -35,5 +36,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include(auth_urls)),
     path('api/workout/', include(workout_urls)),
+    path('api/social/', include(social_urls)),
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0),name='schema-swagger-ui'),
 ]

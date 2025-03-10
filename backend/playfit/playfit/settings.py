@@ -181,3 +181,9 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 # Server settings
 SERVER_BASE_URL = os.getenv('SERVER_BASE_URL')
+
+# Media URL (for accessing via browser)
+MEDIA_URL = '/media/'
+
+# Media Root (for storing uploaded files)
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

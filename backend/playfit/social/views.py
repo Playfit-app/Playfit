@@ -3,8 +3,29 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListAPIView, CreateAPIView, DestroyAPIView, get_object_or_404
 from authentification.models import CustomUser
-from .models import Follow
-from .serializers import UserSerializer
+from .models import Follow, CustomizationItem, Customization
+from .serializers import UserSerializer, CustomizationItemSerializer, CustomizationSerializer
+
+class CustomizationItemListView(ListAPIView):
+    serializer_class = CustomizationItemSerializer
+    queryset = CustomizationItem.objects.all()
+    permission_classes = [IsAuthenticated]
+
+class CustomizationItemByCategoryListView(ListAPIView):
+    serializer_class = CustomizationItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        category = self.kwargs['category']
+        return CustomizationItem.objects.filter(category=category)
+
+class CustomizationView(CreateAPIView):
+    serializer_class = CustomizationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user: CustomUser = self.request.user
+        return Customization.objects.filter(user=user)
 
 class FollowersListView(ListAPIView):
     serializer_class = UserSerializer

@@ -26,8 +26,13 @@ class ExperienceCirclePainter extends CustomPainter {
     canvas.drawCircle(center, radius, backgroundPaint);
 
     double sweepAngle = 2 * pi * progress;
-    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), -pi / 2,
-        sweepAngle, false, progressPaint);
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -pi / 2,
+      sweepAngle,
+      false,
+      progressPaint,
+    );
   }
 
   @override
@@ -37,24 +42,24 @@ class ExperienceCirclePainter extends CustomPainter {
 class ExperienceCircle extends StatelessWidget {
   final double currentXP;
   final double requiredXP;
+  final Widget child;
 
   const ExperienceCircle({
     super.key,
     required this.currentXP,
     required this.requiredXP,
+    required this.child,
   });
 
   @override
   Widget build(BuildContext context) {
     double progress = (currentXP / requiredXP).clamp(0.0, 1.0);
+    double size = MediaQuery.of(context).size.width * 0.17;
 
-    return SizedBox(
-      width: 71,
-      height: 71,
-      child: CustomPaint(
-        size: const Size(71, 71),
-        painter: ExperienceCirclePainter(progress),
-      ),
+    return CustomPaint(
+      painter: ExperienceCirclePainter(progress),
+      size: Size.square(size),
+      child: child,
     );
   }
 }

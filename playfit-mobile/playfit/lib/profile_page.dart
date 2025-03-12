@@ -9,6 +9,9 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -27,8 +30,8 @@ class ProfilePage extends StatelessWidget {
             left: 0,
             top: 0,
             child: Container(
-              height: MediaQuery.of(context).size.height / 2,
-              width: MediaQuery.of(context).size.width,
+              height: screenHeight / 2,
+              width: screenWidth,
               decoration: const BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage('assets/images/mountains/mont_blanc.png'),
@@ -53,10 +56,10 @@ class ProfilePage extends StatelessWidget {
           ),
           Positioned(
             left: 0,
-            top: MediaQuery.of(context).size.height * 0.3,
+            top: screenHeight * 0.3,
             bottom: 0,
             child: Container(
-              width: MediaQuery.of(context).size.width,
+              width: screenWidth,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
@@ -130,82 +133,42 @@ class ProfilePage extends StatelessWidget {
                           children: [
                             Stack(
                               children: [
-                                const ExperienceCircle(
+                                ExperienceCircle(
                                   currentXP: 70,
                                   requiredXP: 100,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(6),
-                                  child: Container(
-                                    height: 58,
-                                    width: 58,
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      image: DecorationImage(
-                                        image: AssetImage(
-                                            'assets/images/mountains/mont_blanc.png'),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Container(
+                                      height: screenWidth * 0.1,
+                                      width: screenWidth * 0.1,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        image: DecorationImage(
+                                          image: AssetImage(
+                                              'assets/images/mountains/mont_blanc.png'),
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(
-                              height: 50,
-                              child: VerticalDivider(
-                                color: Color(0XFFE57106),
-                                thickness: 1,
-                              ),
+                            _buildDivider(),
+                            _buildInfoSection(
+                              const Icon(Icons.local_fire_department,
+                                  color: Color(0XFFFF7A00), size: 24),
+                              "5\nDay streak",
                             ),
-                            const Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(Icons.local_fire_department,
-                                    color: Color(0XFFFF7A00), size: 24),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 8.0),
-                                  child: Text(
-                                    "5\nDay streak",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Color(0XFF1D1B20),
-                                      fontWeight: FontWeight.w400,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 50,
-                              child: VerticalDivider(
-                                color: Color(0XFFE57106),
-                                thickness: 1,
-                              ),
-                            ),
-                            const Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(Icons.flag_rounded, size: 24),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 8.0),
-                                  child: Text(
-                                    "2\nVilles finies",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Color(0XFF1D1B20),
-                                      fontWeight: FontWeight.w400,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            _buildDivider(),
+                            _buildInfoSection(
+                              const Icon(Icons.flag_rounded, size: 24),
+                              "2\nVilles finies",
                             ),
                           ],
                         ),
                         const SizedBox(height: 30),
                         Container(
-                          height: 165,
+                          height: screenHeight * 0.2,
                           decoration: const BoxDecoration(
                             color: Color(0XFFFFE9CA),
                             borderRadius: BorderRadius.all(Radius.circular(20)),
@@ -223,7 +186,7 @@ class ProfilePage extends StatelessWidget {
                                     children: [
                                       Container(
                                         height: 1.5,
-                                        width: 23,
+                                        width: screenWidth * 0.1,
                                         decoration: const BoxDecoration(
                                           shape: BoxShape.rectangle,
                                           color: Color(0XFF7391FD),
@@ -246,7 +209,7 @@ class ProfilePage extends StatelessWidget {
                                     children: [
                                       Container(
                                         height: 1.5,
-                                        width: 23,
+                                        width: screenWidth * 0.1,
                                         decoration: const BoxDecoration(
                                           shape: BoxShape.rectangle,
                                           color: Color(0XFFFF0000),
@@ -329,6 +292,37 @@ class ProfilePage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return const SizedBox(
+      height: 50,
+      child: VerticalDivider(
+        color: Color(0XFFE57106),
+        thickness: 1,
+      ),
+    );
+  }
+
+  Widget _buildInfoSection(Icon icon, String content) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        icon,
+        Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: Text(
+            content,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0XFF1D1B20),
+              fontWeight: FontWeight.w400,
+              height: 1.4,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

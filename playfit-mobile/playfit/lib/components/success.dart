@@ -13,8 +13,8 @@ class Success extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 71,
-      width: 71,
+      height: MediaQuery.of(context).size.width * 0.17,
+      width: MediaQuery.of(context).size.width * 0.17,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
@@ -22,7 +22,11 @@ class Success extends StatelessWidget {
           width: 1.5,
         ),
       ),
-      child: ClipOval(child: Image.asset(image)),
+      child: ClipOval(
+          child: Image.asset(
+        image,
+        fit: BoxFit.cover,
+      )),
     );
   }
 }

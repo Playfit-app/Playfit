@@ -161,13 +161,13 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                         fontWeight: FontWeight.normal,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: screenHeight * 0.02),
                     LinearProgressIndicator(
                       value: (_currentStep) / 3,
                       backgroundColor: Colors.grey[300],
                       color: const Color(0xFF8B0000),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: screenHeight * 0.02),
                     if (_currentStep == 0)
                       Form(
                         key: _step1FormKey,
@@ -207,7 +207,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                         child: const RegistrationStep3(),
                         onChanged: () => _validateStep(_step3FormKey),
                       ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: screenHeight * 0.02),
                     ElevatedButton(
                       onPressed: () {
                         if (_currentStep == 0 && _isStep1Valid) {

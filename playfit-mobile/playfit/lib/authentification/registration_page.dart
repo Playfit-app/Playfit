@@ -230,7 +230,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                       child: Text(
                         _currentStep < 2 ? 'Suivant' : 'Créer mon compte',
                         style:
-                            const TextStyle(fontSize: 18, color: Colors.white),
+                            const TextStyle(fontSize: 14, color: Colors.white),
                       ),
                     ),
                     if (_currentStep > 0)

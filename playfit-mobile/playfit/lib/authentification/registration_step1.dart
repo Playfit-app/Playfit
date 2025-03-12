@@ -27,7 +27,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
           child: TextFormField(
             controller: widget.usernameController,
             decoration: InputDecoration(
@@ -57,9 +57,9 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
             },
           ),
         ),
-        SizedBox(height: screenHeight * 0.03),
+        SizedBox(height: screenHeight * 0.02),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
           child: TextFormField(
             controller: widget.emailController,
             decoration: InputDecoration(
@@ -91,9 +91,9 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
             },
           ),
         ),
-        const SizedBox(height: 30),
+        SizedBox(height: screenHeight * 0.02),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
           child: TextFormField(
             controller: widget.passwordController,
             obscureText: true,
@@ -128,9 +128,9 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
             },
           ),
         ),
-        const SizedBox(height: 30),
+        SizedBox(height: screenHeight * 0.02),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
           child: TextFormField(
             controller: widget.confirmPasswordController,
             obscureText: true,

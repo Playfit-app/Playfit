@@ -26,6 +26,9 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40.0),
       child: Column(
@@ -39,7 +42,7 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: screenHeight * 0.02),
         CarouselSlider(
           options: CarouselOptions(
             height: 250,

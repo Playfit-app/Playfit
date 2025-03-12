@@ -39,7 +39,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
           child: TextFormField(
             controller: widget.birthDateController,
             readOnly: true,
@@ -94,9 +94,9 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             },
           ),
         ),
-        SizedBox(height: screenHeight * 0.03),
+        SizedBox(height: screenHeight * 0.02),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
           child: TextFormField(
             controller: widget.heightController,
             keyboardType: TextInputType.number,
@@ -130,9 +130,9 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             },
           ),
         ),
-        SizedBox(height: screenHeight * 0.03),
+        SizedBox(height: screenHeight * 0.02),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
           child: TextFormField(
             controller: widget.weightController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -166,7 +166,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             },
           ),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: screenHeight * 0.01),
         // Consent form as dialog
         ElevatedButton(
           onPressed: () {

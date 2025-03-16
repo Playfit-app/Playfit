@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:playfit/auth_service.dart';
 import 'package:playfit/home_page.dart';
 import 'package:playfit/authentification/registration_page.dart';
-import 'package:playfit/styles/styles.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,13 +13,30 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _loginController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService authService = AuthService();
   String _errorMessage = '';
   bool _isGoogleSignInLoading = false;
+  bool _isKeyboardVisible = false;
 
-  // ignore: unused_element
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+    });
+  }
+
+  void _hideKeyboard() {
+    FocusScope.of(context).unfocus();
+
+    setState(() {
+      _isKeyboardVisible = false;
+    });
+  }
+
   void _login() async {
     setState(() {
       _isGoogleSignInLoading = true;
@@ -52,17 +69,14 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _handleGoogleSignIn() async {
-    // Send the ID token to the backend for verification and login
     var result = await authService.loginWithGoogle(context);
-    if (!mounted) return; // Ensure the widget is still mounted
+    if (!mounted) return;
     if (result["status"] == 'success') {
-      // Navigate to the HomePage on successful login
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
     } else {
-      // Display an error message if login failed
       setState(() {
         _errorMessage = result["message"]!;
       });
@@ -78,144 +92,224 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      backgroundColor: AppStyles.backgroundColor, // Using the color from styles
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Mascot Image at the top
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20.0),
-                child: Image.asset(
-                  'assets/images/mascot.png',
-                  height: 150,
+      body: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            child: Container(
+              width: screenWidth,
+              height: 682,
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage("assets/images/background_kickoff.png"),
+                  fit: BoxFit.fill,
                 ),
               ),
-              const Text(
-                'Connexion',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+              child: Align(
+                alignment: const Alignment(0, -0.7),
+                child: Image.asset("assets/images/mascot.png"),
+              ),
+            ),
+          ),
+          AnimatedPositioned(
+            top: _isKeyboardVisible ? screenHeight * 0.15 : screenHeight * 0.35,
+            left: 0,
+            bottom: 0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: Container(
+              width: screenWidth,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(40),
+                  topRight: Radius.circular(40),
                 ),
               ),
-              const SizedBox(height: 20),
-              // Display error message if it exists
-              if (_errorMessage.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                  child: Text(
-                    _errorMessage,
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontSize: 16,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    SizedBox(height: screenHeight * 0.03),
+                    Text(
+                      'Connexion',
+                      style: GoogleFonts.amaranth(
+                        fontSize: 36,
+                        color: Colors.black,
+                        letterSpacing: 0,
+                        fontWeight: FontWeight.normal,
+                      ),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              const SizedBox(height: 10),
-              // Username TextField
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                child: TextField(
-                  controller: _loginController,
-                  decoration: InputDecoration(
-                    hintText: 'Nom d\'utilisateur',
-                    filled: true,
-                    fillColor: Colors.white,
-                    prefixIcon: const Icon(Icons.person),
-                    suffixIcon: _loginController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: () => _loginController.clear(),
-                          )
-                        : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(100.0),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              // Password TextField
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                child: TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    hintText: 'Mot de passe',
-                    filled: true,
-                    fillColor: Colors.white,
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: _passwordController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: () => _passwordController.clear(),
-                          )
-                        : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(100.0),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Login Button
-              ElevatedButton(
-                onPressed: () {
-                  _login();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppStyles.primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(100.0),
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                ),
-                child: const Text(
-                  'Connexion',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
-              ),
-              const SizedBox(height: 15),
-              // Register prompt
-              TextButton(
-                onPressed: () => _navigateToCreateAccount(context),
-                child: const Text(
-                  'Première fois ? Créez un compte !',
-                  style: TextStyle(color: Colors.blueAccent),
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Divider and Google Login
-              const Divider(),
-              Platform.isAndroid
-                  ? Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
-                      child: GestureDetector(
-                        onTap: _isGoogleSignInLoading
-                            ? null
-                            : () async {
-                                await _handleGoogleSignIn();
+                    SizedBox(height: screenHeight * 0.02),
+                    if (_errorMessage.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 40.0, vertical: 10),
+                        child: Text(
+                          _errorMessage,
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    SizedBox(height: screenHeight * 0.01),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: screenWidth * 0.2),
+                            child: TextFormField(
+                              onTap: () {
+                                setState(() {
+                                  _isKeyboardVisible = true;
+                                });
                               },
-                        child: _isGoogleSignInLoading
-                            ? const CircularProgressIndicator()
-                            : Image.asset(
-                                'assets/images/google.png',
-                                height: 50,
+                              onEditingComplete: _hideKeyboard,
+                              controller: _loginController,
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor:
+                                    const Color.fromARGB(255, 255, 233, 202),
+                                prefixIcon: const Icon(Icons.person),
+                                suffixIcon: _loginController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.close),
+                                        onPressed: () =>
+                                            _loginController.clear(),
+                                      )
+                                    : null,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  borderSide: BorderSide.none,
+                                ),
+                                labelText: "Nom d'utilisateur",
                               ),
+                              keyboardType: TextInputType.text,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Veuillez entrer votre nom d\'utilisateur';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          SizedBox(height: screenHeight * 0.025),
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: screenWidth * 0.2),
+                            child: TextFormField(
+                              controller: _passwordController,
+                              obscureText: true,
+                              onTap: () {
+                                setState(() {
+                                  _isKeyboardVisible = true;
+                                });
+                              },
+                              onEditingComplete: _hideKeyboard,
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor:
+                                    const Color.fromARGB(255, 255, 233, 202),
+                                prefixIcon: const Icon(Icons.lock),
+                                suffixIcon: _passwordController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.close),
+                                        onPressed: () =>
+                                            _passwordController.clear(),
+                                      )
+                                    : null,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  borderSide: BorderSide.none,
+                                ),
+                                labelText: "Mot de passe",
+                              ),
+                              keyboardType: TextInputType.text,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Veuillez entrer votre mot de passe';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          SizedBox(height: screenHeight * 0.04),
+                          ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                _login();
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  const Color.fromARGB(255, 248, 135, 31),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100.0),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: screenWidth * 0.06, vertical: 10),
+                            ),
+                            child: const Text(
+                              'Connexion',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: screenHeight * 0.03),
+                          TextButton(
+                            onPressed: () => _navigateToCreateAccount(context),
+                            child: const Text(
+                              'Première fois ? Créez un compte !',
+                              style: TextStyle(
+                                color: Color.fromARGB(255, 30, 144, 255),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: screenHeight * 0.02),
+                          Divider(
+                            indent: screenWidth * 0.15,
+                            endIndent: screenWidth * 0.15,
+                          ),
+                          SizedBox(height: screenHeight * 0.02),
+                          Platform.isAndroid
+                              ? Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10.0),
+                                  child: GestureDetector(
+                                    onTap: _isGoogleSignInLoading
+                                        ? null
+                                        : () async {
+                                            await _handleGoogleSignIn();
+                                          },
+                                    child: _isGoogleSignInLoading
+                                        ? const CircularProgressIndicator()
+                                        : Image.asset(
+                                            'assets/images/google.png',
+                                            height: 50,
+                                          ),
+                                  ),
+                                )
+                              : Container(),
+                        ],
                       ),
                     )
-                  : Container(),
-            ],
-          ),
-        ),
+                  ],
+                ),
+              ),
+            ),
+          )
+        ],
       ),
     );
   }

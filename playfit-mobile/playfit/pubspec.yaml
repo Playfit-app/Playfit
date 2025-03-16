@@ -47,6 +47,7 @@ dependencies:
   google_sign_in: ^6.2.2
   flame: ^1.23.0
   fl_chart: ^0.70.2
+  carousel_slider: ^5.0.0
 
 dev_dependencies:
   flutter_test:

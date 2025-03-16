@@ -8,13 +8,13 @@ class RegistrationStep2 extends StatefulWidget {
   final TextEditingController birthDateController;
   final TextEditingController heightController;
   final TextEditingController weightController;
-  bool isConsentGiven;
-  bool isMarketingConsentGiven;
+  final bool isConsentGiven;
+  final bool isMarketingConsentGiven;
   final Function(bool?) onConsentChanged;
   final Function(bool?) onMarketingConsentChanged;
   // final TextEditingController _objectiveController;
 
-  RegistrationStep2({
+  const RegistrationStep2({
     super.key,
     required this.birthDateController,
     required this.heightController,
@@ -33,17 +33,20 @@ class RegistrationStep2 extends StatefulWidget {
 class _RegistrationStep2State extends State<RegistrationStep2> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40.0),
-      child: Column(
-        children: [
-          TextFormField(
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
+          child: TextFormField(
             controller: widget.birthDateController,
             readOnly: true,
             decoration: InputDecoration(
-              hintText: 'Date de naissance',
+              labelText: 'Date de naissance',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.calendar_today),
               suffixIcon: widget.birthDateController.text.isNotEmpty
                   ? IconButton(
@@ -52,7 +55,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(10.0),
                 borderSide: BorderSide.none,
               ),
             ),
@@ -90,14 +93,17 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
               return null;
             },
           ),
-          const SizedBox(height: 10),
-          TextFormField(
+        ),
+        SizedBox(height: screenHeight * 0.02),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
+          child: TextFormField(
             controller: widget.heightController,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              hintText: 'Taille (cm)',
+              labelText: 'Taille (cm)',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.height),
               suffixIcon: widget.heightController.text.isNotEmpty
                   ? IconButton(
@@ -106,7 +112,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(10.0),
                 borderSide: BorderSide.none,
               ),
             ),
@@ -123,14 +129,17 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
               return null;
             },
           ),
-          const SizedBox(height: 10),
-          TextFormField(
+        ),
+        SizedBox(height: screenHeight * 0.02),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
+          child: TextFormField(
             controller: widget.weightController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
-              hintText: 'Poids (kg)',
+              labelText: 'Poids (kg)',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.monitor_weight),
               suffixIcon: widget.weightController.text.isNotEmpty
                   ? IconButton(
@@ -139,7 +148,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(10.0),
                 borderSide: BorderSide.none,
               ),
             ),
@@ -156,24 +165,26 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
               return null;
             },
           ),
-          const SizedBox(height: 10),
-          // Consent form as dialog
-          ElevatedButton(
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return GdprConsentForm(
-                    isConsentGiven: widget.isConsentGiven,
-                    isMarketingConsentGiven: widget.isMarketingConsentGiven,
-                  );
-                },
-              );
-            },
-            child: const Text('Consentement RGPD'),
-          ),
-          const SizedBox(height: 10),
-          CheckboxFormField(
+        ),
+        SizedBox(height: screenHeight * 0.01),
+        // Consent form as dialog
+        ElevatedButton(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return GdprConsentForm(
+                  isConsentGiven: widget.isConsentGiven,
+                  isMarketingConsentGiven: widget.isMarketingConsentGiven,
+                );
+              },
+            );
+          },
+          child: const Text('Consentement RGPD'),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
+          child: CheckboxFormField(
             title: const Text(
               'J’accepte le formulaire de consentement RGPD et la Politique de Confidentialité (Obligatoire).',
               style: TextStyle(fontSize: 8),
@@ -187,7 +198,10 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
               return null;
             },
           ),
-          CheckboxFormField(
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
+          child: CheckboxFormField(
             title: const Text(
               'J’accepte de recevoir des e-mails marketing concernant des promotions, événements ou rappels liés à l’application (Facultatif).',
               style: TextStyle(fontSize: 8),
@@ -195,8 +209,8 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             onChanged: widget.onMarketingConsentChanged,
             initialValue: widget.isMarketingConsentGiven,
           ),
-        ],
-      ),
+        )
+      ],
     );
   }
 }

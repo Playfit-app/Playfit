@@ -21,16 +21,19 @@ class RegistrationStep1 extends StatefulWidget {
 class _RegistrationStep1State extends State<RegistrationStep1> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40.0),
-      child: Column(
-        children: [
-          TextFormField(
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
+          child: TextFormField(
             controller: widget.usernameController,
             decoration: InputDecoration(
-              hintText: 'Nom d\'utilisateur',
+              labelText: 'Nom d\'utilisateur',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.person),
               suffixIcon: widget.usernameController.text.isNotEmpty
                   ? IconButton(
@@ -39,7 +42,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(10.0),
                 borderSide: BorderSide.none,
               ),
             ),
@@ -53,13 +56,16 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               return null;
             },
           ),
-          const SizedBox(height: 10),
-          TextFormField(
+        ),
+        SizedBox(height: screenHeight * 0.02),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
+          child: TextFormField(
             controller: widget.emailController,
             decoration: InputDecoration(
-              hintText: 'Adresse e-mail',
+              labelText: 'Adresse e-mail',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.email),
               suffixIcon: widget.emailController.text.isNotEmpty
                   ? IconButton(
@@ -68,7 +74,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(10.0),
                 borderSide: BorderSide.none,
               ),
             ),
@@ -84,14 +90,17 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               return null;
             },
           ),
-          const SizedBox(height: 10),
-          TextFormField(
+        ),
+        SizedBox(height: screenHeight * 0.02),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
+          child: TextFormField(
             controller: widget.passwordController,
             obscureText: true,
             decoration: InputDecoration(
-              hintText: 'Mot de passe',
+              labelText: 'Mot de passe',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: widget.passwordController.text.isNotEmpty
                   ? IconButton(
@@ -100,7 +109,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(10.0),
                 borderSide: BorderSide.none,
               ),
             ),
@@ -118,14 +127,17 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               return null;
             },
           ),
-          const SizedBox(height: 10),
-          TextFormField(
+        ),
+        SizedBox(height: screenHeight * 0.02),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
+          child: TextFormField(
             controller: widget.confirmPasswordController,
             obscureText: true,
             decoration: InputDecoration(
-              hintText: 'Confirmez le mot de passe',
+              labelText: 'Confirmez le mot de passe',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: widget.confirmPasswordController.text.isNotEmpty
                   ? IconButton(
@@ -134,7 +146,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
                     )
                   : null,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(10.0),
                 borderSide: BorderSide.none,
               ),
             ),
@@ -148,8 +160,8 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               return null;
             },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

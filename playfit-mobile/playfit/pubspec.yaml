@@ -46,6 +46,7 @@ dependencies:
   google_mlkit_pose_detection: ^0.13.0
   google_sign_in: ^6.2.2
   flame: ^1.23.0
+  fl_chart: ^0.70.2
   carousel_slider: ^5.0.0
 
 dev_dependencies:
@@ -74,6 +75,7 @@ flutter:
   assets:
     - .env
     - assets/images/
+    - assets/images/mountains/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

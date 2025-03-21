@@ -22,7 +22,7 @@ class CustomizationSerializer(serializers.ModelSerializer):
     shirt = CustomizationItemSerializer()
     pants = CustomizationItemSerializer()
     shoes = CustomizationItemSerializer()
-    gloves = CustomizationItemSerializer
+    gloves = CustomizationItemSerializer()
 
     class Meta:
         model = Customization

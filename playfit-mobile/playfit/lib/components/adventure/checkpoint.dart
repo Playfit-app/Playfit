@@ -1,48 +1,37 @@
-import 'package:flame/events.dart';
-import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-class Checkpoint extends PositionComponent with TapCallbacks {
-  final Vector2 checkpointPosition;
-  final Function onTap;
+class Checkpoint {
+  final Offset position;
+  final int id;
 
-  Checkpoint({required this.checkpointPosition, required this.onTap}) {
-    size = Vector2(47, 29);
-    position = checkpointPosition;
-    anchor = Anchor.center;
-  }
+  Checkpoint({
+    required this.position,
+    required this.id,
+  });
 
-  @override
-  void render(Canvas canvas) {
-    // Drop shadow
-    final dropShadowPaint = Paint()
-      ..color = const Color.fromARGB(64, 0, 0, 0)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1);
-
-    // Main checkpoint
-    final checkpointPaint = Paint()
-      ..color = const Color.fromARGB(255, 160, 190, 223)
-      ..style = PaintingStyle.fill;
-
-    // Inner shadow
-    final innerShadowPaint = Paint()..color = const Color.fromARGB(64, 0, 0, 0);
-
+  void render(
+    Canvas canvas,
+    Offset scale,
+    Paint dropShadowPaint,
+    Paint checkpointPaint,
+    Paint innerShadowPaint,
+  ) {
     // Draw drop shadow
     canvas.drawOval(
       Rect.fromCenter(
-        center: const Offset(0, 8),
-        width: 47,
-        height: 29,
+        center: position.translate(0, 8 * scale.dy),
+        width: 47 * scale.dx,
+        height: 29 * scale.dy,
       ),
       dropShadowPaint,
     );
 
-    // // Draw inner shadow effect
+    // Draw inner shadow effect
     canvas.drawOval(
       Rect.fromCenter(
-        center: const Offset(0, 4),
-        width: 47,
-        height: 29,
+        center: position.translate(0, 4 * scale.dy),
+        width: 47 * scale.dx,
+        height: 29 * scale.dy,
       ),
       innerShadowPaint,
     );
@@ -50,28 +39,11 @@ class Checkpoint extends PositionComponent with TapCallbacks {
     // Draw main elipse
     canvas.drawOval(
       Rect.fromCenter(
-        center: const Offset(0, 0),
-        width: 47,
-        height: 29,
+        center: position,
+        width: 47 * scale.dx,
+        height: 29 * scale.dy,
       ),
       checkpointPaint,
     );
-  }
-
-  @override
-  bool containsPoint(Vector2 point) {
-    // Convert point to local coordinates relative to the center of the checkpoint
-    Vector2 localPoint = point - position;
-
-    // Check if the point is inside the ellipse
-    double dx = localPoint.x / (size.x / 2);
-    double dy = localPoint.y / (size.y / 2);
-
-    return (dx * dx + dy * dy) <= 1;
-  }
-
-  @override
-  void onTapDown(TapDownEvent event) {
-    onTap();
   }
 }

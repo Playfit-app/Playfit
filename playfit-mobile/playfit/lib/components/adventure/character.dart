@@ -1,57 +1,68 @@
-import 'package:flame/events.dart';
-import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:playfit/components/adventure/workout_session_dialog.dart';
 
-class Character extends SpriteComponent with TapCallbacks {
-  final Vector2 characterPosition;
-  final Function onTap;
-  final BuildContext context;
-  late SpriteComponent _comment;
+class Character extends StatefulWidget {
+  final Offset position;
+  final Offset scale;
+  final Size size;
+  final bool isFlipped;
 
   Character({
-    required this.characterPosition,
-    required this.onTap,
-    required this.context,
-  }) {
-    size = Vector2(410, 700);
-    scale = Vector2(0.15, 0.15);
-    position = characterPosition;
-  }
+    super.key,
+    required Offset position,
+    required this.scale,
+    required this.size,
+    required this.isFlipped,
+  }) : position = Offset(
+          position.dx - size.width * scale.dx / 2,
+          position.dy - size.height * scale.dy,
+        );
 
   @override
-  Future<void> onLoad() async {
-    sprite = await Sprite.load('character.png');
+  State<Character> createState() => _CharacterState();
+}
 
-    _comment = SpriteComponent(
-      sprite: await Sprite.load('comments.png'),
-      size: Vector2(90, 90),
-      position: Vector2(position.x - size.x / 1.5, position.y - size.y - 200),
-      scale: Vector2(4, 4),
+class _CharacterState extends State<Character> {
+  late Image image;
+  late bool isFlipped;
+
+  @override
+  void initState() {
+    super.initState();
+    isFlipped = widget.isFlipped;
+    image = Image.asset(
+      'assets/images/character.png',
+      height: widget.size.height * widget.scale.dy,
+      width: widget.size.width * widget.scale.dx,
     );
-    add(_comment);
+  }
 
-    updateDirection(0);
+  void flip() {
+    setState(() {
+      isFlipped = !isFlipped;
+    });
   }
 
   @override
-  void onTapDown(TapDownEvent event) {
-    onTap(context);
-  }
-
-  void updateDirection(int checkpoint) {
-    if ((checkpoint == 0 ||
-            checkpoint == 3 ||
-            checkpoint == 4 ||
-            checkpoint == 6) &&
-        transform.scale.x > 0) {
-      transform.flipHorizontally();
-      position.x -= 57;
-    } else if ((checkpoint == 1 ||
-            checkpoint == 2 ||
-            checkpoint == 4 ||
-            checkpoint == 5) &&
-        transform.scale.x < 0) {
-      transform.flipHorizontally();
-    }
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: widget.position.dx,
+      top: widget.position.dy,
+      child: GestureDetector(
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return const WorkoutSessionDialog();
+            },
+          );
+        },
+        child: Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.rotationY(isFlipped ? 3.14 : 0),
+          child: image,
+        ),
+      ),
+    );
   }
 }

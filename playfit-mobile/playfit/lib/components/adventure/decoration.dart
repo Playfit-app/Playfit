@@ -1,21 +1,23 @@
-import 'package:flame/components.dart';
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
 
-class DecorationSpriteComponent extends SpriteComponent {
-  final String imagePath;
+class Decoration {
+  final ui.Image image;
+  final Offset position;
+  final Size size;
 
-  DecorationSpriteComponent({
-    required this.imagePath, // Path to the sprite image
-    required Vector2 position,
-    required Vector2 size,
-    double angle = 0.0,
-  }) : super(
-          position: position,
-          size: size,
-          angle: angle,
-        );
+  Decoration({
+    required this.image,
+    required this.position,
+    required this.size,
+  });
 
-  @override
-  Future<void> onLoad() async {
-    sprite = await Sprite.load(imagePath);
+  void render(Canvas canvas) {
+    canvas.drawImageRect(
+      image,
+      Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+      Rect.fromLTWH(position.dx, position.dy, size.width, size.height),
+      Paint(),
+    );
   }
 }

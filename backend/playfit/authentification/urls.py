@@ -15,4 +15,5 @@ urlpatterns = [
     path('account_recovery/', AccountRecoveryView.as_view(), name='account_recovery'),
     path('', include("social_django.urls", namespace="social")),
     path('google-login/', GoogleOAuthLoginView.as_view(), name='google-login'),
+    #path('user-achievements/', UserAchievementView.as_view(), name='user-achievements'),
 ]

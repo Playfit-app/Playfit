@@ -415,3 +415,26 @@ class AccountRecoveryView(View):
             return render(request, "authentification/account_recovery.html", {'error': e.messages[0], 'email': email}, status=status.HTTP_400_BAD_REQUEST)
 
         return render(request, "authentification/account_recovery.html", {'message': 'Account recovered'}, status=status.HTTP_200_OK)
+
+class UserAchievementView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Get user achievements.",
+        responses={
+            200: openapi.Response("User achievements"),
+            400: "Invalid data",
+        }
+    )
+    def get(self, request):
+        user = request.user
+        return Response({'achievements': user.achievements}, status=status.HTTP_200_OK)
+    
+    def post(self, request):
+        user = request.user
+        achievement = request.POST.get('achievement')
+        if not achievement:
+            return Response({'error': 'Achievement is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Have to get the user to apply an evaluation to the achievements list
+        #return Response({'message': 'Achievement added'}, status=status.HTTP_200_OK)

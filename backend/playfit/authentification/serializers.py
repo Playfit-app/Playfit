@@ -1,7 +1,7 @@
 import django.contrib.auth.password_validation as validators
 from rest_framework import serializers
 from utilities.encrypted_fields import hash
-from .models import CustomUser, UserConsent
+from .models import CustomUser, UserConsent, UserAchievement
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -106,3 +106,8 @@ class AccountRecoveryRequestSerializer(serializers.Serializer):
         if not CustomUser.objects.filter(email_hash=hash(data['email'])).exists():
             raise serializers.ValidationError({'email': 'Email not found'})
         return data
+
+class AchievementSerializer(serializers.Serializer):
+    class Meta:
+        model = UserAchievement
+        fields = ['achievement', 'date']

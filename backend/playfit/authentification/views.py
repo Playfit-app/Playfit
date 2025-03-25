@@ -19,9 +19,25 @@ from social_core.backends.google import GoogleOAuth2
 from social_core.exceptions import AuthForbidden
 from utilities.encrypted_fields import hash
 from utilities.expiring_password_reset_token import ExpiringPasswordResetTokenGenerator, get_email_from_signed_token
+from social.models import (
+    City,
+    WorldPosition,
+)
 from .models import CustomUser
-from .serializers import CustomUserSerializer, CustomUserRetrieveSerializer, CustomUserUpdateSerializer, CustomUserDeleteSerializer, AccountRecoveryRequestSerializer
-from .utils import generate_username_with_number, get_user_birthdate, generate_uid_from_id, get_id_from_uid
+from .serializers import (
+    CustomUserSerializer,
+    CustomUserRetrieveSerializer,
+    CustomUserUpdateSerializer,
+    CustomUserDeleteSerializer,
+    AccountRecoveryRequestSerializer,
+)
+from .utils import (
+    generate_username_with_number,
+    get_user_birthdate,
+    generate_uid_from_id,
+    get_id_from_uid,
+    get_position_data,
+)
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -40,7 +56,20 @@ class RegisterView(APIView):
             try:
                 user = serializer.create(serializer.validated_data)
                 token, _ = Token.objects.get_or_create(user=user)
-                return Response({'token': token.key}, status=status.HTTP_201_CREATED)
+                WorldPosition.objects.create(
+                    user=user,
+                    city=City.objects.get(name="Paris"),
+                    city_level=1,
+                )
+                return Response({
+                    'token': token.key,
+                    'position': {
+                        'continent': "Europe",
+                        'country': "France",
+                        'city': "Paris",
+                        'city_level': 1,
+                    }
+                }, status=status.HTTP_201_CREATED)
             except ValidationError as e:
                 return Response({'error': e.messages[0]}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -81,7 +110,19 @@ class LoginView(APIView):
                 return Response({'error': "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
         token, _ = Token.objects.get_or_create(user=user)
-        return Response({'token': token.key}, status=status.HTTP_200_OK)
+        position = user.position
+        following_positions = WorldPosition.objects.filter(user__in=user.get_following())
+        return Response({
+            'token': token.key,
+            'position': get_position_data(position),
+            'following_positions': [
+                {
+                    'user': following_position.user.username,
+                    'position': get_position_data(following_position),
+                }
+                for following_position in following_positions
+            ]
+        }, status=status.HTTP_200_OK)
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]

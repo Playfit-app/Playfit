@@ -12,6 +12,8 @@ from .views import (
     CommentCreateView,
     CommentDeleteView,
     NotificationReadAllView,
+    WorldPositionView,
+    FollowingWorldPositionView,
 )
 
 urlpatterns = [
@@ -27,4 +29,6 @@ urlpatterns = [
     path('posts/<int:id>/comment/', CommentCreateView.as_view(), name='comment'),
     path('comments/<int:id>/delete/', CommentDeleteView.as_view(), name='delete_comment'),
     path('notifications/read/all/', NotificationReadAllView.as_view(), name='read_all_notifications'),
+    path('get-my-position/', WorldPositionView.as_view(), name='get_my_position'),
+    path('get-following-positions/', FollowingWorldPositionView.as_view(), name='get_following_positions'),
 ]

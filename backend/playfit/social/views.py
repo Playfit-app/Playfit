@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import (
+    RetrieveAPIView,
     ListAPIView,
     CreateAPIView,
     UpdateAPIView,
@@ -13,7 +14,7 @@ from asgiref.sync import async_to_sync
 from push_notifications.models import GCMDevice
 from authentification.models import CustomUser
 from utilities.redis import redis_client
-from .models import Follow, Post, Like, Comment, Notification
+from .models import Follow, Post, Like, Comment, Notification, WorldPosition
 from .serializers import (
     UserSerializer,
     PostSerializer,
@@ -21,6 +22,7 @@ from .serializers import (
     CommentSerializer,
     NotificationSerializer,
     GCMDeviceSerializer,
+    WorldPositionSerializer,
 )
 
 def send_push_notification(user, title, message):
@@ -273,3 +275,20 @@ class NotificationReadAllView(UpdateAPIView):
         return Response(
             {"detail": "All notifications read"}, status=status.HTTP_200_OK
         )
+
+class WorldPositionView(RetrieveAPIView):
+    serializer_class = WorldPositionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        user = self.request.user
+        position = WorldPosition.objects.get(user=user)
+        return position
+
+class FollowingWorldPositionView(ListAPIView):
+    serializer_class = WorldPositionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user: CustomUser = self.request.user
+        return WorldPosition.objects.filter(user__in=user.get_following())

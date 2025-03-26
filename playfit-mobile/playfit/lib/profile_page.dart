@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:playfit/components/experience_circle.dart';
@@ -11,6 +13,70 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
+
+    void _showSuccessPopup(BuildContext context, String title, String imagePath,
+        int meters, bool completed) {
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (_) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(20),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                  child: Container(
+                    color: Colors.black.withAlpha((0.2 * 255).toInt()),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.orange, width: 1.5),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: const Icon(Icons.close),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      CircleAvatar(
+                        radius: 60,
+                        backgroundImage: AssetImage(imagePath),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Divider(color: Colors.orange),
+                      const SizedBox(height: 8),
+                      Text(
+                        "Parcourir $meters mètres",
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -266,23 +332,50 @@ class ProfilePage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        const Row(
+                        Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             Success(
                               image: "assets/images/mountains/mont_blanc.png",
                               completed: true,
+                              onTap: () {
+                                _showSuccessPopup(
+                                  context,
+                                  "Mont Blanc",
+                                  "assets/images/mountains/mont_blanc.png",
+                                  4806,
+                                  true,
+                                );
+                              },
                             ),
                             Success(
                               image: "assets/images/mountains/kilimanjaro.png",
                               completed: false,
+                              onTap: () {
+                                _showSuccessPopup(
+                                  context,
+                                  "Kilimanjaro",
+                                  "assets/images/mountains/kilimanjaro.png",
+                                  5895,
+                                  false,
+                                );
+                              },
                             ),
                             Success(
                               image: "assets/images/mountains/everest.png",
                               completed: false,
+                              onTap: () {
+                                _showSuccessPopup(
+                                  context,
+                                  "Everest",
+                                  "assets/images/mountains/everest.png",
+                                  8849,
+                                  false,
+                                );
+                              },
                             ),
                           ],
-                        )
+                        ),
                       ],
                     ),
                   ),

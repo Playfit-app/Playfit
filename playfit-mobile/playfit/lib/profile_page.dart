@@ -1,10 +1,10 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:playfit/components/experience_circle.dart';
 import 'package:playfit/components/success.dart';
 import 'package:playfit/components/historic_chart.dart';
+import 'package:playfit/components/level_progression_dialog.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -13,6 +13,14 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
+
+    void _showLevelProgressionPopup(BuildContext context) {
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (_) => const LevelProgressionDialog(),
+      );
+    }
 
     void _showSuccessPopup(BuildContext context, String title, String imagePath,
         int meters, bool completed) {
@@ -197,27 +205,28 @@ class ProfilePage extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Stack(
-                              children: [
-                                ExperienceCircle(
-                                  currentXP: 70,
-                                  requiredXP: 100,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Container(
-                                      height: screenWidth * 0.1,
-                                      width: screenWidth * 0.1,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        image: DecorationImage(
-                                          image: AssetImage(
-                                              'assets/images/mountains/mont_blanc.png'),
-                                        ),
+                            GestureDetector(
+                              onTap: () {
+                                _showLevelProgressionPopup(context);
+                              },
+                              child: ExperienceCircle(
+                                currentXP: 70,
+                                requiredXP: 100,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                    height: screenWidth * 0.1,
+                                    width: screenWidth * 0.1,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      image: DecorationImage(
+                                        image: AssetImage(
+                                            'assets/images/mountains/mont_blanc.png'),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
                             _buildDivider(),
                             _buildInfoSection(

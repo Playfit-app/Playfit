@@ -141,24 +141,6 @@ class _AdventurePageState extends State<AdventurePage>
           reverse: true,
           child: Stack(
             children: [
-              Positioned(
-                top: -14,
-                left: 0,
-                right: 0,
-                child: Container(
-                  height: 292,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomLeft,
-                      colors: [
-                        Colors.white,
-                        Colors.white.withValues(alpha: 0),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
               RepaintBoundary(
                 child: CustomPaint(
                   size: Size(screenSize.width, height),
@@ -184,6 +166,20 @@ class _RoadPainter extends CustomPainter {
 
   _RoadPainter(this.roads);
 
+  void drawWhiteTopGradient(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomLeft,
+        colors: [
+          Colors.white,
+          Colors.white.withAlpha(0),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, 292));
+
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, 292), paint);
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     for (Road road in roads) {
@@ -193,6 +189,8 @@ class _RoadPainter extends CustomPainter {
     for (Road road in roads) {
       road.paint(canvas, size);
     }
+
+    drawWhiteTopGradient(canvas, size);
   }
 
   @override

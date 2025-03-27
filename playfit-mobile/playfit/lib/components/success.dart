@@ -18,27 +18,22 @@ class Success extends StatelessWidget {
   void _showSuccessPopup(BuildContext context) {
     if (!completed) return;
 
-    showDialog(
+    showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      builder: (_) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(20),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: Container(
-                color: Colors.black.withAlpha((0.2 * 255).toInt()),
-              ),
-            ),
-            Container(
+      barrierLabel: "Success Dialog",
+      barrierColor: Colors.black.withAlpha((0.2 * 255).toInt()),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                border: Border.all(color: Colors.orange, width: 1.5),
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.orange, width: 1.5),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -74,9 +69,9 @@ class Success extends StatelessWidget {
                 ],
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

@@ -31,40 +31,26 @@ class LevelProgressionDialog extends StatelessWidget {
       },
     ];
 
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.all(16),
-      child: Stack(
-        alignment: Alignment.center,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.orange, width: 1.5),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-            child: Container(
-              color: Colors.black.withAlpha((0.2 * 255).toInt()),
+          Align(
+            alignment: Alignment.topLeft,
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: const Icon(Icons.close),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.orange, width: 1.5),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: const Icon(Icons.close),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _buildLevelProgressionColumn(context, levels),
-              ],
-            ),
-          ),
+          const SizedBox(height: 10),
+          _buildLevelProgressionColumn(context, levels),
         ],
       ),
     );
@@ -165,4 +151,21 @@ class LevelProgressionDialog extends StatelessWidget {
       }),
     );
   }
+}
+
+void showLevelProgressionPopup(BuildContext context) {
+  showGeneralDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: "Level Progression",
+    barrierColor: Colors.black.withAlpha((0.2 * 255).toInt()),
+    pageBuilder: (_, __, ___) {
+      return const Center(
+        child: Material(
+          color: Colors.transparent,
+          child: LevelProgressionDialog(),
+        ),
+      );
+    },
+  );
 }

@@ -14,14 +14,6 @@ class ProfilePage extends StatelessWidget {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
 
-    void _showLevelProgressionPopup(BuildContext context) {
-      showDialog(
-        context: context,
-        barrierDismissible: true,
-        builder: (_) => const LevelProgressionDialog(),
-      );
-    }
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -143,7 +135,7 @@ class ProfilePage extends StatelessWidget {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                _showLevelProgressionPopup(context);
+                                showLevelProgressionPopup(context);
                               },
                               child: ExperienceCircle(
                                 currentXP: 70,

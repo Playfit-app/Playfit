@@ -117,7 +117,10 @@ class LoginView(APIView):
             'position': get_position_data(position),
             'following_positions': [
                 {
-                    'user': following_position.user.username,
+                    'user': {
+                        'id': following_position.user.id,
+                        'username': following_position.user.username,
+                    },
                     'position': get_position_data(following_position),
                 }
                 for following_position in following_positions

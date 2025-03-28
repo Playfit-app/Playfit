@@ -19,8 +19,8 @@ from social_core.backends.google import GoogleOAuth2
 from social_core.exceptions import AuthForbidden
 from utilities.encrypted_fields import hash
 from utilities.expiring_password_reset_token import ExpiringPasswordResetTokenGenerator, get_email_from_signed_token
-from .models import CustomUser
-from .serializers import CustomUserSerializer, CustomUserRetrieveSerializer, CustomUserUpdateSerializer, CustomUserDeleteSerializer, AccountRecoveryRequestSerializer
+from .models import CustomUser, UserAchievement
+from .serializers import CustomUserSerializer, CustomUserRetrieveSerializer, CustomUserUpdateSerializer, CustomUserDeleteSerializer, AccountRecoveryRequestSerializer, UserAchievementSerializer
 from .utils import generate_username_with_number, get_user_birthdate, generate_uid_from_id, get_id_from_uid
 
 class RegisterView(APIView):
@@ -426,15 +426,24 @@ class UserAchievementView(APIView):
             400: "Invalid data",
         }
     )
-    def get(self, request):
-        user = request.user
-        return Response({'achievements': user.achievements}, status=status.HTTP_200_OK)
+    #def get(self, request):
     
     def post(self, request):
-        user = request.user
+        #serializer = UserAchievementSerializer(data=request.data)
+        email = request.POST.get('email')
+        uid = request.POST.get('uid')
         achievement = request.POST.get('achievement')
-        if not achievement:
-            return Response({'error': 'Achievement is required'}, status=status.HTTP_400_BAD_REQUEST)
+        progress = request.POST.get('progress')
 
-        # Have to get the user to apply an evaluation to the achievements list
-        #return Response({'message': 'Achievement added'}, status=status.HTTP_200_OK)
+        if not all([uid, achievement, progress]):
+            return render(request, "authentification/account_recovery.html", {'error': 'Donnée(s) manquante(s)', 'email': email}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user_id = get_id_from_uid(uid)
+        except (UnicodeDecodeError, CustomUser.DoesNotExist):
+            return render(request, "authentification/account_recovery.html", {'message': 'Lien non valide'}, status=status.HTTP_400_BAD_REQUEST)
+        # Need to check if the user has the achievement
+        user_achievement = UserAchievement.objects.get(user=user_id, achievement=achievement)
+        if not user_achievement:
+            return render(request, "authentification/account_recovery.html", {'message': 'User does not have this achievement'}, status=status.HTTP_400_BAD_REQUEST)
+        # If the user has the achievement, update the progress
+

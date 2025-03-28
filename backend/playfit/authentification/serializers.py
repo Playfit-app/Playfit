@@ -107,7 +107,20 @@ class AccountRecoveryRequestSerializer(serializers.Serializer):
             raise serializers.ValidationError({'email': 'Email not found'})
         return data
 
-class AchievementSerializer(serializers.Serializer):
+class UserAchievementSerializer(serializers.Serializer):
     class Meta:
         model = UserAchievement
-        fields = ['achievement', 'date']
+        fields = ['achievement', 'progress', 'user', 'is_completed', 'awarded_at']
+    
+    def validate(self, data):
+        if not data['achievement']:
+            raise serializers.ValidationError({'achievement': 'Achievement not found'})
+        if not data['progress']:
+            raise serializers.ValidationError({'progress': 'Progress not found'})
+        if not data['user']:
+            raise serializers.ValidationError({'user': 'User not found'})
+        if data['achievement'] == '' or data['achievement'] == "":
+            raise serializers.ValidationError({'achievement': 'Achievement cannot be empty'})
+        if data['progress'] == '' or data['progress'] == "":
+            raise serializers.ValidationError({'progress': 'Progress cannot be empty'})
+        return data

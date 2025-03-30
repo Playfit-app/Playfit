@@ -182,7 +182,8 @@ class ProfilePage extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Expanded(
+                            Flexible(
+                              fit: FlexFit.loose,
                               child: Column(
                                 children: [
                                   Row(
@@ -195,14 +196,19 @@ class ProfilePage extends StatelessWidget {
                                           color: Color(0XFF7391FD),
                                         ),
                                       ),
-                                      const Padding(
-                                        padding: EdgeInsets.only(left: 8.0),
+                                      const SizedBox(
+                                          width:
+                                              8), //value hardcoded because of little padding
+                                      const Flexible(
                                         child: Text(
                                           "Nombre d'exercices faits",
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Color(0XFF1D1B20),
                                           ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          softWrap: false,
                                         ),
                                       ),
                                     ],
@@ -218,14 +224,19 @@ class ProfilePage extends StatelessWidget {
                                           color: Color(0XFFFF0000),
                                         ),
                                       ),
-                                      const Padding(
-                                        padding: EdgeInsets.only(left: 8.0),
+                                      const SizedBox(
+                                          width:
+                                              8), //value hardcoded because of little padding
+                                      const Flexible(
                                         child: Text(
                                           "BPM (Battements par minute)",
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Color(0XFF1D1B20),
                                           ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          softWrap: false,
                                         ),
                                       ),
                                     ],

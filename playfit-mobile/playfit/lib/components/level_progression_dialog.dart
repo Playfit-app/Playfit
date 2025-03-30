@@ -34,24 +34,29 @@ class LevelProgressionDialog extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.8,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: Colors.orange, width: 1.5),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Align(
-            alignment: Alignment.topLeft,
-            child: GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
-              child: const Icon(Icons.close),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Align(
+              alignment: Alignment.topLeft,
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: const Icon(Icons.close),
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          _buildLevelProgressionColumn(context, levels),
-        ],
+            const SizedBox(height: 10),
+            _buildLevelProgressionColumn(context, levels),
+          ],
+        ),
       ),
     );
   }
@@ -61,92 +66,83 @@ class LevelProgressionDialog extends StatelessWidget {
     final double imageSize = MediaQuery.of(context).size.width * 0.22;
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(levels.length, (i) {
         final level = levels[i];
         final isLast = i == levels.length - 1;
-        final isCurrent = isLast;
+        final isCurrent = i == levels.length - 1;
 
-        return SizedBox(
-          height: imageSize + 100, // make room for the dotted line
-          child: Stack(
-            children: [
-              if (!isLast)
-                Positioned(
-                  top: imageSize,
-                  left: imageSize / 2 - 1,
-                  child: const DottedLine(
-                    height: 100,
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Avatar and line column
+            Column(
+              children: [
+                // Avatar
+                isCurrent
+                    ? ExperienceCircle(
+                        currentXP: (level['xp'] as int).toDouble(),
+                        requiredXP: (level['xpRequired'] as int).toDouble(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Opacity(
+                            opacity: level['completed'] ? 1.0 : 0.4,
+                            child: CircleAvatar(
+                              radius: (imageSize - 12) / 2,
+                              backgroundImage: AssetImage(level['image']),
+                            ),
+                          ),
+                        ),
+                      )
+                    : Opacity(
+                        opacity: level['completed'] ? 1.0 : 0.4,
+                        child: CircleAvatar(
+                          radius: imageSize / 2,
+                          backgroundImage: AssetImage(level['image']),
+                        ),
+                      ),
+                // Dotted line (only if not last)
+                if (!isLast)
+                  DottedLine(
+                    height: imageSize + 12, // match avatar spacing perfectly
                     color: Colors.blueAccent,
                     dotSize: 4,
                     spacing: 8,
                   ),
-                ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: isCurrent
-                        ? ExperienceCircle(
-                            currentXP: (level['xp'] as int).toDouble(),
-                            requiredXP: (level['xpRequired'] as int).toDouble(),
-                            child: Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: Opacity(
-                                opacity: level['completed'] ? 1.0 : 0.4,
-                                child: CircleAvatar(
-                                  radius: (imageSize - 12) / 2,
-                                  backgroundImage: AssetImage(level['image']),
-                                ),
-                              ),
-                            ),
-                          )
-                        : Opacity(
-                            opacity: level['completed'] ? 1.0 : 0.4,
-                            child: CircleAvatar(
-                              radius: imageSize / 2,
-                              backgroundImage: AssetImage(level['image']),
-                            ),
-                          ),
-                  ),
-                  if (isCurrent)
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${level['title']} - ${level['height']} mètres",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Container(
-                                  width: double.infinity,
-                                  height: 1.5,
-                                  color: Colors.orange,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              level['description'],
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ],
+              ],
+            ),
+            const SizedBox(width: 16),
+            // Text content for current level
+            if (isCurrent)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${level['title']} - ${level['height']} mètres",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       ),
-                    ),
-                ],
+                      const SizedBox(height: 4),
+                      Container(
+                        width: double.infinity,
+                        height: 1.5,
+                        color: Colors.orange,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        level['description'],
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ],
-          ),
+          ],
         );
       }),
     );

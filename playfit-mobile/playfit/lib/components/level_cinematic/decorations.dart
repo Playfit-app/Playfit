@@ -1,16 +1,20 @@
+import 'dart:ui' as ui;
 import "package:flutter/material.dart";
 
-class Decorations extends StatelessWidget {
-  final Map<String, String> decorationImages;
+class Decorations {
+  final Map<String, ui.Image> images;
   final double nbHills;
   final Offset scale;
+  final double screenHeight;
+  final double hillHeight;
   List<Map<String, dynamic>> decorations = [];
 
   Decorations({
-    super.key,
-    required this.decorationImages,
+    required this.images,
     required this.nbHills,
     required this.scale,
+    required this.screenHeight,
+    required this.hillHeight,
   }) {
     if (nbHills == 3) {
       _createEasyDecorations();
@@ -21,44 +25,37 @@ class Decorations extends StatelessWidget {
     }
   }
 
-  double getYPosition(double position) {
-    double y = 0.0;
-
-    y = position == 0 ? position - 0.2 : position - 0.8;
-    return y * 80 * scale.dy + 190 * scale.dy;
-  }
-
   void _createEasyDecorations() {
     decorations = [
       {
-        "image": decorationImages["building"]!,
+        "image": images["building"]!,
         "position": {
           "x": 100 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 180 * scale.dy,
+          "y": screenHeight - hillHeight / 3,
         },
-        "rotationZ": -0.45,
+        "rotationZ": -0.6,
       },
       {
-        "image": decorationImages["building"]!,
+        "image": images["building"]!,
         "position": {
           "x": 50 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 145 * scale.dy,
+          "y": screenHeight - hillHeight / 4,
         },
         "rotationZ": -0.7,
       },
       {
-        "image": decorationImages["tree"]!,
+        "image": images["tree"]!,
         "position": {
           "x": 320 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 220 * scale.dy,
+          "y": screenHeight - hillHeight / 1.9,
         },
         "rotationZ": 0.0,
       },
       {
-        "image": decorationImages["tree"]!,
+        "image": images["tree"]!,
         "position": {
           "x": 120 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 270 * scale.dy,
+          "y": screenHeight - hillHeight / 1.5,
         },
         "rotationZ": 0.0,
       },
@@ -68,50 +65,50 @@ class Decorations extends StatelessWidget {
   void _createMediumDecorations() {
     decorations = [
       {
-        "image": decorationImages["building"]!,
+        "image": images["building"]!,
         "position": {
           "x": 100 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 180 * scale.dy,
+          "y": screenHeight - hillHeight / 3,
         },
-        "rotationZ": -0.45,
+        "rotationZ": -0.6,
       },
       {
-        "image": decorationImages["building"]!,
+        "image": images["building"]!,
         "position": {
           "x": 50 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 145 * scale.dy,
+          "y": screenHeight - hillHeight / 4,
         },
         "rotationZ": -0.7,
       },
       {
-        "image": decorationImages["tree"]!,
+        "image": images["tree"]!,
         "position": {
-          "x": 40 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 260 * scale.dy,
+          "x": 120 * scale.dx,
+          "y": screenHeight - hillHeight / 1.5,
         },
         "rotationZ": 0.0,
       },
       {
-        "image": decorationImages["building"]!,
+        "image": images["building"]!,
         "position": {
           "x": 300 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 350 * scale.dy,
+          "y": screenHeight - hillHeight / 1.15,
         },
         "rotationZ": 0.1,
       },
       {
-        "image": decorationImages["tree"]!,
+        "image": images["tree"]!,
         "position": {
           "x": 140 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 410 * scale.dy,
+          "y": screenHeight - hillHeight / 1.02,
         },
         "rotationZ": 0.0,
       },
       {
-        "image": decorationImages["tree"]!,
+        "image": images["tree"]!,
         "position": {
           "x": 180 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 390 * scale.dy,
+          "y": screenHeight - hillHeight / 1.05,
         },
         "rotationZ": 0.0,
       },
@@ -121,92 +118,100 @@ class Decorations extends StatelessWidget {
   void _createHardDecorations() {
     decorations = [
       {
-        "image": decorationImages["building"]!,
+        "image": images["building"]!,
         "position": {
           "x": 100 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 180 * scale.dy,
+          "y": screenHeight - hillHeight / 3,
         },
         "rotationZ": -0.45,
       },
       {
-        "image": decorationImages["building"]!,
+        "image": images["building"]!,
         "position": {
           "x": 50 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 145 * scale.dy,
+          "y": screenHeight - hillHeight / 4,
         },
         "rotationZ": -0.7,
       },
       {
-        "image": decorationImages["tree"]!,
+        "image": images["tree"]!,
         "position": {
-          "x": 40 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 260 * scale.dy,
+          "x": 120 * scale.dx,
+          "y": screenHeight - hillHeight / 1.5,
         },
         "rotationZ": 0.0,
       },
       {
-        "image": decorationImages["building"]!,
+        "image": images["building"]!,
         "position": {
-          "x": 300 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 350 * scale.dy,
+          "x": 320 * scale.dx,
+          "y": screenHeight - hillHeight / 1.15,
         },
         "rotationZ": 0.1,
       },
       {
-        "image": decorationImages["building"]!,
+        "image": images["building"]!,
         "position": {
           "x": 130 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 470 * scale.dy,
+          "y": screenHeight - hillHeight / 0.95,
         },
-        "rotationZ": -0.4,
+        "rotationZ": -0.5,
       },
       {
-        "image": decorationImages["tree"]!,
+        "image": images["tree"]!,
         "position": {
           "x": 140 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 410 * scale.dy,
+          "y": screenHeight - hillHeight / 1.02,
         },
         "rotationZ": 0.0,
       },
       {
-        "image": decorationImages["tree"]!,
+        "image": images["tree"]!,
         "position": {
           "x": 180 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 390 * scale.dy,
+          "y": screenHeight - hillHeight / 1.05,
         },
         "rotationZ": 0.0,
       },
       {
-        "image": decorationImages["tree"]!,
+        "image": images["tree"]!,
         "position": {
           "x": 40 * scale.dx,
-          "y": -0.2 * 80 * scale.dy + 420 * scale.dy,
+          "y": screenHeight - hillHeight / 1.02,
         },
         "rotationZ": 0.0,
       },
     ];
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        for (final decoration in decorations)
-          Positioned(
-            left: decoration["position"]["x"],
-            bottom: decoration["position"]["y"],
-            child: Transform.rotate(
-              angle: decoration["rotationZ"],
-              child: SizedBox(
-                height: 100 * scale.dy,
-                child: Image.asset(
-                  decoration["image"],
-                  fit: BoxFit.fill,
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
+  void render(Canvas canvas, Size size) {
+    for (final decoration in decorations) {
+      ui.Image image = decoration["image"];
+      Map<String, double> position = decoration["position"];
+      double rotationZ = decoration["rotationZ"];
+      double maxHeight = 100 * scale.dy;
+      double aspectRatio = image.width / image.height.toDouble();
+      double maxWidth = maxHeight * aspectRatio;
+
+      canvas.save();
+
+      canvas.translate(position["x"]!, position["y"]!);
+
+      canvas.rotate(rotationZ);
+
+      canvas.drawImageRect(
+        image,
+        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+        Rect.fromLTWH(
+          -maxWidth / 2,
+          -maxHeight / 2,
+          maxWidth,
+          maxHeight,
+        ),
+        Paint(),
+      );
+
+      canvas.restore();
+    }
   }
 }

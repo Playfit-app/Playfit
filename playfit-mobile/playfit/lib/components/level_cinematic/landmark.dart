@@ -1,74 +1,75 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:playfit/components/level_cinematic/difficulty.dart';
 
-class Landmark extends StatelessWidget {
-  final String image;
+class Landmark {
+  final ui.Image image;
   final Offset scale;
-  final int difficulty;
+  final Difficulty difficulty;
+  final double screenHeight;
+  final double hillHeight;
+  late Offset position;
 
-  const Landmark({
-    super.key,
+  Landmark({
     required this.image,
     required this.scale,
     required this.difficulty,
-  });
+    required this.screenHeight,
+    required this.hillHeight,
+  }) {
+    position = const Offset(0, 0);
 
-  Widget _easyDifficultyPosition() {
-    return Positioned(
-      left: 220 * scale.dx,
-      bottom: -0.2 * 80 * scale.dy + 340 * scale.dy,
-      child: Transform.rotate(
-        angle: 0,
-        child: SizedBox(
-          height: 150 * scale.dy,
-          child: Image.asset(
-            image,
-            fit: BoxFit.fill,
-          ),
-        ),
-      ),
+    if (difficulty == Difficulty.easy) {
+      _easyDifficultyPosition();
+    } else if (difficulty == Difficulty.medium) {
+      _mediumDifficultyPosition();
+    } else {
+      _hardDifficultyPosition();
+    }
+  }
+
+  void _easyDifficultyPosition() {
+    position = Offset(
+      300 * scale.dx,
+      screenHeight - hillHeight / 1.15,
     );
   }
 
-  Widget _mediumDifficultyPosition() {
-    return Positioned(
-      left: 30 * scale.dx,
-      bottom: -0.2 * 80 * scale.dy + 400 * scale.dy,
-      child: Transform.rotate(
-        angle: 0,
-        child: SizedBox(
-          height: 150 * scale.dy,
-          child: Image.asset(
-            image,
-            fit: BoxFit.fill,
-          ),
-        ),
-      ),
+  void _mediumDifficultyPosition() {
+    position = Offset(
+      80 * scale.dx,
+      screenHeight - hillHeight,
     );
   }
 
-  Widget _hardDifficultyPosition() {
-    return Positioned(
-      left: 230 * scale.dx,
-      bottom: -0.2 * 80 * scale.dy + 490 * scale.dy,
-      child: Transform.rotate(
-        angle: 0,
-        child: SizedBox(
-          height: 150 * scale.dy,
-          child: Image.asset(
-            image,
-            fit: BoxFit.fill,
-          ),
-        ),
-      ),
+  void _hardDifficultyPosition() {
+    position = Offset(
+      300 * scale.dx,
+      screenHeight - hillHeight / 0.83,
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return difficulty == 1
-        ? _easyDifficultyPosition()
-        : difficulty == 2
-            ? _mediumDifficultyPosition()
-            : _hardDifficultyPosition();
+  void render(Canvas canvas, Size size) {
+    double maxHeight = 150 * scale.dy;
+    double aspectRatio = image.width / image.height.toDouble();
+    double maxWidth = maxHeight * aspectRatio;
+
+    canvas.save();
+    canvas.translate(
+      position.dx,
+      position.dy,
+    );
+    canvas.drawImageRect(
+      image,
+      Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+      Rect.fromLTWH(
+        -image.width / 2,
+        -image.height / 2,
+        maxWidth,
+        maxHeight,
+      ),
+      Paint(),
+    );
+    canvas.restore();
   }
 }

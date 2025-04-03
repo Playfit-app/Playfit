@@ -156,7 +156,7 @@ class UserAchievement(models.Model):
         return f"{self.user.username} - {self.achievement.name}"
 
 class UserStats(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     total_workouts = models.PositiveIntegerField(default=0)
     longest_streak = models.PositiveIntegerField(default=0)
     current_streak = models.PositiveIntegerField(default=0)

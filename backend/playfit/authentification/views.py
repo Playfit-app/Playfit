@@ -22,7 +22,7 @@ from utilities.encrypted_fields import hash
 from utilities.expiring_password_reset_token import ExpiringPasswordResetTokenGenerator, get_email_from_signed_token
 from .models import CustomUser, UserAchievement, UserStats, GameAchievement
 from .serializers import CustomUserSerializer, CustomUserRetrieveSerializer, CustomUserUpdateSerializer, CustomUserDeleteSerializer, AccountRecoveryRequestSerializer, UserAchievementSerializer
-from .utils import generate_username_with_number, get_user_birthdate, generate_uid_from_id, get_id_from_uid, evaluate_achievements
+from .utils import generate_username_with_number, get_user_birthdate, generate_uid_from_id, get_id_from_uid, evaluate_achievements, setup_game_achievements
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -41,6 +41,7 @@ class RegisterView(APIView):
             try:
                 user = serializer.create(serializer.validated_data)
                 token, _ = Token.objects.get_or_create(user=user)
+                setup_game_achievements()
                 return Response({'token': token.key}, status=status.HTTP_201_CREATED)
             except ValidationError as e:
                 return Response({'error': e.messages[0]}, status=status.HTTP_400_BAD_REQUEST)

@@ -2,6 +2,7 @@ import django.contrib.auth.password_validation as validators
 from rest_framework import serializers
 from utilities.encrypted_fields import hash
 from .models import CustomUser, UserConsent, UserAchievement
+import json
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -123,4 +124,9 @@ class UserAchievementSerializer(serializers.Serializer):
             raise serializers.ValidationError({'achievement': 'Achievement cannot be empty'})
         if data['progress'] == '' or data['progress'] == "":
             raise serializers.ValidationError({'progress': 'Progress cannot be empty'})
+        data['progress'] = json.loads(data['progress'])
+        if not isinstance(data['progress'], dict):
+            raise serializers.ValidationError({'progress': 'Progress must be a JSON object'})
+        if 'progress_value' not in data['progress']:
+            raise serializers.ValidationError({'progress': 'Progress must contain a progress_value'})
         return data

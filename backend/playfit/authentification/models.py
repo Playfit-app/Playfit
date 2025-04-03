@@ -154,3 +154,12 @@ class UserAchievement(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.achievement.name}"
+
+class UserStats(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    total_workouts = models.PositiveIntegerField(default=0)
+    longest_streak = models.PositiveIntegerField(default=0)
+    current_streak = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"Stats for {self.user.username}"

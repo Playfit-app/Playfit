@@ -7,6 +7,7 @@ class Decorations {
   final Offset scale;
   final double screenHeight;
   final double hillHeight;
+  final bool transition;
   List<Map<String, dynamic>> decorations = [];
 
   Decorations({
@@ -15,17 +16,28 @@ class Decorations {
     required this.scale,
     required this.screenHeight,
     required this.hillHeight,
+    required this.transition,
   }) {
-    if (nbHills == 3) {
-      _createEasyDecorations();
-    } else if (nbHills == 4) {
-      _createMediumDecorations();
+    if (this.transition) {
+      if (nbHills == 3) {
+        _createEasyCityDecorations();
+      } else if (nbHills == 4) {
+        _createMediumCityDecorations();
+      } else {
+        _createHardCityDecorations();
+      }
     } else {
-      _createHardDecorations();
+      if (nbHills == 3) {
+        _createEasyTransitionDecorations();
+      } else if (nbHills == 4) {
+        _createMediumTransitionDecorations();
+      } else {
+        _createMediumTransitionDecorations();
+      }
     }
   }
 
-  void _createEasyDecorations() {
+  void _createEasyCityDecorations() {
     decorations = [
       {
         "image": images["building"]!,
@@ -62,7 +74,7 @@ class Decorations {
     ];
   }
 
-  void _createMediumDecorations() {
+  void _createMediumCityDecorations() {
     decorations = [
       {
         "image": images["building"]!,
@@ -115,7 +127,7 @@ class Decorations {
     ];
   }
 
-  void _createHardDecorations() {
+  void _createHardCityDecorations() {
     decorations = [
       {
         "image": images["building"]!,
@@ -182,6 +194,93 @@ class Decorations {
         "rotationZ": 0.0,
       },
     ];
+  }
+
+  void _createEasyTransitionDecorations() {
+    decorations = [
+      {
+        "image": images["tree"]!,
+        "position": {
+          "x": 100 * scale.dx,
+          "y": screenHeight - hillHeight / 3.1,
+        },
+        "rotationZ": 0.0,
+      },
+      {
+        "image": images["tree"]!,
+        "position": {
+          "x": 130 * scale.dx,
+          "y": screenHeight - hillHeight / 2.7,
+        },
+        "rotationZ": 0.0,
+      },
+    ];
+
+    if (nbHills == 3) {
+      decorations.add({
+        "image": images["tree"]!,
+        "position": {
+          "x": 210 * scale.dx,
+          "y": screenHeight - hillHeight / 1.2,
+        },
+        "rotationZ": 0.0,
+      });
+      decorations.add({
+        "image": images["tree"]!,
+        "position": {
+          "x": 180 * scale.dx,
+          "y": screenHeight - hillHeight / 1.3,
+        },
+        "rotationZ": 0.0,
+      });
+    }
+  }
+
+  void _createMediumTransitionDecorations() {
+    _createEasyTransitionDecorations();
+
+    decorations.addAll([
+      {
+        "image": images["tree"]!,
+        "position": {
+          "x": 280 * scale.dx,
+          "y": screenHeight - hillHeight / 1.2,
+        },
+        "rotationZ": 0.0,
+      },
+      {
+        "image": images["tree"]!,
+        "position": {
+          "x": 320 * scale.dx,
+          "y": screenHeight - hillHeight / 1.15,
+        },
+        "rotationZ": 0.0,
+      },
+      {
+        "image": images["tree"]!,
+        "position": {
+          "x": 80 * scale.dx,
+          "y": screenHeight - hillHeight / 1.2,
+        },
+        "rotationZ": 0.0,
+      },
+      {
+        "image": images["tree"]!,
+        "position": {
+          "x": 40 * scale.dx,
+          "y": screenHeight - hillHeight / 1.35,
+        },
+        "rotationZ": 0.0,
+      },
+      {
+        "image": images["tree"]!,
+        "position": {
+          "x": 120 * scale.dx,
+          "y": screenHeight - hillHeight / 1.35,
+        },
+        "rotationZ": 0.0,
+      },
+    ]);
   }
 
   void render(Canvas canvas, Size size) {

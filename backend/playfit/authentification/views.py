@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
+from rest_framework.parsers import JSONParser
 from django.contrib.auth import authenticate, login
 from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
@@ -20,9 +21,9 @@ from social_core.backends.google import GoogleOAuth2
 from social_core.exceptions import AuthForbidden
 from utilities.encrypted_fields import hash
 from utilities.expiring_password_reset_token import ExpiringPasswordResetTokenGenerator, get_email_from_signed_token
-from .models import CustomUser, UserAchievement, UserStats, GameAchievement
+from .models import CustomUser, UserAchievement
 from .serializers import CustomUserSerializer, CustomUserRetrieveSerializer, CustomUserUpdateSerializer, CustomUserDeleteSerializer, AccountRecoveryRequestSerializer, UserAchievementSerializer
-from .utils import generate_username_with_number, get_user_birthdate, generate_uid_from_id, get_id_from_uid, evaluate_achievements, setup_game_achievements
+from .utils import generate_username_with_number, get_user_birthdate, generate_uid_from_id, get_id_from_uid, evaluate_achievements, link_achievements_to_user
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -41,7 +42,7 @@ class RegisterView(APIView):
             try:
                 user = serializer.create(serializer.validated_data)
                 token, _ = Token.objects.get_or_create(user=user)
-                setup_game_achievements()
+                link_achievements_to_user(user)
                 return Response({'token': token.key}, status=status.HTTP_201_CREATED)
             except ValidationError as e:
                 return Response({'error': e.messages[0]}, status=status.HTTP_400_BAD_REQUEST)
@@ -443,20 +444,13 @@ class UserAchievementView(APIView):
         }
     )
     def post(self, request):
-        serializer = UserAchievementSerializer(data=request.data)
+        print("RECEIVED DATA:", request.data)
+        serializer = UserAchievementSerializer(data=request.data,  context={'request': request})
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
         user = request.user
-        achievement = request.POST.get('achievement')
-
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        # Need to check if the user has the achievement
-        user_achievement = UserAchievement.objects.get(user=user, achievement=achievement)
-        if not user_achievement:
-            return Response({'message': 'user achievement not found'}, status=status.HTTP_400_BAD_REQUEST)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        # If the user has the achievement, update the progress
-        #The data progress from the request should be the value to add to the current progress, not the new progress
-        return evaluate_achievements(user, user_achievement)
+        progress = serializer.validated_data['progress']
+        return evaluate_achievements(user, progress)
         
 

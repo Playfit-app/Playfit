@@ -146,7 +146,7 @@ class GameAchievement(models.Model):
         return self.name
 
 class UserAchievement(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='achievements')
     achievement = models.ForeignKey(GameAchievement, on_delete=models.CASCADE)
     is_completed = models.BooleanField(default=False)
     progress = models.JSONField(default=dict)
@@ -156,7 +156,7 @@ class UserAchievement(models.Model):
         return f"{self.user.username} - {self.achievement.name}"
 
 class UserStats(models.Model):
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='stats')
     total_workouts = models.PositiveIntegerField(default=0)
     longest_streak = models.PositiveIntegerField(default=0)
     current_streak = models.PositiveIntegerField(default=0)

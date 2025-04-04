@@ -108,25 +108,29 @@ class AccountRecoveryRequestSerializer(serializers.Serializer):
             raise serializers.ValidationError({'email': 'Email not found'})
         return data
 
-class UserAchievementSerializer(serializers.Serializer):
+class UserTestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username']
+
+class UserAchievementSerializer(serializers.ModelSerializer):
+    user = UserTestSerializer(read_only=True)
+    progress = serializers.DictField()
     class Meta:
         model = UserAchievement
-        fields = ['achievement', 'progress', 'user', 'is_completed', 'awarded_at']
+        fields = ['progress', 'user']
     
     def validate(self, data):
-        if not data['achievement']:
-            raise serializers.ValidationError({'achievement': 'Achievement not found'})
+        user = self.context['request'].user
+        print("User from context:", user)
+        print("Data:", data)
+        
+        if not data:
+            raise serializers.ValidationError({'data': 'Data not found'})
         if not data['progress']:
             raise serializers.ValidationError({'progress': 'Progress not found'})
-        if not data['user']:
+        if not user:
             raise serializers.ValidationError({'user': 'User not found'})
-        if data['achievement'] == '' or data['achievement'] == "":
-            raise serializers.ValidationError({'achievement': 'Achievement cannot be empty'})
         if data['progress'] == '' or data['progress'] == "":
             raise serializers.ValidationError({'progress': 'Progress cannot be empty'})
-        data['progress'] = json.loads(data['progress'])
-        if not isinstance(data['progress'], dict):
-            raise serializers.ValidationError({'progress': 'Progress must be a JSON object'})
-        if 'progress_value' not in data['progress']:
-            raise serializers.ValidationError({'progress': 'Progress must contain a progress_value'})
         return data

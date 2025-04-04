@@ -40,100 +40,49 @@ def generate_uid_from_id(id: int) -> str:
 def get_id_from_uid(uid: str) -> int:
     return struct.unpack("I", base64.urlsafe_b64decode(uid + "=="))[0]
 
-def evaluate_achievements(user, achievement_to_update):
-    # Check if the user has the achievement
-    try:
-        user_achievement = UserAchievement.objects.get(user=user, achievement=achievement_to_update)
-    except UserAchievement.DoesNotExist:
-        return Response({'message': 'User achievement not found'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        game_achievement = GameAchievement.objects.get(id=achievement_to_update.id)
-    except GameAchievement.DoesNotExist:
-        return Response({'message': 'Game achievement not found'}, status=status.HTTP_400_BAD_REQUEST)
+def evaluate_achievements(user, progress):
+    # Get all achievements
+    achievements = GameAchievement.objects.all()
 
+    for achievement in achievements:
+        for criterias in achievement.criteria:
+            for key, value in criterias.items():
+                if key in progress:
+                    user_achievement = UserAchievement.objects.get(user=user, achievement=achievement)
+                    if user_achievement.is_completed:
+                        continue
+                    if key == 'current_streak':
+                        if progress[key] >= value:
+                            user_achievement.is_completed = True
+                            user_achievement.awarded_at = timezone.now()
+                            user_achievement.save()
+                            # Add XP reward to the user
+                            # user.xp += achievement.xp_reward
+                            # user.save()
+                    else:
+                        if progress[key] >= value:
+                            user_achievement.progress[key] = progress[key]
+                            user_achievement.save()
+    
     # Check if the achievement is completed
-    if user_achievement.is_completed:
-        return Response({'message': 'Achievement already completed'}, status=status.HTTP_400_BAD_REQUEST)
-    for criteria in game_achievement.criteria:
-        for key, value in criteria.items():
-            if key in user_achievement.progress:
-                if user_achievement.progress[key] >= value:
-                    user_achievement.is_completed = True
-                    user_achievement.awarded_at = timezone.now()
-                    user_achievement.save()
-                    return Response({'message': 'Achievement completed'}, status=status.HTTP_200_OK)
-                user_achievement.progress[key] += value
-    user_achievement.save()
+    # if user_achievement.is_completed:
+    #     return Response({'message': 'Achievement already completed'}, status=status.HTTP_400_BAD_REQUEST)
+    # for criteria in game_achievement.criteria:
+    #     for key, value in criteria.items():
+    #         if key in user_achievement.progress:
+    #             if user_achievement.progress[key] >= value:
+    #                 user_achievement.is_completed = True
+    #                 user_achievement.awarded_at = timezone.now()
+    #                 user_achievement.save()
+    #                 return Response({'message': 'Achievement completed'}, status=status.HTTP_200_OK)
+    #             user_achievement.progress[key] += value
+    # user_achievement.save()
     return Response({'message': 'Achievement progress updated'}, status=status.HTTP_200_OK)
 
-#Create the GameAchievement
-def create_game_achievement(name_achievement, description_achievement, criteria_achievement, xp_reward_achievement):
-    # Check if the achievement already exists
-    if GameAchievement.objects.filter(name=name_achievement).exists():
-        return Response({'message': 'Achievement already exists'}, status=status.HTTP_400_BAD_REQUEST)
+def link_achievements_to_user(user):
+    # Get all achievements
+    achievements = GameAchievement.objects.all()
 
-    # Create the achievement
-    new_achievement = GameAchievement.objects.create(
-        name=name_achievement,
-        description=description_achievement,
-        criteria=criteria_achievement,
-        xp_reward_achievement=xp_reward_achievement,
-    )
-    return Response({'message': 'Achievement created successfully'}, status=status.HTTP_201_CREATED)
-
-def setup_game_achievements():
-    # Define the achievements
-    achievements = [
-        {
-            "name": "Welcome to Playfit",
-            "description": "Welcome to Playfit! We are happy to have you here.",
-            "criteria": [{"current_streak": 1}],
-            "xp_reward": 50,
-        },
-        {
-            "name": "First Steps",
-            "description": "Complete your first workout.",
-            "criteria": [{"workouts_completed": 1}],
-            "xp_reward": 100,
-        },
-        {
-            "name": "The beginning of a journey",
-            "description": "Complete 5 workouts.",
-            "criteria": [{"workouts_completed": 5}],
-            "xp_reward": 150,
-        },
-        {
-            "name": "Regularity is THE key, week 1",
-            "description": "The current streak is 7 days.",
-            "criteria": [{"current_streak": 7}],
-            "xp_reward": 150,
-        },
-        {
-            "name": "Regularity is THE key, week 2",
-            "description": "The current streak is 14 days.",
-            "criteria": [{"current_streak": 14}],
-            "xp_reward": 200,
-        },
-        {
-            "name": "Regularity is THE key, week 3",
-            "description": "The current streak is 21 days.",
-            "criteria": [{"current_streak": 21}],
-            "xp_reward": 250,
-        },
-        {
-            "name": "Regularity is THE key, month 1",
-            "description": "The current streak is 30 days.",
-            "criteria": [{"current_streak": 30}],
-            "xp_reward": 300,
-        },
-    ]
-
-    # Create the achievements
+    # Check if the user already has the achievement
     for achievement in achievements:
-        create_game_achievement(
-            achievement["name"],
-            achievement["description"],
-            achievement["criteria"],
-            achievement["xp_reward"],
-        )
+        UserAchievement.objects.get_or_create(user=user, achievement=achievement)

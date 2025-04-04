@@ -73,12 +73,10 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
 
     return FutureBuilder(
       future: Future.wait([
-        UIImageCacheManager()
-            .loadImageFromAssets("assets/images/hill_path.png"),
-        UIImageCacheManager().loadImageFromAssets("assets/images/tree.png"),
-        UIImageCacheManager().loadImageFromAssets("assets/images/building.png"),
-        UIImageCacheManager()
-            .loadImageFromAssets("assets/images/sacre_coeur.png"),
+        UIImageCacheManager().loadImageFromAssets(widget.images[0]),
+        UIImageCacheManager().loadImageFromAssets(widget.images[1]),
+        UIImageCacheManager().loadImageFromAssets(widget.images[2]),
+        UIImageCacheManager().loadImageFromAssets(widget.images[3]),
       ]),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
@@ -175,16 +173,17 @@ class _HillPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final hillImage = images["hill"]!;
     final hillHeight = size.height / 2 * scale.dy;
     double startY = size.height - (hillHeight / 6) * (difficulty.index + 2);
-    // final hillPaint = Paint()
-    //   ..shader = ImageShader(
-    //     images["hill"]!,
-    //     ui.TileMode.clamp,
-    //     ui.TileMode.clamp,
-    //     Matrix4.identity().scaled(scale.dx, scale.dy).storage,
-    //   );
-    final hillPaint = Paint()..color = Colors.grey;
+    final hillPaint = Paint()
+      ..shader = ImageShader(
+        images["hill"]!,
+        ui.TileMode.clamp,
+        ui.TileMode.clamp,
+        Matrix4.identity().scaled(scale.dx, scale.dy).storage,
+      );
+    // final hillPaint = Paint()..color = Colors.grey;
     final Paint backgroundHillPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
@@ -217,6 +216,11 @@ class _HillPainter extends CustomPainter {
         scale: scale,
         height: size.height / 2 * scale.dy,
       );
+      final hill = hillPath.getClip(size);
+      // Keep aspect ratio for path texture
+      double imageAspectRatio = hillImage.width / hillImage.height;
+      double targetWidth = hill.getBounds().width;
+      double targetHeight = targetWidth / imageAspectRatio;
 
       if (i.isOdd) {
         Offset pivot = Offset(size.width / 2, size.height / 2);
@@ -239,10 +243,22 @@ class _HillPainter extends CustomPainter {
           backgroundHillPaint,
         );
         // Hill
-        canvas.drawPath(
-          hillPath.getClip(size),
-          hillPaint,
+        canvas.save();
+        canvas.clipPath(hill);
+        final srcRect = Rect.fromLTWH(
+          0,
+          0,
+          hillImage.width.toDouble(),
+          hillImage.height.toDouble(),
         );
+        final dstRect = Rect.fromLTWH(
+          hill.getBounds().left,
+          hill.getBounds().top + (hill.getBounds().height - targetHeight),
+          targetWidth,
+          targetHeight,
+        );
+        canvas.drawImageRect(hillImage, srcRect, dstRect, hillPaint);
+        canvas.restore();
         canvas.restore();
       } else {
         // Drop Shadow
@@ -250,14 +266,28 @@ class _HillPainter extends CustomPainter {
           hillPath.getClip(size).shift(const Offset(0, -7)),
           shadowPaint,
         );
+        // Background Hill
         canvas.drawPath(
           backgroundHillPath.getClip(size),
           backgroundHillPaint,
         );
-        canvas.drawPath(
-          hillPath.getClip(size),
-          hillPaint,
+        // Hill
+        canvas.save();
+        canvas.clipPath(hill);
+        final srcRect = Rect.fromLTWH(
+          0,
+          0,
+          hillImage.width.toDouble(),
+          hillImage.height.toDouble(),
         );
+        final dstRect = Rect.fromLTWH(
+          hill.getBounds().left,
+          hill.getBounds().top + (hill.getBounds().height - targetHeight),
+          targetWidth,
+          targetHeight,
+        );
+        canvas.drawImageRect(hillImage, srcRect, dstRect, hillPaint);
+        canvas.restore();
       }
       startY += hillHeight / 6;
     }

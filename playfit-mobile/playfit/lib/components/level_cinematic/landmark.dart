@@ -52,7 +52,13 @@ class Landmark {
   void render(Canvas canvas, Size size) {
     double maxHeight = 150 * scale.dy;
     double aspectRatio = image.width / image.height.toDouble();
+    // double maxWidth = maxHeight * aspectRatio;
+    // Max width is 150 * scale.dx or aspect ratio of the image
     double maxWidth = maxHeight * aspectRatio;
+    if (maxWidth > 150 * scale.dx) {
+      maxWidth = 210 * scale.dx;
+      maxHeight = maxWidth / aspectRatio;
+    }
 
     canvas.save();
     canvas.translate(

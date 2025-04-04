@@ -72,12 +72,11 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
     );
 
     return FutureBuilder(
-      future: Future.wait([
-        UIImageCacheManager().loadImageFromAssets(widget.images[0]),
-        UIImageCacheManager().loadImageFromAssets(widget.images[1]),
-        UIImageCacheManager().loadImageFromAssets(widget.images[2]),
-        UIImageCacheManager().loadImageFromAssets(widget.images[3]),
-      ]),
+      future: Future.wait(
+        widget.images.map((imagePath) {
+          return UIImageCacheManager().loadImageFromAssets(imagePath);
+        }),
+      ),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());

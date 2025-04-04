@@ -283,8 +283,5 @@ class UserAchievementTests(APITestCase):
                 'current_streak': 1,
             },
         }
-        import json
-        print("test data: " + json.dumps(data))
         response = self.client.post(self.url, data, format='json')
-        print(response.data)
         

@@ -444,7 +444,6 @@ class UserAchievementView(APIView):
         }
     )
     def post(self, request):
-        print("RECEIVED DATA:", request.data)
         serializer = UserAchievementSerializer(data=request.data,  context={'request': request})
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

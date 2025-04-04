@@ -64,19 +64,6 @@ def evaluate_achievements(user, progress):
                             user_achievement.progress[key] = progress[key]
                             user_achievement.save()
     
-    # Check if the achievement is completed
-    # if user_achievement.is_completed:
-    #     return Response({'message': 'Achievement already completed'}, status=status.HTTP_400_BAD_REQUEST)
-    # for criteria in game_achievement.criteria:
-    #     for key, value in criteria.items():
-    #         if key in user_achievement.progress:
-    #             if user_achievement.progress[key] >= value:
-    #                 user_achievement.is_completed = True
-    #                 user_achievement.awarded_at = timezone.now()
-    #                 user_achievement.save()
-    #                 return Response({'message': 'Achievement completed'}, status=status.HTTP_200_OK)
-    #             user_achievement.progress[key] += value
-    # user_achievement.save()
     return Response({'message': 'Achievement progress updated'}, status=status.HTTP_200_OK)
 
 def link_achievements_to_user(user):

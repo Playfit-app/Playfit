@@ -122,8 +122,6 @@ class UserAchievementSerializer(serializers.ModelSerializer):
     
     def validate(self, data):
         user = self.context['request'].user
-        print("User from context:", user)
-        print("Data:", data)
         
         if not data:
             raise serializers.ValidationError({'data': 'Data not found'})

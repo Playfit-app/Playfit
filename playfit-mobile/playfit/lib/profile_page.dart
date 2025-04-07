@@ -1,8 +1,10 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:playfit/components/experience_circle.dart';
 import 'package:playfit/components/success.dart';
 import 'package:playfit/components/historic_chart.dart';
+import 'package:playfit/components/level_progression_dialog.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -131,27 +133,28 @@ class ProfilePage extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Stack(
-                              children: [
-                                ExperienceCircle(
-                                  currentXP: 70,
-                                  requiredXP: 100,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Container(
-                                      height: screenWidth * 0.1,
-                                      width: screenWidth * 0.1,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        image: DecorationImage(
-                                          image: AssetImage(
-                                              'assets/images/mountains/mont_blanc.png'),
-                                        ),
+                            GestureDetector(
+                              onTap: () {
+                                showLevelProgressionPopup(context);
+                              },
+                              child: ExperienceCircle(
+                                currentXP: 70,
+                                requiredXP: 100,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                    height: screenWidth * 0.1,
+                                    width: screenWidth * 0.1,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      image: DecorationImage(
+                                        image: AssetImage(
+                                            'assets/images/mountains/mont_blanc.png'),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
                             _buildDivider(),
                             _buildInfoSection(
@@ -179,7 +182,8 @@ class ProfilePage extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Expanded(
+                            Flexible(
+                              fit: FlexFit.loose,
                               child: Column(
                                 children: [
                                   Row(
@@ -192,14 +196,19 @@ class ProfilePage extends StatelessWidget {
                                           color: Color(0XFF7391FD),
                                         ),
                                       ),
-                                      const Padding(
-                                        padding: EdgeInsets.only(left: 8.0),
+                                      const SizedBox(
+                                          width:
+                                              8), //value hardcoded because of little padding
+                                      const Flexible(
                                         child: Text(
                                           "Nombre d'exercices faits",
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Color(0XFF1D1B20),
                                           ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          softWrap: false,
                                         ),
                                       ),
                                     ],
@@ -215,14 +224,19 @@ class ProfilePage extends StatelessWidget {
                                           color: Color(0XFFFF0000),
                                         ),
                                       ),
-                                      const Padding(
-                                        padding: EdgeInsets.only(left: 8.0),
+                                      const SizedBox(
+                                          width:
+                                              8), //value hardcoded because of little padding
+                                      const Flexible(
                                         child: Text(
                                           "BPM (Battements par minute)",
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Color(0XFF1D1B20),
                                           ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          softWrap: false,
                                         ),
                                       ),
                                     ],
@@ -272,17 +286,23 @@ class ProfilePage extends StatelessWidget {
                             Success(
                               image: "assets/images/mountains/mont_blanc.png",
                               completed: true,
+                              title: "Mont Blanc",
+                              meters: 4806,
                             ),
                             Success(
                               image: "assets/images/mountains/kilimanjaro.png",
                               completed: false,
+                              title: "Kilimanjaro",
+                              meters: 5895,
                             ),
                             Success(
                               image: "assets/images/mountains/everest.png",
                               completed: false,
+                              title: "Everest",
+                              meters: 8849,
                             ),
                           ],
-                        )
+                        ),
                       ],
                     ),
                   ),

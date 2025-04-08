@@ -67,3 +67,82 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.sender} {self.notification_type} {self.user}"
+
+class Continent(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Country(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    continent = models.ForeignKey(Continent, related_name='countries', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+class City(models.Model):
+    name = models.CharField(max_length=50)
+    country = models.ForeignKey(Country, related_name='cities', on_delete=models.CASCADE)
+    order = models.PositiveIntegerField()
+
+    class Meta:
+        unique_together = ("country", "order")
+        ordering = ['country', 'order']
+
+    def __str__(self):
+        return self.name
+
+class WorldPosition(models.Model):
+    CITY_LEVEL_CHOICES = [(i, f"Level {i}") for i in range(1, 7)]
+    TRANSITION_LEVEL_CHOICES = [(i, f"Level {i}") for i in range(1, 5)]
+
+    user = models.OneToOneField(CustomUser, related_name='position', on_delete=models.CASCADE)
+    city = models.ForeignKey(City, related_name='users', on_delete=models.SET_NULL, null=True, blank=True)
+    city_level = models.PositiveIntegerField(null=True, blank=True, choices=CITY_LEVEL_CHOICES)
+
+    transition_from = models.ForeignKey(City, related_name='departing_users', on_delete=models.SET_NULL, null=True, blank=True)
+    transition_to = models.ForeignKey(City, related_name='arriving_users', on_delete=models.SET_NULL, null=True, blank=True)
+    transition_level = models.PositiveIntegerField(null=True, blank=True, choices=TRANSITION_LEVEL_CHOICES)
+
+    def is_in_city(self):
+        return self.city is not None
+
+    def is_in_transition(self):
+        return self.transition_from is not None and self.transition_to is not None
+
+    def move_to_next_level(self):
+        if self.is_in_city():
+            if self.city_level < 6:
+                self.city_level += 1
+            else:
+                try:
+                    next_city = City.objects.get(country=self.city.country, order=self.city.order + 1)
+                    if next_city:
+                        self.start_transition(next_city)
+                except City.DoesNotExist:
+                    pass
+        elif self.is_in_transition():
+            if self.transition_level < 4:
+                self.transition_level += 1
+            else:
+                self.city = self.transition_to
+                self.city_level = 1
+                self.transition_from = None
+                self.transition_to = None
+                self.transition_level = None
+
+    def start_transition(self, next_city):
+        self.transition_from = self.city
+        self.transition_to = next_city
+        self.transition_level = 1
+        self.city = None
+        self.city_level = None
+        self.save()
+
+    def __str__(self):
+        if self.is_in_city():
+            return f"{self.user} is in {self.city} (Level {self.city_level})"
+        elif self.is_in_transition():
+            return f"{self.user} is transitioning from {self.transition_from} to {self.transition_to} (Level {self.transition_level})"
+        return f"{self.user} is in the void"

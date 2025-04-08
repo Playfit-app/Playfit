@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from push_notifications.models import GCMDevice
-from .models import Post, Like, Comment, Notification
+from .models import Post, Like, Comment, Notification, WorldPosition
 
 User = get_user_model()
 
@@ -56,3 +56,10 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ["id", "user", "sender", "notification_type", "post", "created_at"]
+
+class WorldPositionSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = WorldPosition
+        fields = "__all__"

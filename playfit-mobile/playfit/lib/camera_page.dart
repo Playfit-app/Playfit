@@ -53,6 +53,7 @@ class _CameraViewState extends State<CameraView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFFDF4FF),
       body: _controller != null && _controller!.value.isInitialized
           ? Stack(
               children: [
@@ -66,6 +67,65 @@ class _CameraViewState extends State<CameraView> {
                     ),
                   ),
                 ),
+
+                // Nouvelle BOX à gauche, centrée verticalement, collée à l'écran
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    width: 85,
+                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    margin: const EdgeInsets.only(left: 0),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.horizontal(
+                        right: Radius.circular(20),
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Column(
+                          children: [
+                            Icon(Icons.timer, color: Colors.orange, size: 36),
+                            SizedBox(height: 8),
+                            Text(
+                              '0:30',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 30),
+                        Column(
+                          children: [
+                            Icon(Icons.fitness_center, color: Colors.orange, size: 36),
+                            SizedBox(height: 8),
+                            Text(
+                              '1',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 30),
+                        SizedBox(
+                          height: 100,
+                          child: Image(
+                            image: AssetImage("assets/images/mascot.png"),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                /*
+                // Ancienne BOX en bas (désactivée via commentaire)
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
@@ -113,6 +173,7 @@ class _CameraViewState extends State<CameraView> {
                     ),
                   ),
                 ),
+                */
               ],
             )
           : const Center(child: CircularProgressIndicator()),

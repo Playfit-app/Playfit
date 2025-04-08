@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 from rest_framework.generics import (
     RetrieveAPIView,
     ListAPIView,
@@ -16,7 +17,16 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from authentification.models import CustomUser
 from utilities.redis import redis_client
-from .models import Follow, Post, Like, Comment, Notification, WorldPosition
+from .models import (
+    Follow,
+    Post,
+    Like,
+    Comment,
+    Notification,
+    WorldPosition,
+    CustomizationItem,
+    Customization,
+)
 from .serializers import (
     UserSerializer,
     PostSerializer,
@@ -25,6 +35,8 @@ from .serializers import (
     NotificationSerializer,
     GCMDeviceSerializer,
     WorldPositionSerializer,
+    CustomizationItemSerializer,
+    CustomizationSerializer,
 )
 
 def send_push_notification(user, title, message):
@@ -557,3 +569,36 @@ class FollowingWorldPositionView(ListAPIView):
     def get_queryset(self):
         user: CustomUser = self.request.user
         return WorldPosition.objects.filter(user__in=user.get_following())
+
+class CustomizationItemListView(ListAPIView):
+    serializer_class = CustomizationItemSerializer
+    queryset = CustomizationItem.objects.all()
+    permission_classes = [IsAuthenticated]
+
+class CustomizationItemByCategoryListView(ListAPIView):
+    serializer_class = CustomizationItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        category = self.kwargs['category']
+        return CustomizationItem.objects.filter(category=category)
+
+class CustomizationUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        user: CustomUser = request.user
+        customization = Customization.objects.get(user=user)
+        serializer = CustomizationSerializer(customization, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+class CustomizationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user: CustomUser = request.user
+        customization = Customization.objects.get(user=user)
+        serializer = CustomizationSerializer(customization)
+        return Response(serializer.data)

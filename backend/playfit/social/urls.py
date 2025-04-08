@@ -14,6 +14,10 @@ from .views import (
     NotificationReadAllView,
     WorldPositionView,
     FollowingWorldPositionView,
+    CustomizationItemListView,
+    CustomizationItemByCategoryListView,
+    CustomizationUpdateView,
+    CustomizationView,
 )
 
 urlpatterns = [
@@ -31,4 +35,8 @@ urlpatterns = [
     path('notifications/read/all/', NotificationReadAllView.as_view(), name='read_all_notifications'),
     path('get-my-position/', WorldPositionView.as_view(), name='get_my_position'),
     path('get-following-positions/', FollowingWorldPositionView.as_view(), name='get_following_positions'),
+    path("customization-items/", CustomizationItemListView.as_view(), name="customization_items"),
+    path("customization-items/<str:category>/", CustomizationItemByCategoryListView.as_view(), name="customization_items_by_category"),
+    path("update-customization/", CustomizationUpdateView.as_view(), name="update_customization"),
+    path("customization/", CustomizationView.as_view(), name="customization"),
 ]

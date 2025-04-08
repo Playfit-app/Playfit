@@ -1,8 +1,7 @@
 from datetime import timedelta
 from django.utils.timezone import now
 from django.core.management.base import BaseCommand
-from your_app.models import Notification
-
+from social.models import Notification
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         one_month_ago = now() - timedelta(days=30)

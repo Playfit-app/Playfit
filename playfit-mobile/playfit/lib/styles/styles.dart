@@ -36,4 +36,12 @@ class AppStyles {
     fontWeight: FontWeight.normal,
     color: beige,
   );
+
+  static TextStyle displaySmall = GoogleFonts.amaranth(
+    fontSize: 36,
+    height: 44,
+    letterSpacing: 0,
+    fontWeight: FontWeight.normal,
+    color: grey,
+  );
 }

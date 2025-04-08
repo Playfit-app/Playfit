@@ -147,3 +147,6 @@ cython_debug/
 
 # PyCharm
 # .idea/
+
+# Firebase credentials
+playfit/serviceAccountKey.json

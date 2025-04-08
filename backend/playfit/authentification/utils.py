@@ -4,6 +4,7 @@ import base64
 import struct
 
 from .models import CustomUser
+from social.models import WorldPosition
 
 def generate_username_with_number(base_name: str) -> str:
     base_name = base_name.replace(" ", "").lower()
@@ -36,3 +37,23 @@ def generate_uid_from_id(id: int) -> str:
 
 def get_id_from_uid(uid: str) -> int:
     return struct.unpack("I", base64.urlsafe_b64decode(uid + "=="))[0]
+
+def get_position_data(data: WorldPosition) -> dict:
+    if data.is_in_city():
+        return {
+            'status': 'in_city',
+            'continent': data.city.country.continent.name,
+            'country': data.city.country.name,
+            'city': data.city.name,
+            'level': data.city_level,
+        }
+    elif data.is_in_transition():
+        return {
+            'status': 'in_transition',
+            'continent': data.transition_from.country.continent.name,
+            'country': data.transition_from.country.name,
+            'from': data.transition_from.name,
+            'to': data.transition_to.name,
+            'level': data.transition_level,
+        }
+    return {'status': 'unknown'}

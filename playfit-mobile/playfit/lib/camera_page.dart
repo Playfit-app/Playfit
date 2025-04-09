@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:playfit/workout_analyzer.dart';
@@ -14,11 +15,22 @@ class _CameraViewState extends State<CameraView> {
   CameraController? _controller;
   bool _isDetecting = false;
   final WorkoutAnalyzer _workoutAnalyzer = WorkoutAnalyzer();
+  Timer? _timer;
+  Duration _elapsedTime = Duration.zero;
 
   @override
   void initState() {
     super.initState();
     initCamera();
+    startTimer();
+  }
+
+  void startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      setState(() {
+        _elapsedTime += const Duration(seconds: 1);
+      });
+    });
   }
 
   Future<void> initCamera() async {
@@ -68,6 +80,7 @@ class _CameraViewState extends State<CameraView> {
                   ),
                 ),
 
+                /*
                 // Nouvelle BOX à gauche, centrée verticalement, collée à l'écran
                 Align(
                   alignment: Alignment.centerLeft,
@@ -84,24 +97,25 @@ class _CameraViewState extends State<CameraView> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Column(
                           children: [
-                            Icon(Icons.timer, color: Colors.orange, size: 36),
-                            SizedBox(height: 8),
+                            const Icon(Icons.timer, color: Colors.orange, size: 36),
+                            const SizedBox(height: 8),
                             Text(
-                              '0:30',
-                              style: TextStyle(
+                               '${_elapsedTime.inMinutes}:${(_elapsedTime.inSeconds % 60).toString().padLeft(2, '0')}',
+                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
                         ),
-                        SizedBox(height: 30),
-                        Column(
+                        const SizedBox(height: 30),
+                        const Column(
                           children: [
-                            Icon(Icons.fitness_center, color: Colors.orange, size: 36),
+                            Icon(Icons.fitness_center,
+                                color: Colors.orange, size: 36),
                             SizedBox(height: 8),
                             Text(
                               '1',
@@ -112,8 +126,8 @@ class _CameraViewState extends State<CameraView> {
                             ),
                           ],
                         ),
-                        SizedBox(height: 30),
-                        SizedBox(
+                        const SizedBox(height: 30),
+                        const SizedBox(
                           height: 100,
                           child: Image(
                             image: AssetImage("assets/images/mascot.png"),
@@ -124,13 +138,13 @@ class _CameraViewState extends State<CameraView> {
                   ),
                 ),
 
-                /*
+                */
                 // Ancienne BOX en bas (désactivée via commentaire)
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
                     height: 100,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 50),
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius:
@@ -139,14 +153,14 @@ class _CameraViewState extends State<CameraView> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.timer, color: Colors.orange),
-                            SizedBox(width: 5),
+                            const Icon(Icons.timer, color: Colors.orange, size: 30),
+                            const SizedBox(width: 5),
                             Text(
-                              '0:30',
-                              style: TextStyle(
-                                fontSize: 18,
+                              '${_elapsedTime.inMinutes}:${(_elapsedTime.inSeconds % 60).toString().padLeft(2, '0')}',
+                              style: const TextStyle(
+                                fontSize: 40,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -154,26 +168,25 @@ class _CameraViewState extends State<CameraView> {
                         ),
                         const Row(
                           children: [
-                            Icon(Icons.fitness_center, color: Colors.orange),
+                            Icon(Icons.fitness_center, color: Colors.orange, size: 30),
                             SizedBox(width: 5),
                             Text(
                               '1',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 40,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
                         ),
                         SizedBox(
-                          height: 50,
+                          height: 80,
                           child: Image.asset("assets/images/mascot.png"),
                         ),
                       ],
                     ),
                   ),
                 ),
-                */
               ],
             )
           : const Center(child: CircularProgressIndicator()),
@@ -182,6 +195,7 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   void dispose() {
+    _timer?.cancel();
     _workoutAnalyzer.dispose();
     _controller?.dispose();
     super.dispose();

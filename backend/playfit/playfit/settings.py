@@ -13,8 +13,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+import firebase_admin
 
 load_dotenv()
+
+default_app = firebase_admin.initialize_app()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,11 +43,15 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
     'django.contrib.staticfiles',
+    'channels',
     'rest_framework',
     'rest_framework.authtoken',
+    'push_notifications',
     'authentification',
     'workout',
+    'social',
     'drf_yasg',
     'social_django',
 ]
@@ -88,7 +95,18 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'playfit.wsgi.application'
+# WSGI_APPLICATION = 'playfit.wsgi.application'
+ASGI_APPLICATION = 'playfit.asgi.application'
+
+# Channels
+CHANNEL_LAYERS = {
+    'default': {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    }
+}
 
 
 # Database
@@ -180,3 +198,22 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 # Server settings
 SERVER_BASE_URL = os.getenv('SERVER_BASE_URL')
+
+# Media URL (for accessing via browser)
+MEDIA_URL = '/media/'
+
+# Media Root (for storing uploaded files)
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Redis settings
+REDIS_HOST = os.getenv('REDIS_HOST')
+REDIS_PORT = os.getenv('REDIS_PORT')
+REDIS_DB = os.getenv('REDIS_DB')
+
+# Push notifications settings
+PUSH_NOTIFICATIONS_SETTINGS = {
+    "FCM_API_KEY": os.getenv('FCM_API_KEY'),
+    "APNS_CERTIFICATE": os.getenv('APNS_CERTIFICATE'),
+    "APNS_TOPIC": os.getenv('APNS_TOPIC'),
+    "APNS_USE_SANDBOX": True,
+}

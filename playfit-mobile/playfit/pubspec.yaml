@@ -78,7 +78,7 @@ flutter:
   assets:
     - .env
     - assets/images/
-    - assets/images/paris/
+    - assets/images/france/paris/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

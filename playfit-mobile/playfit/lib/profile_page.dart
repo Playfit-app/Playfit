@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:playfit/components/experience_circle.dart';
@@ -49,8 +48,12 @@ class ProfilePage extends StatelessWidget {
                     color: Color.fromARGB(255, 204, 255, 178),
                     shape: BoxShape.circle,
                   ),
-                  child: Image.asset(
-                    'assets/images/characterMapFlip.png',
+                  child: Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.rotationY(3.14),
+                    child: Image.asset(
+                      'assets/images/character.png',
+                    ),
                   ),
                 ),
               ),
@@ -196,9 +199,7 @@ class ProfilePage extends StatelessWidget {
                                           color: Color(0XFF7391FD),
                                         ),
                                       ),
-                                      const SizedBox(
-                                          width:
-                                              8), //value hardcoded because of little padding
+                                      const SizedBox(width: 8),
                                       const Flexible(
                                         child: Text(
                                           "Nombre d'exercices faits",
@@ -224,9 +225,7 @@ class ProfilePage extends StatelessWidget {
                                           color: Color(0XFFFF0000),
                                         ),
                                       ),
-                                      const SizedBox(
-                                          width:
-                                              8), //value hardcoded because of little padding
+                                      const SizedBox(width: 8),
                                       const Flexible(
                                         child: Text(
                                           "BPM (Battements par minute)",
@@ -248,7 +247,7 @@ class ProfilePage extends StatelessWidget {
                               onPressed: () {},
                               style: ButtonStyle(
                                 backgroundColor: WidgetStateProperty.all(
-                                  const Color(0Xffff8871f),
+                                  const Color(0XFFF8871F),
                                 ),
                                 shape: WidgetStateProperty.all(
                                   RoundedRectangleBorder(

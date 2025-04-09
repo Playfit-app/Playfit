@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:playfit/components/adventure/roads/city_road.dart';
 import 'package:playfit/components/adventure/roads/road.dart';
 import 'package:playfit/components/adventure/roads/transition_road.dart';
 import 'package:playfit/components/adventure/character.dart';
+import 'package:playfit/utils/image.dart';
 
 class AdventurePage extends StatefulWidget {
   final bool moveCharacter;
@@ -24,18 +24,19 @@ class _AdventurePageState extends State<AdventurePage>
   final ScrollController _scrollController = ScrollController();
   // late AnimationController _animationController;
   // late Animation<double> _animation;
-  late List<Road> roads;
   late Path combinedPath;
   late int nbCities;
-  late List<Offset> checkpoints;
   int currentCheckpoint = 0;
-  Map<String, ui.Image> decorationImages = {};
+  final List<String> imagePaths = [
+    'assets/images/paris/france/eiffel_tower.png',
+    'assets/images/france/paris/apt.png',
+    'assets/images/tree.png',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _createRoads();
-    _loadImages();
+    nbCities = 2;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollController.jumpTo(_scrollController.position.minScrollExtent);
@@ -47,10 +48,9 @@ class _AdventurePageState extends State<AdventurePage>
     });
   }
 
-  void _createRoads({bool reset = false}) {
-    roads = [];
+  List<Road> _createRoads(Map<String, ui.Image> decorationImages) {
+    List<Road> roads = [];
     combinedPath = Path();
-    nbCities = 2;
 
     Size screenSize = MediaQueryData.fromView(
             WidgetsBinding.instance.platformDispatcher.views.first)
@@ -62,11 +62,6 @@ class _AdventurePageState extends State<AdventurePage>
       screenSize.width / 411,
       height / (nbCities + (nbCities - 1) * 0.5) / 830,
     );
-
-    if (reset) {
-      combinedPath.reset();
-      checkpoints.clear();
-    }
 
     for (int i = 0; i <= nbCities; i++) {
       Road road;
@@ -89,37 +84,7 @@ class _AdventurePageState extends State<AdventurePage>
       combinedPath.addPath(road.path, Offset.zero);
     }
 
-    checkpoints = roads
-        .map((road) =>
-            road.getCheckpoints().map((checkpoint) => checkpoint.position))
-        .expand((element) => element)
-        .toList();
-  }
-
-  Future<void> _loadImages() async {
-    final List<String> imagePaths = [
-      'assets/images/paris/eiffel_tower.png',
-      'assets/images/paris/apt.png',
-      'assets/images/tree.png',
-    ];
-
-    for (String imagePath in imagePaths) {
-      decorationImages[imagePath] = await _loadImage(imagePath);
-    }
-
-    setState(() {
-      _createRoads(reset: true);
-    });
-  }
-
-  Future<ui.Image> _loadImage(String imagePath) async {
-    final ByteData data = await rootBundle.load(imagePath);
-    final Uint8List bytes = data.buffer.asUint8List();
-    final Completer<ui.Image> completer = Completer();
-    ui.decodeImageFromList(bytes, (ui.Image img) {
-      completer.complete(img);
-    });
-    return completer.future;
+    return roads;
   }
 
   @override
@@ -133,30 +98,54 @@ class _AdventurePageState extends State<AdventurePage>
     Size screenSize = MediaQuery.of(context).size;
     double height = screenSize.height * (nbCities + (nbCities - 1) * 0.5);
 
-    return Scaffold(
-      body: SizedBox(
-        height: screenSize.height * 2,
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          reverse: true,
-          child: Stack(
-            children: [
-              RepaintBoundary(
-                child: CustomPaint(
-                  size: Size(screenSize.width, height),
-                  painter: _RoadPainter(roads),
-                ),
-              ),
-              Character(
-                position: checkpoints[currentCheckpoint],
-                scale: const Offset(0.15, 0.15),
-                size: const Size(410, 732),
-                isFlipped: currentCheckpoint % 2 == 0,
-              )
-            ],
-          ),
-        ),
+    return FutureBuilder(
+      future: Future.wait(
+        imagePaths.map((imagePath) {
+          return UIImageCacheManager().loadImageFromAssets(imagePath);
+        }),
       ),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final decorationImages = {
+          "landmark": snapshot.data![0],
+          "building": snapshot.data![1],
+          "tree": snapshot.data![2],
+        };
+        final roads = _createRoads(decorationImages);
+        final checkpoints = roads
+            .map((road) => road.getCheckpoints().map((c) => c.position))
+            .expand((element) => element)
+            .toList();
+
+        return Scaffold(
+          body: SizedBox(
+            height: screenSize.height * 2,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              reverse: true,
+              child: Stack(
+                children: [
+                  RepaintBoundary(
+                    child: CustomPaint(
+                      size: Size(screenSize.width, height),
+                      painter: _RoadPainter(roads),
+                    ),
+                  ),
+                  Character(
+                    position: checkpoints[currentCheckpoint],
+                    scale: const Offset(0.15, 0.15),
+                    size: const Size(410, 732),
+                    isFlipped: currentCheckpoint % 2 == 0,
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

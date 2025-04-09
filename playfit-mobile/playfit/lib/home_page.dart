@@ -51,11 +51,13 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       extendBody: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const TopBar(),
-        automaticallyImplyLeading: false,
-      ),
+      appBar: _currentIndex == 3
+          ? null
+          : AppBar(
+              backgroundColor: Colors.transparent,
+              title: const TopBar(),
+              automaticallyImplyLeading: false,
+            ),
       body: _pages[_currentIndex],
       bottomNavigationBar: SizedBox(
         height: 100,

@@ -22,11 +22,9 @@ class CityRoad extends Road {
 
   @override
   void setDecorations() {
-    final ui.Image? treeImage = decorationImages['assets/images/tree.png'];
-    final ui.Image? buildingImage =
-        decorationImages['assets/images/paris/apt.png'];
-    final ui.Image? eiffelTowerImage =
-        decorationImages['assets/images/paris/eiffel_tower.png'];
+    final ui.Image? treeImage = decorationImages['tree'];
+    final ui.Image? buildingImage = decorationImages['building'];
+    final ui.Image? eiffelTowerImage = decorationImages['landmark'];
     const Size treeSize = Size(79, 118);
     const Size buildingSize = Size(75, 131);
     const Size eiffelTowerSize = Size(89, 208);

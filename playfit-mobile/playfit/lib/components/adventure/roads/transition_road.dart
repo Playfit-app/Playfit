@@ -22,7 +22,7 @@ class TransitionRoad extends Road {
 
   @override
   void setDecorations() {
-    final ui.Image? treeImage = decorationImages['assets/images/tree.png'];
+    final ui.Image? treeImage = decorationImages['tree'];
     const Size treeSize = Size(79, 118);
 
     if (treeImage == null) return;

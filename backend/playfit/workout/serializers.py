@@ -34,6 +34,13 @@ class WorkoutSessionSerializer(serializers.ModelSerializer):
         )
         return workout_session
 
+class WorkoutSessionPatchSerializer(serializers.ModelSerializer):
+    completed = serializers.BooleanField(required=False)
+    selected_difficulty = serializers.ListField(
+        child=serializers.ChoiceField(choices=Exercise.DIFFICULTY_CHOICES),
+        required=False
+    )
+
 class WorkoutSessionExerciseSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkoutSessionExercise

@@ -1,10 +1,25 @@
 from django.db import models
 from authentification.models import CustomUser
+from social.models import City
 
 class WorkoutSession(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    date = models.DateField()
-    duration = models.DurationField()
+
+    # World position's snapshot
+    city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True)
+    city_level = models.PositiveIntegerField(null=True, blank=True)
+    transition_from = models.ForeignKey(City, related_name='+', on_delete=models.SET_NULL, null=True, blank=True)
+    transition_to = models.ForeignKey(City, related_name='+', on_delete=models.SET_NULL, null=True, blank=True)
+
+    duration = models.DurationField(default=0)
+    creation_date = models.DateField()
+    completed_date = models.DateField(blank=True, null=True)
+
+    def is_in_city(self):
+        return self.city is not None
+
+    def is_in_transition(self):
+        return self.transition_from is not None and self.transition_to is not None
 
 class Exercise(models.Model):
     DIFFICULTY_CHOICES = [

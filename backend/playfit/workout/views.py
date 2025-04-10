@@ -1,3 +1,4 @@
+from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -5,7 +6,12 @@ from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .models import WorkoutSession, Exercise, WorkoutSessionExercise
-from .serializers import WorkoutSessionSerializer, ExerciseSerializer, WorkoutSessionExerciseSerializer
+from .serializers import (
+    WorkoutSessionSerializer,
+    ExerciseSerializer,
+    WorkoutSessionExerciseSerializer,
+    WorkoutSessionPatchSerializer,
+)
 
 class ExerciseView(APIView):
     permission_classes = [IsAuthenticated]
@@ -67,7 +73,7 @@ class ExerciseView(APIView):
             "difficulty": exercise.difficulty
         }, status=status.HTTP_201_CREATED)
 
-class WorkoutSessionView(APIView):
+class WorkoutSessionsView(APIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
@@ -159,3 +165,82 @@ class WorkoutSessionView(APIView):
             exercise_serializer.save()
 
         return Response("Workout session added successfully", status=status.HTTP_201_CREATED)
+
+    @swagger_auto_schema(
+        operation_description="Update a workout session",
+        request_body=WorkoutSessionPatchSerializer,
+        responses={
+            200: openapi.Response("Workout session updated", "Workout session updated successfully"),
+            400: openapi.Response("Bad request", "Invalid workout session data")
+        }
+    )
+    def patch(self, request, pk):
+        try:
+            workout_session = WorkoutSession.objects.get(pk=pk, user=request.user)
+        except WorkoutSession.DoesNotExist:
+            return Response("Workout session not found", status=status.HTTP_404_NOT_FOUND)
+
+        serializer = WorkoutSessionPatchSerializer(workout_session, data=request.data, partial=True)
+        if serializer.is_valid():
+            data = serializer.validated_data
+
+            if data.get("completed"):
+                workout_session.completed_date = now().date()
+                workout_session.save()
+
+            if data.get("selected_difficulty"):
+                workout_session_exercises = WorkoutSessionExercise.objects.filter(workout_session=workout_session).exclude(exercise__difficulty__in=data["selected_difficulty"])
+                workout_session_exercises.delete()
+
+            return Response("Workout session updated successfully", status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class WorkoutSessionExerciseView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Get all workout session exercises",
+        responses={
+            200: openapi.Response("List of workout session exercises", WorkoutSessionExerciseSerializer(many=True)),
+        }
+    )
+    def get(self, request):
+        wp = request.user.position
+        workout_session: WorkoutSession = None
+
+        try:
+            if wp.is_in_city():
+                workout_session = WorkoutSession.objects.get(user=request.user, city=wp.city, city_level=wp.city_level)
+            elif wp.is_in_transition():
+                workout_session = WorkoutSession.objects.get(user=request.user, transition_from=wp.transition_from, transition_to=wp.transition_to, transition_level=wp.transition_level)
+
+        except WorkoutSession.DoesNotExist:
+            pass
+
+        if workout_session is None:
+            # Generate a new workout session
+            workout_session = WorkoutSession.objects.create(
+                user=request.user,
+                city=wp.city if wp.is_in_city() else None,
+                city_level=wp.city_level if wp.is_in_city() else None,
+                transition_from=wp.transition_from if wp.is_in_transition() else None,
+                transition_to=wp.transition_to if wp.is_in_transition() else None
+            )
+        workout_session_exercises = WorkoutSessionExercise.objects.filter(workout_session=workout_session)
+        data = {
+            'beginner': [],
+            'intermediate': [],
+            'advanced': []
+        }
+
+        for workout_session_exercise in workout_session_exercises:
+            exercise = workout_session_exercise.exercise
+            data[exercise.difficulty].append({
+                "name": exercise.name,
+                "description": exercise.description,
+                "video_url": exercise.video_url,
+                "sets": workout_session_exercise.sets,
+                "repetitions": workout_session_exercise.repetitions,
+                "weight": workout_session_exercise.weight
+            })
+        return Response(data, status=status.HTTP_200_OK)

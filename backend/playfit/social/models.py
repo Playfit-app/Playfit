@@ -33,8 +33,25 @@ class CustomizationItem(models.Model):
                 raise ValidationError("The image must be a PNG or WebP file")
         super().save(*args, **kwargs)
 
+class BaseCharacter(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    image = models.ImageField(upload_to='base_characters/')
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            ext = self.image.name.split('.')[-1].lower()
+            if ext == 'png':
+                self.image = convert_to_webp(self.image)
+            elif ext != 'webp':
+                raise ValidationError("The image must be a PNG or WebP file")
+        super().save(*args, **kwargs)
+
 class Customization(models.Model):
     user = models.OneToOneField(CustomUser, related_name='customizations', on_delete=models.CASCADE)
+    base_character = models.ForeignKey(BaseCharacter, related_name='character', on_delete=models.SET_NULL, null=True, blank=True)
     hat = models.ForeignKey(CustomizationItem, related_name='hat', on_delete=models.SET_NULL, null=True, blank=True)
     backpack = models.ForeignKey(CustomizationItem, related_name='backpack', on_delete=models.SET_NULL, null=True, blank=True)
     shirt = models.ForeignKey(CustomizationItem, related_name='shirt', on_delete=models.SET_NULL, null=True, blank=True)
@@ -43,7 +60,7 @@ class Customization(models.Model):
     gloves = models.ForeignKey(CustomizationItem, related_name='gloves', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user}'s customizations ({self.hat}, {self.backpack}, {self.shirt}, {self.pants}, {self.shoes}, {self.gloves})"
+        return f"{self.user}'s customizations ({self.base_character}) - ({self.hat}, {self.backpack}, {self.shirt}, {self.pants}, {self.shoes}, {self.gloves})"
 
 class Follow(models.Model):
     follower = models.ForeignKey(CustomUser, related_name='following', on_delete=models.CASCADE)

@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.generics import (
-    RetrieveAPIView,
     ListAPIView,
     CreateAPIView,
     UpdateAPIView,
@@ -34,7 +33,7 @@ from .serializers import (
     CommentSerializer,
     NotificationSerializer,
     GCMDeviceSerializer,
-    WorldPositionSerializer,
+    WorldPositionResponseSerializer,
     CustomizationItemSerializer,
     CustomizationSerializer,
 )
@@ -517,58 +516,54 @@ class NotificationReadAllView(UpdateAPIView):
             {"detail": "All notifications read"}, status=status.HTTP_200_OK
         )
 
-class WorldPositionView(RetrieveAPIView):
-    serializer_class = WorldPositionSerializer
+class WorldPositionsListView(ListAPIView):
+    serializer_class = WorldPositionResponseSerializer
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         responses={
             200: openapi.Response(
-                description="User's world position",
+                description="List of world positions",
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
                         'user': openapi.Schema(type=openapi.TYPE_OBJECT, ref=UserSerializer),
-                        'status': openapi.Schema(type=openapi.TYPE_STRING),
+                        'character': openapi.Schema(type=openapi.TYPE_OBJECT, ref=CustomizationSerializer),
+                        'status': openapi.Schema(type=openapi.TYPE_STRING, enum=["in_city", "in_transition"]),
                         'continent': openapi.Schema(type=openapi.TYPE_STRING),
                         'country': openapi.Schema(type=openapi.TYPE_STRING),
-                        'city': openapi.Schema(type=openapi.TYPE_STRING),
+                        'city': openapi.Schema(type=openapi.TYPE_STRING, description="City name (if in city)"),
+                        'transition_from': openapi.Schema(type=openapi.TYPE_STRING, description="City from (if in transition)"),
+                        'transition_to': openapi.Schema(type=openapi.TYPE_STRING, description="City to (if in transition)"),
                         'level': openapi.Schema(type=openapi.TYPE_INTEGER),
                     },
                 ),
             ),
         }
     )
-    def get_object(self):
-        user = self.request.user
-        position = WorldPosition.objects.get(user=user)
-        return position
-
-class FollowingWorldPositionView(ListAPIView):
-    serializer_class = WorldPositionSerializer
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(
-        responses={
-            200: openapi.Response(
-                description="Following's world positions",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        'user': openapi.Schema(type=openapi.TYPE_OBJECT, ref=UserSerializer),
-                        'status': openapi.Schema(type=openapi.TYPE_STRING),
-                        'continent': openapi.Schema(type=openapi.TYPE_STRING),
-                        'country': openapi.Schema(type=openapi.TYPE_STRING),
-                        'city': openapi.Schema(type=openapi.TYPE_STRING),
-                        'level': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    },
-                ),
-            )
-        }
-    )
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         user: CustomUser = self.request.user
-        return WorldPosition.objects.filter(user__in=user.get_following())
+        customization = get_object_or_404(Customization, user=user)
+        world_position = get_object_or_404(WorldPosition, user=user)
+        followings = user.get_following()
+        world_positions = []
+
+        world_positions.append({
+            'user': user,
+            'customization': customization,
+            'position': world_position,
+        })
+        for following in followings:
+            customization = get_object_or_404(Customization, user=following)
+            world_position = get_object_or_404(WorldPosition, user=following)
+            world_positions.append({
+                'user': following,
+                'customization': customization,
+                'position': world_position,
+            })
+        serializer = WorldPositionResponseSerializer(world_positions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class CustomizationItemListView(ListAPIView):
     serializer_class = CustomizationItemSerializer

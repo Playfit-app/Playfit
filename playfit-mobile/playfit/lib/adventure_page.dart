@@ -193,31 +193,38 @@ class _AdventurePageState extends State<AdventurePage>
                       painter: _RoadPainter(roads),
                     ),
                   ),
-                  for (int i = 0; i < snapshot.data![1].length; i++)
-                    Character(
-                      position: checkpoints[snapshot.data![1][i]
-                          ['current_checkpoint']],
-                      scale: const Offset(0.15, 0.15),
-                      size: const Size(410, 732),
-                      isFlipped:
-                          snapshot.data![1][i]['current_checkpoint'] % 2 == 0,
-                      isMe: i == 0,
-                      images: {
-                        'base_character':
-                            '$serverBaseUrl${snapshot.data![1][i]['character']['base_character']['image']}',
-                        'hat': '$serverBaseUrl${snapshot.data![1][i]['hat']}',
-                        'backpack':
-                            '$serverBaseUrl${snapshot.data![1][i]['backpack']}',
-                        'shirt':
-                            '$serverBaseUrl${snapshot.data![1][i]['shirt']}',
-                        'pants':
-                            '$serverBaseUrl${snapshot.data![1][i]['pants']}',
-                        'shoes':
-                            '$serverBaseUrl${snapshot.data![1][i]['shoes']}',
-                        'gloves':
-                            '$serverBaseUrl${snapshot.data![1][i]['gloves']}',
-                      },
-                    ),
+                  ...[
+                    for (int i = 0; i < snapshot.data![1].length; i++)
+                      if (i == 0 ||
+                          snapshot.data![1][i]['country'] ==
+                              snapshot.data![1][0]['country'])
+                        Character(
+                          position: checkpoints[snapshot.data![1][i]
+                              ['current_checkpoint']],
+                          scale: const Offset(0.15, 0.15),
+                          size: const Size(410, 732),
+                          isFlipped:
+                              snapshot.data![1][i]['current_checkpoint'] % 2 ==
+                                  0,
+                          isMe: i == 0,
+                          images: {
+                            'base_character':
+                                '$serverBaseUrl${snapshot.data![1][i]['character']['base_character']['image']}',
+                            'hat':
+                                '$serverBaseUrl${snapshot.data![1][i]['hat']}',
+                            'backpack':
+                                '$serverBaseUrl${snapshot.data![1][i]['backpack']}',
+                            'shirt':
+                                '$serverBaseUrl${snapshot.data![1][i]['shirt']}',
+                            'pants':
+                                '$serverBaseUrl${snapshot.data![1][i]['pants']}',
+                            'shoes':
+                                '$serverBaseUrl${snapshot.data![1][i]['shoes']}',
+                            'gloves':
+                                '$serverBaseUrl${snapshot.data![1][i]['gloves']}',
+                          },
+                        ),
+                  ]
                 ],
               ),
             ),

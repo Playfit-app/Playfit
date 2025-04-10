@@ -16,7 +16,7 @@ class NotificationService {
 
   static Future<void> sendTokenToBackend(String token) async {
     final url = Uri.parse(
-        "${dotenv.env['SERVER_BASE_URL']}api/social/store-device-token/");
+        "${dotenv.env['SERVER_BASE_URL']}/api/social/store-device-token/");
     final userToken = await const FlutterSecureStorage().read(key: "token");
 
     final response = await http.post(

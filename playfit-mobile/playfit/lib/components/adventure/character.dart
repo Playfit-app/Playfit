@@ -6,6 +6,8 @@ class Character extends StatefulWidget {
   final Offset scale;
   final Size size;
   final bool isFlipped;
+  final bool isMe;
+  final Map<String, String?> images;
 
   Character({
     super.key,
@@ -13,6 +15,8 @@ class Character extends StatefulWidget {
     required this.scale,
     required this.size,
     required this.isFlipped,
+    required this.isMe,
+    required this.images,
   }) : position = Offset(
           position.dx - size.width * scale.dx / 2,
           position.dy - size.height * scale.dy,
@@ -23,18 +27,12 @@ class Character extends StatefulWidget {
 }
 
 class _CharacterState extends State<Character> {
-  late Image image;
   late bool isFlipped;
 
   @override
   void initState() {
     super.initState();
     isFlipped = widget.isFlipped;
-    image = Image.asset(
-      'assets/images/character.png',
-      height: widget.size.height * widget.scale.dy,
-      width: widget.size.width * widget.scale.dx,
-    );
   }
 
   void flip() {
@@ -50,17 +48,23 @@ class _CharacterState extends State<Character> {
       top: widget.position.dy,
       child: GestureDetector(
         onTap: () {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return const WorkoutSessionDialog();
-            },
-          );
+          if (widget.isMe) {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return const WorkoutSessionDialog();
+              },
+            );
+          }
         },
         child: Transform(
           alignment: Alignment.center,
-          transform: Matrix4.rotationY(isFlipped ? 3.14 : 0),
-          child: image,
+          transform: Matrix4.rotationY(widget.isFlipped ? 3.14 : 0),
+          child: Image.network(
+            widget.images['base_character']!,
+            height: widget.size.height * widget.scale.dy,
+            width: widget.size.width * widget.scale.dx,
+          ),
         ),
       ),
     );

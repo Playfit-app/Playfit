@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:playfit/providers/notification_provider.dart';
 
 class AuthService {
-  final String? baseUrl = '${dotenv.env['SERVER_BASE_URL']}api/auth/';
+  final String? baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/auth/';
   final FlutterSecureStorage storage = const FlutterSecureStorage();
   final GoogleSignIn googleSignIn = GoogleSignIn(
     scopes: <String>[

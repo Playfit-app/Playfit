@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
 class CustomTabBar extends StatefulWidget {
+  final Map<String, List<dynamic>> workoutSessionExercises;
+
+  const CustomTabBar({
+    super.key,
+    required this.workoutSessionExercises,
+  });
+
   @override
   _CustomTabBarState createState() => _CustomTabBarState();
 }
@@ -52,17 +59,17 @@ class _CustomTabBarState extends State<CustomTabBar>
                 _buildTabContent(
                   const Color.fromARGB(255, 187, 255, 137),
                   const Color.fromARGB(255, 232, 255, 215),
-                  'Contenu pour l\'onglet Facile',
+                  widget.workoutSessionExercises['beginner'] ?? [],
                 ),
                 _buildTabContent(
                   const Color.fromARGB(255, 255, 214, 110),
                   const Color.fromARGB(255, 255, 235, 185),
-                  'Contenu pour l\'onglet Moyen',
+                  widget.workoutSessionExercises['intermediate'] ?? [],
                 ),
                 _buildTabContent(
                   const Color.fromARGB(255, 255, 124, 124),
                   const Color.fromARGB(255, 255, 186, 186),
-                  'Contenu pour l\'onglet Facile',
+                  widget.workoutSessionExercises['advanced'] ?? [],
                 ),
               ],
             ),
@@ -96,7 +103,8 @@ class _CustomTabBarState extends State<CustomTabBar>
     );
   }
 
-  Widget _buildTabContent(Color borderColor, Color color, String text) {
+  Widget _buildTabContent(
+      Color borderColor, Color color, List<dynamic> content) {
     return Container(
       decoration: BoxDecoration(color: color),
       child: Column(
@@ -105,6 +113,52 @@ class _CustomTabBarState extends State<CustomTabBar>
             height: 9,
             width: double.infinity,
             color: borderColor,
+          ),
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(8),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // two per row
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 3 / 4, // adjust depending on card layout
+              ),
+              itemCount: content.length,
+              itemBuilder: (context, index) {
+                final item = content[index];
+                final videoUrl = item['video_url'];
+                final videoId = Uri.parse(videoUrl).queryParameters['v'];
+
+                return Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  elevation: 4,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (videoId != null)
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16)),
+                          child: Image.network(
+                            'https://img.youtube.com/vi/$videoId/0.jpg',
+                            height: 140,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      else
+                        const SizedBox(height: 140),
+                      Text(
+                        item['name'],
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),

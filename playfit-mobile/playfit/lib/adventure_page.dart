@@ -58,7 +58,8 @@ class _AdventurePageState extends State<AdventurePage>
         curve: Curves.easeInOut,
       );
     } else {
-      debugPrint("No checkpoints or world positions available.");
+      throw Exception(
+          'No checkpoints or world positions available. Please try again later.');
     }
   }
 

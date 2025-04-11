@@ -107,7 +107,8 @@ class WorkoutSessionsView(APIView):
                     "name": workout_session_exercise.exercise.name,
                     "sets": workout_session_exercise.sets,
                     "repetitions": workout_session_exercise.repetitions,
-                    "weight": workout_session_exercise.weight
+                    "weight": workout_session_exercise.weight,
+                    "difficulty": workout_session_exercise.difficulty,
                 })
             data.append({
                 "date": workout_session.date,
@@ -116,55 +117,6 @@ class WorkoutSessionsView(APIView):
             })
 
         return Response(data, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        operation_description="Add a new workout session with its exercises for the current user",
-        request_body=WorkoutSessionSerializer,
-        responses={
-            201: openapi.Response("New workout session", "Workout session added successfully"),
-            400: openapi.Response("Bad request", "Invalid workout session data")
-        }
-    )
-    def post(self, request):
-        workout_session_serializer = WorkoutSessionSerializer(data={
-            "date": request.data["date"],
-            "duration": request.data["duration"]
-        })
-
-        if not workout_session_serializer.is_valid():
-            return Response(workout_session_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        workout_session = workout_session_serializer.save(user=request.user)
-
-        if "exercises" not in request.data or not isinstance(request.data["exercises"], list) or len(request.data["exercises"]) == 0:
-            workout_session.delete()
-            return Response("Invalid workout session data", status=status.HTTP_400_BAD_REQUEST)
-
-        for exercise in request.data["exercises"]:
-            try:
-                exercise_obj = Exercise.objects.get(name=exercise["name"])
-            except Exercise.DoesNotExist:
-                workout_session.delete()
-                return Response(f"Exercise {exercise['name']} does not exist.", status=status.HTTP_400_BAD_REQUEST)
-
-            exercise_serializer = WorkoutSessionExerciseSerializer(data={
-                "workout_session": workout_session.id,
-                "exercise": exercise_obj.id,
-                "sets": exercise["sets"],
-                "repetitions": exercise["repetitions"],
-                "weight": exercise.get("weight")
-            })
-
-            if not exercise_serializer.is_valid():
-                workout_session.delete()
-                return Response(exercise_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            if not Exercise.objects.filter(name=exercise["name"]).exists():
-                workout_session.delete()
-                return Response(f"Exercise {exercise['name']} does not exist.", status=status.HTTP_400_BAD_REQUEST)
-
-            exercise_serializer.save()
-
-        return Response("Workout session added successfully", status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
         operation_description="Update a workout session",
@@ -189,7 +141,7 @@ class WorkoutSessionsView(APIView):
                 workout_session.save()
 
             if data.get("selected_difficulty"):
-                workout_session_exercises = WorkoutSessionExercise.objects.filter(workout_session=workout_session).exclude(exercise__difficulty__in=data["selected_difficulty"])
+                workout_session_exercises = WorkoutSessionExercise.objects.filter(workout_session=workout_session).exclude(difficulty__in=data["selected_difficulty"])
                 workout_session_exercises.delete()
 
             return Response("Workout session updated successfully", status=status.HTTP_200_OK)
@@ -235,12 +187,12 @@ class WorkoutSessionExerciseView(APIView):
 
         for workout_session_exercise in workout_session_exercises:
             exercise = workout_session_exercise.exercise
-            data[exercise.difficulty].append({
+            data[workout_session_exercise.difficulty].append({
                 "name": exercise.name,
-                "description": exercise.description,
-                "video_url": exercise.video_url,
+                "image": exercise.image.url,
                 "sets": workout_session_exercise.sets,
                 "repetitions": workout_session_exercise.repetitions,
-                "weight": workout_session_exercise.weight
+                "weight": workout_session_exercise.weight,
             })
+
         return Response(data, status=status.HTTP_200_OK)

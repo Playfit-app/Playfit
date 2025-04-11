@@ -1,24 +1,6 @@
 from django.contrib import admin
 from .models import Exercise, WorkoutSession, WorkoutSessionExercise
 
-class ExerciseAdmin(admin.ModelAdmin):
-    model = Exercise
-    list_display = [
-        'name', 'difficulty'
-    ]
-    list_filter = [
-        'difficulty'
-    ]
-    fieldsets = [
-        (None, {'fields': ('name', 'description', 'video_url', 'difficulty')}),
-    ]
-    add_fieldsets = [
-        (None, {
-            'classes': ('wide',),
-            'fields': ('name', 'description', 'video_url', 'difficulty'),
-        }),
-    ]
-
 class WorkoutSessionAdmin(admin.ModelAdmin):
     model = WorkoutSession
     list_display = [
@@ -31,21 +13,21 @@ class WorkoutSessionAdmin(admin.ModelAdmin):
 class WorkoutSessionExerciseAdmin(admin.ModelAdmin):
     model = WorkoutSessionExercise
     list_display = [
-        'workout_session', 'exercise', 'sets', 'repetitions', 'weight'
+        'workout_session', 'exercise', 'sets', 'repetitions', 'weight', 'difficulty'
     ]
     list_filter = [
-        'workout_session', 'exercise'
+        'workout_session', 'exercise', 'difficulty'
     ]
     fieldsets = [
-        (None, {'fields': ('workout_session', 'exercise', 'sets', 'repetitions', 'weight')}),
+        (None, {'fields': ('workout_session', 'exercise', 'sets', 'repetitions', 'weight', 'difficulty')}),
     ]
     add_fieldsets = [
         (None, {
             'classes': ('wide',),
-            'fields': ('workout_session', 'exercise', 'sets', 'repetitions', 'weight'),
+            'fields': ('workout_session', 'exercise', 'sets', 'repetitions', 'weight', 'difficulty'),
         }),
     ]
 
-admin.site.register(Exercise, ExerciseAdmin)
+admin.site.register(Exercise)
 admin.site.register(WorkoutSession, WorkoutSessionAdmin)
 admin.site.register(WorkoutSessionExercise, WorkoutSessionExerciseAdmin)

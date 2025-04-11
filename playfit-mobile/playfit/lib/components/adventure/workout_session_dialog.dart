@@ -47,6 +47,22 @@ class WorkoutSessionDialog extends StatelessWidget {
             const SizedBox(height: 20),
             // Tab menu
             CustomTabBar(workoutSessionExercises: workoutSessionExercises),
+            ElevatedButton(
+              onPressed: () {
+                // Handle start workout session
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF8871F),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: const Text('Démarrer',
+                  style: TextStyle(
+                    color: Colors.white,
+                  )),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

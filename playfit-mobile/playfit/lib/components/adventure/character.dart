@@ -72,8 +72,7 @@ class _CharacterState extends State<Character> {
             data[difficulty].map((exercise) {
               return {
                 'name': exercise['name'],
-                'description': exercise['description'],
-                'video_url': exercise['video_url'],
+                'image': '${dotenv.env['SERVER_BASE_URL']}${exercise['image']}',
                 'sets': exercise['sets'],
                 'repetitions': exercise['repetitions'],
                 'weight': exercise['weight'],

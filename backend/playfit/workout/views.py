@@ -170,13 +170,14 @@ class WorkoutSessionExerciseView(APIView):
             pass
 
         if workout_session is None:
-            # Generate a new workout session
+            # Generate a new workout session, temporary solution
             workout_session = WorkoutSession.objects.create(
                 user=request.user,
                 city=wp.city if wp.is_in_city() else None,
                 city_level=wp.city_level if wp.is_in_city() else None,
                 transition_from=wp.transition_from if wp.is_in_transition() else None,
-                transition_to=wp.transition_to if wp.is_in_transition() else None
+                transition_to=wp.transition_to if wp.is_in_transition() else None,
+                creation_date=now().date(),
             )
         workout_session_exercises = WorkoutSessionExercise.objects.filter(workout_session=workout_session)
         data = {

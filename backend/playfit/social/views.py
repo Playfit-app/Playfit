@@ -9,13 +9,10 @@ from rest_framework.generics import (
     DestroyAPIView,
     get_object_or_404,
 )
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-from push_notifications.models import GCMDevice
+
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from authentification.models import CustomUser
-from utilities.redis import redis_client
 from .models import (
     Follow,
     Post,
@@ -37,40 +34,7 @@ from .serializers import (
     CustomizationItemSerializer,
     CustomizationSerializer,
 )
-
-def send_push_notification(user, title, message):
-    devices = GCMDevice.objects.filter(user=user)
-
-    for device in devices:
-        device.send_message(title=title, message=message)
-
-def send_notification(user, notification_data):
-    channel_layer = get_channel_layer()
-    group_name = f"notifications_{user.id}"
-
-    if redis_client.exists(f"user_{user.id}"):
-        async_to_sync(channel_layer.group_send)(
-            group_name,
-            {
-                "type": "send_notification",
-                "message": {
-                    "data": notification_data,
-                },
-            },
-        )
-    else:
-        message = ""
-
-        if notification_data["notification_type"] == "like":
-            message = f"{notification_data['sender']} liked your post"
-        elif notification_data["notification_type"] == "comment":
-            message = f"{notification_data['sender']} commented on your post"
-        elif notification_data["notification_type"] == "follow":
-            message = f"{notification_data['sender']} followed you"
-        elif notification_data["notification_type"] == "post":
-            message = f"{notification_data['sender']} posted"
-
-        send_push_notification(user, "Playfit", message)
+from .utils import send_notification
 
 class GCMDeviceCreateView(CreateAPIView):
     serializer_class = GCMDeviceSerializer
@@ -536,6 +500,15 @@ class WorldPositionsListView(ListAPIView):
                         'transition_from': openapi.Schema(type=openapi.TYPE_STRING, description="City from (if in transition)"),
                         'transition_to': openapi.Schema(type=openapi.TYPE_STRING, description="City to (if in transition)"),
                         'level': openapi.Schema(type=openapi.TYPE_INTEGER),
+                    },
+                ),
+            ),
+            400: openapi.Response(
+                description="Bad request",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'errors': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)),
                     },
                 ),
             ),

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.db import models
 from django.core.exceptions import ValidationError
 from authentification.models import CustomUser
@@ -17,7 +18,7 @@ class WorkoutSession(models.Model):
     transition_from = models.ForeignKey(City, related_name='+', on_delete=models.SET_NULL, null=True, blank=True)
     transition_to = models.ForeignKey(City, related_name='+', on_delete=models.SET_NULL, null=True, blank=True)
 
-    duration = models.DurationField(default=0)
+    duration = models.DurationField(default=timedelta(minutes=0, seconds=0))
     creation_date = models.DateField()
     completed_date = models.DateField(blank=True, null=True)
 

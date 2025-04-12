@@ -22,6 +22,8 @@ from utilities.expiring_password_reset_token import ExpiringPasswordResetTokenGe
 from social.models import (
     City,
     WorldPosition,
+    Customization,
+    BaseCharacter,
 )
 from .models import CustomUser
 from .serializers import (
@@ -52,6 +54,7 @@ class RegisterView(APIView):
     )
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
+
         if serializer.is_valid():
             try:
                 user = serializer.create(serializer.validated_data)
@@ -60,6 +63,10 @@ class RegisterView(APIView):
                     user=user,
                     city=City.objects.get(name="Paris"),
                     city_level=1,
+                )
+                Customization.objects.create(
+                    user=user,
+                    base_character=BaseCharacter.objects.get(id=serializer.validated_data['character_image_id']),
                 )
                 return Response({
                     'token': token.key,

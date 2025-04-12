@@ -54,15 +54,17 @@ class AuthService {
   }
 
   Future<Map<String, String>> register(
-      BuildContext context,
-      String email,
-      String username,
-      String password,
-      String dateOfBirth,
-      double height,
-      double weight,
-      bool isConsentGiven,
-      bool isMarketingConsentGiven) async {
+    BuildContext context,
+    String email,
+    String username,
+    String password,
+    String dateOfBirth,
+    double height,
+    double weight,
+    bool isConsentGiven,
+    bool isMarketingConsentGiven,
+    int index,
+  ) async {
     try {
       final data = <String, dynamic>{
         'email': email,
@@ -74,6 +76,7 @@ class AuthService {
         'terms_and_conditions': isConsentGiven,
         'privacy_policy': isConsentGiven,
         'marketing': isMarketingConsentGiven,
+        'character_image_id': index,
       };
       final response = await http.post(
         Uri.parse('${baseUrl}register/'),

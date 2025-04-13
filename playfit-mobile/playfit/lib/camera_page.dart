@@ -80,7 +80,6 @@ class _CameraViewState extends State<CameraView> {
                   ),
                 ),
 
-                /*
                 // Nouvelle BOX à gauche, centrée verticalement, collée à l'écran
                 Align(
                   alignment: Alignment.centerLeft,
@@ -105,7 +104,7 @@ class _CameraViewState extends State<CameraView> {
                             Text(
                                '${_elapsedTime.inMinutes}:${(_elapsedTime.inSeconds % 60).toString().padLeft(2, '0')}',
                                style: const TextStyle(
-                                fontSize: 20,
+                                fontSize: 30,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -120,7 +119,7 @@ class _CameraViewState extends State<CameraView> {
                             Text(
                               '1',
                               style: TextStyle(
-                                fontSize: 20,
+                                fontSize: 30,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -138,55 +137,54 @@ class _CameraViewState extends State<CameraView> {
                   ),
                 ),
 
-                */
                 // Ancienne BOX en bas (désactivée via commentaire)
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    height: 100,
-                    padding: const EdgeInsets.symmetric(horizontal: 50),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.timer, color: Colors.orange, size: 30),
-                            const SizedBox(width: 5),
-                            Text(
-                              '${_elapsedTime.inMinutes}:${(_elapsedTime.inSeconds % 60).toString().padLeft(2, '0')}',
-                              style: const TextStyle(
-                                fontSize: 40,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Row(
-                          children: [
-                            Icon(Icons.fitness_center, color: Colors.orange, size: 30),
-                            SizedBox(width: 5),
-                            Text(
-                              '1',
-                              style: TextStyle(
-                                fontSize: 40,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 80,
-                          child: Image.asset("assets/images/mascot.png"),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                // Align(
+                //   alignment: Alignment.bottomCenter,
+                //   child: Container(
+                //     height: 100,
+                //     padding: const EdgeInsets.symmetric(horizontal: 50),
+                //     decoration: const BoxDecoration(
+                //       color: Colors.white,
+                //       borderRadius:
+                //           BorderRadius.vertical(top: Radius.circular(20)),
+                //     ),
+                //     child: Row(
+                //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //       children: [
+                //         Row(
+                //           children: [
+                //             const Icon(Icons.timer, color: Colors.orange, size: 30),
+                //             const SizedBox(width: 5),
+                //             Text(
+                //               '${_elapsedTime.inMinutes}:${(_elapsedTime.inSeconds % 60).toString().padLeft(2, '0')}',
+                //               style: const TextStyle(
+                //                 fontSize: 34,
+                //                 fontWeight: FontWeight.bold,
+                //               ),
+                //             ),
+                //           ],
+                //         ),
+                //         const Row(
+                //           children: [
+                //             Icon(Icons.fitness_center, color: Colors.orange, size: 30),
+                //             SizedBox(width: 5),
+                //             Text(
+                //               '1',
+                //               style: TextStyle(
+                //                 fontSize: 34,
+                //                 fontWeight: FontWeight.bold,
+                //               ),
+                //             ),
+                //           ],
+                //         ),
+                //         SizedBox(
+                //           height: 80,
+                //           child: Image.asset("assets/images/mascot.png"),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
               ],
             )
           : const Center(child: CircularProgressIndicator()),

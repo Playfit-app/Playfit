@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:playfit/auth_service.dart';
+import 'package:playfit/services/auth_service.dart';
 import 'package:playfit/authentification/registration_step1.dart';
 import 'package:playfit/authentification/registration_step2.dart';
 import 'package:playfit/home_page.dart';
@@ -61,7 +61,8 @@ class CreateAccountPageState extends State<CreateAccountPage> {
     if (result["status"] == 'success') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        MaterialPageRoute(
+            builder: (context) => const HomePage(firstLogin: true)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

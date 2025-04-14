@@ -2,11 +2,11 @@ import random
 import requests
 import base64
 import struct
-
-from .models import CustomUser, UserAchievement, GameAchievement
 from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework import status
+from social.models import WorldPosition
+from .models import CustomUser, UserAchievement, GameAchievement
 
 def generate_username_with_number(base_name: str) -> str:
     base_name = base_name.replace(" ", "").lower()
@@ -73,3 +73,23 @@ def link_achievements_to_user(user):
     # Check if the user already has the achievement
     for achievement in achievements:
         UserAchievement.objects.get_or_create(user=user, achievement=achievement)
+
+def get_position_data(data: WorldPosition) -> dict:
+    if data.is_in_city():
+        return {
+            'status': 'in_city',
+            'continent': data.city.country.continent.name,
+            'country': data.city.country.name,
+            'city': data.city.name,
+            'level': data.city_level,
+        }
+    elif data.is_in_transition():
+        return {
+            'status': 'in_transition',
+            'continent': data.transition_from.country.continent.name,
+            'country': data.transition_from.country.name,
+            'from': data.transition_from.name,
+            'to': data.transition_to.name,
+            'level': data.transition_level,
+        }
+    return {'status': 'unknown'}

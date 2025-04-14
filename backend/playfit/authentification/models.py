@@ -125,6 +125,15 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         self.is_active = False
         self.save()
 
+    def get_followers(self):
+        return CustomUser.objects.filter(following__following=self)
+
+    def get_following(self):
+        return CustomUser.objects.filter(followers__follower=self)
+
+    def get_posts(self):
+        return self.posts.all()
+
 class UserConsent(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     terms_and_conditions = models.BooleanField(default=False)

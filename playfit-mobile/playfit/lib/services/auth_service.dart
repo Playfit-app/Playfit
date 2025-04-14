@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:provider/provider.dart';
+import 'package:playfit/providers/notification_provider.dart';
 
 class AuthService {
   final String? baseUrl = '${dotenv.env['SERVER_BASE_URL']}api/auth/';
@@ -38,6 +40,8 @@ class AuthService {
         await storage.write(key: 'token', value: token);
 
         if (context.mounted) {
+          Provider.of<NotificationProvider>(context, listen: false)
+              .connect(token);
           return {'status': 'success', 'message': 'Login successful'};
         }
       } else {
@@ -83,6 +87,8 @@ class AuthService {
         await storage.write(key: 'token', value: token);
 
         if (context.mounted) {
+          Provider.of<NotificationProvider>(context, listen: false)
+              .connect(token);
           return {'status': 'success', 'message': 'Register successful'};
         }
       } else {
@@ -116,6 +122,8 @@ class AuthService {
             await storage.write(key: 'token', value: token);
 
             if (context.mounted) {
+              Provider.of<NotificationProvider>(context, listen: false)
+                  .connect(token);
               return {
                 'status': 'success',
                 'message': 'Google login successful'

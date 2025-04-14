@@ -76,7 +76,7 @@ class AuthService {
         'terms_and_conditions': isConsentGiven,
         'privacy_policy': isConsentGiven,
         'marketing': isMarketingConsentGiven,
-        'character_image_id': index,
+        'character_image_id': index + 1,
       };
       final response = await http.post(
         Uri.parse('${baseUrl}register/'),

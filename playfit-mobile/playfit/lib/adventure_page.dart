@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 import 'dart:convert';
+import 'dart:ui' as ui;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -38,13 +38,12 @@ class _AdventurePageState extends State<AdventurePage>
     'assets/images/france/paris/apt.png',
     'assets/images/tree.png',
   ];
-  late Future<List<dynamic>> _worldPositions;
 
   @override
   void initState() {
     super.initState();
     nbCities = 2;
-    _worldPositions = _getWorldPositions();
+    // _worldPositions = _getWorldPositions();
   }
 
   void _scrollToCharacter(List<dynamic> worldPositions) {
@@ -101,7 +100,28 @@ class _AdventurePageState extends State<AdventurePage>
     }
   }
 
-  List<Road> _createRoads(Map<String, ui.Image> decorationImages) {
+  Future<Map<String, dynamic>> _getDecorationImages(String country) async {
+    final String url =
+        '${dotenv.env['SERVER_BASE_URL']}/api/social/get-decoration-images/$country/';
+    final String? token = await storage.read(key: 'token');
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Token $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      return data;
+    } else {
+      throw Exception('Failed to load decoration images');
+    }
+  }
+
+  List<Road> _createRoads(Map<String, dynamic> decorationImages) {
     List<Road> roads = [];
     combinedPath = Path();
 
@@ -124,12 +144,14 @@ class _AdventurePageState extends State<AdventurePage>
           startY: startY,
           scale: scale,
           decorationImages: decorationImages,
+          cityIndex: i,
         );
       } else {
         road = TransitionRoad(
           startY: startY,
           scale: scale,
           decorationImages: decorationImages,
+          cityIndex: i,
         );
       }
       startY = road.getStartY();
@@ -146,38 +168,57 @@ class _AdventurePageState extends State<AdventurePage>
     super.dispose();
   }
 
+  Future<List<dynamic>> _loadPositionsAndImages() async {
+    final positions = await _getWorldPositions();
+    final String country = positions.first['country'];
+    final decorationImages = await _getDecorationImages(country);
+    Map<String, dynamic> images = {
+      'tree': await UIImageCacheManager().loadImageFromNetwork(
+          '${dotenv.env['SERVER_BASE_URL']}${decorationImages['tree']}'),
+      'flag': await UIImageCacheManager().loadImageFromNetwork(
+          '${dotenv.env['SERVER_BASE_URL']}${decorationImages['flag']}'),
+      'building': await UIImageCacheManager().loadImageFromNetwork(
+          '${dotenv.env['SERVER_BASE_URL']}${decorationImages['building']}'),
+      'country': [],
+    };
+
+    for (var i = 0; i < decorationImages['country'].length; i++) {
+      final countryImages = await Future.wait(
+        decorationImages['country'][i].map<Future<ui.Image>>((imageUrl) async {
+          final fullUrl = '${dotenv.env['SERVER_BASE_URL']}$imageUrl';
+
+          return await UIImageCacheManager().loadImageFromNetwork(fullUrl);
+        }).toList(),
+      );
+      images['country'].add(countryImages);
+    }
+
+    return [images, positions];
+  }
+
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     double height = screenSize.height * (nbCities + (nbCities - 1) * 0.5);
 
     return FutureBuilder(
-      future: Future.wait([
-        Future.wait(imagePaths.map((imagePath) {
-          return UIImageCacheManager().loadImageFromAssets(imagePath);
-        })),
-        _worldPositions,
-      ]),
+      future: _loadPositionsAndImages(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
-        final List<ui.Image> images = snapshot.data![0] as List<ui.Image>;
         final String serverBaseUrl = dotenv.env['SERVER_BASE_URL']!;
+        final images = snapshot.data![0] as Map<String, dynamic>;
+        final worldPositions = snapshot.data![1] as List<dynamic>;
+        final roads = _createRoads(images);
 
-        final decorationImages = {
-          "landmark": images[0],
-          "building": images[1],
-          "tree": images[2],
-        };
-        final roads = _createRoads(decorationImages);
         checkpoints = roads
             .map((road) => road.getCheckpoints().map((c) => c.position))
             .expand((element) => element)
             .toList();
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToCharacter(snapshot.data![1]);
+          _scrollToCharacter(worldPositions);
         });
 
         return Scaffold(
@@ -195,34 +236,33 @@ class _AdventurePageState extends State<AdventurePage>
                     ),
                   ),
                   ...[
-                    for (int i = 0; i < snapshot.data![1].length; i++)
+                    for (int i = 0; i < worldPositions.length; i++)
                       if (i == 0 ||
-                          snapshot.data![1][i]['country'] ==
-                              snapshot.data![1][0]['country'])
+                          worldPositions[i]['country'] ==
+                              worldPositions[0]['country'])
                         Character(
-                          position: checkpoints[snapshot.data![1][i]
+                          position: checkpoints[worldPositions[i]
                               ['current_checkpoint']],
                           scale: const Offset(0.15, 0.15),
                           size: const Size(410, 732),
                           isFlipped:
-                              snapshot.data![1][i]['current_checkpoint'] % 2 ==
-                                  0,
+                              worldPositions[i]['current_checkpoint'] % 2 == 0,
                           isMe: i == 0,
                           images: {
                             'base_character':
-                                '$serverBaseUrl${snapshot.data![1][i]['character']['base_character']['image']}',
+                                '$serverBaseUrl${worldPositions[i]['character']['base_character']['image']}',
                             'hat':
-                                '$serverBaseUrl${snapshot.data![1][i]['hat']}',
+                                '$serverBaseUrl${worldPositions[i]['character']['hat']}',
                             'backpack':
-                                '$serverBaseUrl${snapshot.data![1][i]['backpack']}',
+                                '$serverBaseUrl${worldPositions[i]['character']['backpack']}',
                             'shirt':
-                                '$serverBaseUrl${snapshot.data![1][i]['shirt']}',
+                                '$serverBaseUrl${worldPositions[i]['character']['shirt']}',
                             'pants':
-                                '$serverBaseUrl${snapshot.data![1][i]['pants']}',
+                                '$serverBaseUrl${worldPositions[i]['character']['pants']}',
                             'shoes':
-                                '$serverBaseUrl${snapshot.data![1][i]['shoes']}',
+                                '$serverBaseUrl${worldPositions[i]['character']['shoes']}',
                             'gloves':
-                                '$serverBaseUrl${snapshot.data![1][i]['gloves']}',
+                                '$serverBaseUrl${worldPositions[i]['character']['gloves']}',
                           },
                         ),
                   ]

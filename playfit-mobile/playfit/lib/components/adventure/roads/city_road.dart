@@ -12,6 +12,7 @@ class CityRoad extends Road {
     required super.startY,
     required super.scale,
     required super.decorationImages,
+    required super.cityIndex,
   }) {
     oldStartY = startY;
     buildGreyPath();
@@ -24,16 +25,16 @@ class CityRoad extends Road {
   void setDecorations() {
     final ui.Image? treeImage = decorationImages['tree'];
     final ui.Image? buildingImage = decorationImages['building'];
-    final ui.Image? eiffelTowerImage = decorationImages['landmark'];
-    const Size treeSize = Size(79, 118);
-    const Size buildingSize = Size(75, 131);
-    const Size eiffelTowerSize = Size(89, 208);
+    final ui.Image? landmarkImage = decorationImages['country'][cityIndex].last;
 
-    if (treeImage == null ||
-        buildingImage == null ||
-        eiffelTowerImage == null) {
+    if (treeImage == null || buildingImage == null || landmarkImage == null) {
       return;
     }
+
+    const Size treeSize = Size(79, 118);
+    const Size buildingSize = Size(75, 131);
+    Size landmarkSize =
+        Size(landmarkImage.width.toDouble(), landmarkImage.height.toDouble());
 
     decorations = [
       // Trees
@@ -87,9 +88,9 @@ class CityRoad extends Road {
 
       // Landmarks
       dec.Decoration(
-        image: eiffelTowerImage,
+        image: landmarkImage,
         position: Offset(300 * scale.dx, startY + 170 * scale.dy),
-        size: eiffelTowerSize,
+        size: landmarkSize,
       ),
     ];
   }

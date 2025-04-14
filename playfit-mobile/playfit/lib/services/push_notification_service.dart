@@ -18,7 +18,6 @@ class NotificationService {
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/store-device-token/");
     final userToken = await const FlutterSecureStorage().read(key: "token");
-
     final response = await http.post(
       url,
       headers: {
@@ -30,7 +29,7 @@ class NotificationService {
       }),
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 201) {
       print("FCM Token sent successfully!");
     } else {
       print("Failed to send FCM Token");
@@ -79,7 +78,6 @@ class NotificationService {
 
   Future<void> getToken() async {
     String? token = await _firebaseMessaging.getToken();
-    print("FCM Token: $token");
 
     if (token != null) {
       await sendTokenToBackend(token);

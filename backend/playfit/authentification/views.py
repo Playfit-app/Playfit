@@ -1,9 +1,11 @@
 import datetime
+import json
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
+from rest_framework.parsers import JSONParser
 from django.contrib.auth import authenticate, login
 from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
@@ -23,13 +25,14 @@ from social.models import (
     City,
     WorldPosition,
 )
-from .models import CustomUser
+from .models import CustomUser, UserAchievement
 from .serializers import (
     CustomUserSerializer,
     CustomUserRetrieveSerializer,
     CustomUserUpdateSerializer,
     CustomUserDeleteSerializer,
     AccountRecoveryRequestSerializer,
+    UserAchievementSerializer,
 )
 from .utils import (
     generate_username_with_number,
@@ -37,6 +40,8 @@ from .utils import (
     generate_uid_from_id,
     get_id_from_uid,
     get_position_data,
+    evaluate_achievements,
+    link_achievements_to_user,
 )
 
 class RegisterView(APIView):
@@ -56,6 +61,8 @@ class RegisterView(APIView):
             try:
                 user = serializer.create(serializer.validated_data)
                 token, _ = Token.objects.get_or_create(user=user)
+
+                link_achievements_to_user(user)
                 WorldPosition.objects.create(
                     user=user,
                     city=City.objects.get(name="Paris"),
@@ -459,3 +466,38 @@ class AccountRecoveryView(View):
             return render(request, "authentification/account_recovery.html", {'error': e.messages[0], 'email': email}, status=status.HTTP_400_BAD_REQUEST)
 
         return render(request, "authentification/account_recovery.html", {'message': 'Account recovered'}, status=status.HTTP_200_OK)
+
+class UserAchievementView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Get user achievements.",
+        responses={
+            200: openapi.Response("User achievements"),
+            400: "Invalid data or data not found",
+        }
+    )
+    def get(self, request):
+        user = request.user
+        achievements = UserAchievement.objects.filter(user=user)
+        serializer = UserAchievementSerializer(achievements, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @swagger_auto_schema(
+        request_body=UserAchievementSerializer,
+        operation_description="Update user achievement progress.",
+        responses={
+            200: openapi.Response("User achievement updated", UserAchievementSerializer),
+            400: "Invalid data or data not found",
+        }
+    )
+    def post(self, request):
+        serializer = UserAchievementSerializer(data=request.data,  context={'request': request})
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = request.user
+        progress = serializer.validated_data['progress']
+        return evaluate_achievements(user, progress)
+        
+

@@ -1,6 +1,7 @@
 from django.urls import path, include
 from .views import RegisterView, LoginView, LogoutView, UserView, GoogleOAuthLoginView,\
-                    ResetPasswordRequestView, ResetPasswordView, AccountRecoveryRequestView, AccountRecoveryView
+                    ResetPasswordRequestView, ResetPasswordView, AccountRecoveryRequestView,\
+                        AccountRecoveryView, UserAchievementView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -15,4 +16,5 @@ urlpatterns = [
     path('account_recovery/', AccountRecoveryView.as_view(), name='account_recovery'),
     path('', include("social_django.urls", namespace="social")),
     path('google-login/', GoogleOAuthLoginView.as_view(), name='google-login'),
+    path('user-achievements/', UserAchievementView.as_view(), name='user-achievements'),
 ]

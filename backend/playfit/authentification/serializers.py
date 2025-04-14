@@ -1,7 +1,8 @@
 import django.contrib.auth.password_validation as validators
 from rest_framework import serializers
 from utilities.encrypted_fields import hash
-from .models import CustomUser, UserConsent
+from .models import CustomUser, UserConsent, UserAchievement
+import json
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -105,4 +106,29 @@ class AccountRecoveryRequestSerializer(serializers.Serializer):
     def validate(self, data):
         if not CustomUser.objects.filter(email_hash=hash(data['email'])).exists():
             raise serializers.ValidationError({'email': 'Email not found'})
+        return data
+
+class UserTestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username']
+
+class UserAchievementSerializer(serializers.ModelSerializer):
+    user = UserTestSerializer(read_only=True)
+    progress = serializers.DictField()
+    class Meta:
+        model = UserAchievement
+        fields = ['progress', 'user']
+    
+    def validate(self, data):
+        user = self.context['request'].user
+        
+        if not data:
+            raise serializers.ValidationError({'data': 'Data not found'})
+        if not data['progress']:
+            raise serializers.ValidationError({'progress': 'Progress not found'})
+        if not user:
+            raise serializers.ValidationError({'user': 'User not found'})
+        if data['progress'] == '' or data['progress'] == "":
+            raise serializers.ValidationError({'progress': 'Progress cannot be empty'})
         return data

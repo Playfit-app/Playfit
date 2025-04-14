@@ -1,7 +1,9 @@
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 from rest_framework.authtoken.models import Token
-from authentification.models import CustomUser
+from authentification.models import CustomUser, GameAchievement, UserAchievement
+from django.utils import timezone as Timezone
+from authentification.serializers import UserTestSerializer
 
 class RegisterViewTests(APITestCase):
     def setUp(self):
@@ -237,3 +239,49 @@ class UserViewTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         response = self.client.delete(self.delete_url, data={'confirm': True}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)        
+
+class UserAchievementTests(APITestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            email="test@test.com",
+            username="test",
+            password="test12345",
+            date_of_birth="1990-01-01",
+            height=180,
+            weight=80,
+        )
+        self.url = "/api/auth/user-achievements/"
+        self.achievement = GameAchievement.objects.create(
+            name="Welcome to Playfit",
+            description="Welcome to Playfit! Let's get started!",
+            criteria=[
+                {
+                    "current_streak": 1,
+                }
+            ],
+            xp_reward=50,
+            created_at=Timezone.now(),
+        )
+        self.user_achievement = UserAchievement.objects.create(
+            user=self.user,
+            achievement=self.achievement,
+            is_completed=False,
+            progress={
+                "current_streak": 0,
+            },
+        )
+        self.client = APIClient()
+
+    #Test the validation of the "Welcome to Playfit" achievement by doing a request to the user-acheivements endpoint
+    def test_welcome_to_playfit(self):
+        token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        user_data = UserTestSerializer(self.user).data
+        data = {
+            'user': user_data,
+            'progress': {
+                'current_streak': 1,
+            },
+        }
+        response = self.client.post(self.url, data, format='json')
+        

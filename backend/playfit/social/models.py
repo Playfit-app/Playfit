@@ -1,11 +1,20 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from authentification.models import CustomUser
+from django.contrib.auth import get_user_model
+from django.utils.text import slugify
 from .utils import convert_to_webp
+
+User = get_user_model()
 
 def customizations_image_path(instance, filename):
     filename_without_ext = filename.split('.')[0]
     return f'customizations/{instance.category}/{filename_without_ext}.webp'
+
+def city_decoration_image_path(instance, filename):
+    filename_without_ext = filename.split('.')[0]
+    country_name = slugify(instance.city.country.name)
+    city_name = slugify(instance.city.name)
+    return f'decorations/countries/{country_name}/{city_name}/{filename_without_ext}.webp'
 
 class CustomizationItem(models.Model):
     CATEGORY_CHOICES = [
@@ -33,8 +42,25 @@ class CustomizationItem(models.Model):
                 raise ValidationError("The image must be a PNG or WebP file")
         super().save(*args, **kwargs)
 
+class BaseCharacter(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    image = models.ImageField(upload_to='base_characters/')
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            ext = self.image.name.split('.')[-1].lower()
+            if ext == 'png':
+                self.image = convert_to_webp(self.image)
+            elif ext != 'webp':
+                raise ValidationError("The image must be a PNG or WebP file")
+        super().save(*args, **kwargs)
+
 class Customization(models.Model):
-    user = models.OneToOneField(CustomUser, related_name='customizations', on_delete=models.CASCADE)
+    user = models.OneToOneField(User, related_name='customizations', on_delete=models.CASCADE)
+    base_character = models.ForeignKey(BaseCharacter, related_name='character', on_delete=models.SET_NULL, null=True, blank=True)
     hat = models.ForeignKey(CustomizationItem, related_name='hat', on_delete=models.SET_NULL, null=True, blank=True)
     backpack = models.ForeignKey(CustomizationItem, related_name='backpack', on_delete=models.SET_NULL, null=True, blank=True)
     shirt = models.ForeignKey(CustomizationItem, related_name='shirt', on_delete=models.SET_NULL, null=True, blank=True)
@@ -43,11 +69,11 @@ class Customization(models.Model):
     gloves = models.ForeignKey(CustomizationItem, related_name='gloves', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user}'s customizations ({self.hat}, {self.backpack}, {self.shirt}, {self.pants}, {self.shoes}, {self.gloves})"
+        return f"{self.user}'s customizations ({self.base_character}) - ({self.hat}, {self.backpack}, {self.shirt}, {self.pants}, {self.shoes}, {self.gloves})"
 
 class Follow(models.Model):
-    follower = models.ForeignKey(CustomUser, related_name='following', on_delete=models.CASCADE)
-    following = models.ForeignKey(CustomUser, related_name='followers', on_delete=models.CASCADE)
+    follower = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE)
+    following = models.ForeignKey(User, related_name='followers', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -65,7 +91,7 @@ class Follow(models.Model):
         super().save(*args, **kwargs)
 
 class Post(models.Model):
-    user = models.ForeignKey(CustomUser, related_name='posts', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='posts', on_delete=models.CASCADE)
     content = models.TextField(blank=True, null=True)
     media = models.FileField(upload_to='posts/media/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -74,7 +100,7 @@ class Post(models.Model):
         return f"{self.user} posted on {self.created_at}"
 
 class Like(models.Model):
-    user = models.ForeignKey(CustomUser, related_name='likes', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='likes', on_delete=models.CASCADE)
     post = models.ForeignKey(Post, related_name='likes', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -85,7 +111,7 @@ class Like(models.Model):
         return f"{self.user} liked {self.post}"
 
 class Comment(models.Model):
-    user = models.ForeignKey(CustomUser, related_name='comments', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='comments', on_delete=models.CASCADE)
     post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -99,12 +125,13 @@ class Notification(models.Model):
         ('comment', 'Comment'),
         ('follow', 'Follow'),
         ('post', 'Post'),
+        ('world_position', 'World Position'),
     )
 
-    user = models.ForeignKey(CustomUser, related_name='notifications', on_delete=models.CASCADE)
-    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='notifications', on_delete=models.CASCADE)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, null=True, blank=True, on_delete=models.CASCADE)
-    notification_type = models.CharField(max_length=10, choices=NOTIFICATION_TYPES)
+    notification_type = models.CharField(max_length=25, choices=NOTIFICATION_TYPES)
     created_at = models.DateTimeField(auto_now_add=True)
     seen = models.BooleanField(default=False)
 
@@ -140,7 +167,7 @@ class WorldPosition(models.Model):
     CITY_LEVEL_CHOICES = [(i, f"Level {i}") for i in range(1, 7)]
     TRANSITION_LEVEL_CHOICES = [(i, f"Level {i}") for i in range(1, 5)]
 
-    user = models.OneToOneField(CustomUser, related_name='position', on_delete=models.CASCADE)
+    user = models.OneToOneField(User, related_name='position', on_delete=models.CASCADE)
     city = models.ForeignKey(City, related_name='users', on_delete=models.SET_NULL, null=True, blank=True)
     city_level = models.PositiveIntegerField(null=True, blank=True, choices=CITY_LEVEL_CHOICES)
 
@@ -189,3 +216,28 @@ class WorldPosition(models.Model):
         elif self.is_in_transition():
             return f"{self.user} is transitioning from {self.transition_from} to {self.transition_to} (Level {self.transition_level})"
         return f"{self.user} is in the void"
+
+# class CountryDecorationImage(models.Model):
+#     country = models.ForeignKey(Country, related_name='decorations', on_delete=models.CASCADE)
+#     image = models.ImageField(upload_to='decorations/')
+
+#     def __str__(self):
+#         return f"{self.country} decoration ({self.created_at})"
+
+class CityDecorationImage(models.Model):
+    city = models.ForeignKey(City, related_name='decorations', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to=city_decoration_image_path)
+    label = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.label} decoration for {self.city} ({self.created_at})"
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            ext = self.image.name.split('.')[-1].lower()
+            if ext == 'png':
+                self.image = convert_to_webp(self.image)
+            elif ext != 'webp':
+                raise ValidationError("The image must be a PNG or WebP file")
+        super().save(*args, **kwargs)

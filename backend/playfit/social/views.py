@@ -3,20 +3,16 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.generics import (
-    RetrieveAPIView,
     ListAPIView,
     CreateAPIView,
     UpdateAPIView,
     DestroyAPIView,
     get_object_or_404,
 )
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-from push_notifications.models import GCMDevice
+
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from authentification.models import CustomUser
-from utilities.redis import redis_client
 from .models import (
     Follow,
     Post,
@@ -26,6 +22,9 @@ from .models import (
     WorldPosition,
     CustomizationItem,
     Customization,
+    Country,
+    City,
+    CityDecorationImage,
 )
 from .serializers import (
     UserSerializer,
@@ -34,44 +33,11 @@ from .serializers import (
     CommentSerializer,
     NotificationSerializer,
     GCMDeviceSerializer,
-    WorldPositionSerializer,
+    WorldPositionResponseSerializer,
     CustomizationItemSerializer,
     CustomizationSerializer,
 )
-
-def send_push_notification(user, title, message):
-    devices = GCMDevice.objects.filter(user=user)
-
-    for device in devices:
-        device.send_message(title=title, message=message)
-
-def send_notification(user, notification_data):
-    channel_layer = get_channel_layer()
-    group_name = f"notifications_{user.id}"
-
-    if redis_client.exists(f"user_{user.id}"):
-        async_to_sync(channel_layer.group_send)(
-            group_name,
-            {
-                "type": "send_notification",
-                "message": {
-                    "data": notification_data,
-                },
-            },
-        )
-    else:
-        message = ""
-
-        if notification_data["notification_type"] == "like":
-            message = f"{notification_data['sender']} liked your post"
-        elif notification_data["notification_type"] == "comment":
-            message = f"{notification_data['sender']} commented on your post"
-        elif notification_data["notification_type"] == "follow":
-            message = f"{notification_data['sender']} followed you"
-        elif notification_data["notification_type"] == "post":
-            message = f"{notification_data['sender']} posted"
-
-        send_push_notification(user, "Playfit", message)
+from .utils import send_notification
 
 class GCMDeviceCreateView(CreateAPIView):
     serializer_class = GCMDeviceSerializer
@@ -517,58 +483,63 @@ class NotificationReadAllView(UpdateAPIView):
             {"detail": "All notifications read"}, status=status.HTTP_200_OK
         )
 
-class WorldPositionView(RetrieveAPIView):
-    serializer_class = WorldPositionSerializer
+class WorldPositionsListView(ListAPIView):
+    serializer_class = WorldPositionResponseSerializer
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         responses={
             200: openapi.Response(
-                description="User's world position",
+                description="List of world positions",
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
                         'user': openapi.Schema(type=openapi.TYPE_OBJECT, ref=UserSerializer),
-                        'status': openapi.Schema(type=openapi.TYPE_STRING),
+                        'character': openapi.Schema(type=openapi.TYPE_OBJECT, ref=CustomizationSerializer),
+                        'status': openapi.Schema(type=openapi.TYPE_STRING, enum=["in_city", "in_transition"]),
                         'continent': openapi.Schema(type=openapi.TYPE_STRING),
                         'country': openapi.Schema(type=openapi.TYPE_STRING),
-                        'city': openapi.Schema(type=openapi.TYPE_STRING),
+                        'city': openapi.Schema(type=openapi.TYPE_STRING, description="City name (if in city)"),
+                        'transition_from': openapi.Schema(type=openapi.TYPE_STRING, description="City from (if in transition)"),
+                        'transition_to': openapi.Schema(type=openapi.TYPE_STRING, description="City to (if in transition)"),
                         'level': openapi.Schema(type=openapi.TYPE_INTEGER),
+                    },
+                ),
+            ),
+            400: openapi.Response(
+                description="Bad request",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'errors': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)),
                     },
                 ),
             ),
         }
     )
-    def get_object(self):
-        user = self.request.user
-        position = WorldPosition.objects.get(user=user)
-        return position
-
-class FollowingWorldPositionView(ListAPIView):
-    serializer_class = WorldPositionSerializer
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(
-        responses={
-            200: openapi.Response(
-                description="Following's world positions",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        'user': openapi.Schema(type=openapi.TYPE_OBJECT, ref=UserSerializer),
-                        'status': openapi.Schema(type=openapi.TYPE_STRING),
-                        'continent': openapi.Schema(type=openapi.TYPE_STRING),
-                        'country': openapi.Schema(type=openapi.TYPE_STRING),
-                        'city': openapi.Schema(type=openapi.TYPE_STRING),
-                        'level': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    },
-                ),
-            )
-        }
-    )
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         user: CustomUser = self.request.user
-        return WorldPosition.objects.filter(user__in=user.get_following())
+        customization = get_object_or_404(Customization, user=user)
+        world_position = get_object_or_404(WorldPosition, user=user)
+        followings = user.get_following()
+        world_positions = []
+
+        world_positions.append({
+            'user': user,
+            'customization': customization,
+            'position': world_position,
+        })
+        for following in followings:
+            customization = get_object_or_404(Customization, user=following)
+            world_position = get_object_or_404(WorldPosition, user=following)
+            world_positions.append({
+                'user': following,
+                'customization': customization,
+                'position': world_position,
+            })
+        serializer = WorldPositionResponseSerializer(world_positions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class CustomizationItemListView(ListAPIView):
     serializer_class = CustomizationItemSerializer
@@ -602,3 +573,29 @@ class CustomizationView(APIView):
         customization = Customization.objects.get(user=user)
         serializer = CustomizationSerializer(customization)
         return Response(serializer.data)
+
+class GetDecorationImagesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, country: str):
+        c = get_object_or_404(Country, name=country)
+        cities = City.objects.filter(country=c)
+        decoration_images = {
+            'tree': '/media/decorations/tree.webp',
+            'building': '/media/decorations/building.webp',
+            'flag': '/media/decorations/flag.webp',
+            'country': []
+        }
+
+        for city in cities:
+            images = CityDecorationImage.objects.filter(city=city)
+            temp_images = []
+
+            for image in images:
+                temp_images.append(image.image.url)
+            decoration_images['country'].append(temp_images)
+
+        # Temporary solution to avoid empty list
+        decoration_images['country'][1] = decoration_images['country'][0]
+        decoration_images['country'][2] = decoration_images['country'][0]
+        return Response(decoration_images, status=status.HTTP_200_OK)

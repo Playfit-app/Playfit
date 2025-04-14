@@ -1,134 +1,313 @@
-import 'package:flame/game.dart';
-import 'package:flame/components.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'dart:ui' as ui;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:playfit/components/adventure/roads/city_road.dart';
+import 'package:playfit/components/adventure/roads/road.dart';
+import 'package:playfit/components/adventure/roads/transition_road.dart';
+import 'package:playfit/components/adventure/character.dart';
+import 'package:playfit/utils/image.dart';
 
-class AdventurePage extends StatelessWidget {
-  const AdventurePage({super.key});
+class AdventurePage extends StatefulWidget {
+  final bool moveCharacter;
+
+  const AdventurePage({
+    super.key,
+    this.moveCharacter = false,
+  });
+
+  @override
+  State<AdventurePage> createState() => _AdventurePageState();
+}
+
+class _AdventurePageState extends State<AdventurePage>
+    with SingleTickerProviderStateMixin {
+  final ScrollController _scrollController = ScrollController();
+  final FlutterSecureStorage storage = const FlutterSecureStorage();
+  // late AnimationController _animationController;
+  // late Animation<double> _animation;
+  late Path combinedPath;
+  late List<Offset> checkpoints;
+  late int nbCities;
+  // int currentCheckpoint = 0;
+  final List<String> imagePaths = [
+    'assets/images/france/paris/eiffel_tower.png',
+    'assets/images/france/paris/apt.png',
+    'assets/images/tree.png',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    nbCities = 2;
+    // _worldPositions = _getWorldPositions();
+  }
+
+  void _scrollToCharacter(List<dynamic> worldPositions) {
+    if (checkpoints.isNotEmpty && worldPositions.isNotEmpty) {
+      final targetOffset = checkpoints[worldPositions[0]['current_checkpoint']];
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent -
+            targetOffset.dy +
+            (MediaQuery.of(context).size.height * 0.85),
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      throw Exception(
+          'No checkpoints or world positions available. Please try again later.');
+    }
+  }
+
+  Future<List<dynamic>> _getWorldPositions() async {
+    final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/social';
+    final String? token = await storage.read(key: 'token');
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/get-world-positions/'),
+      headers: {
+        'Authorization': 'Token $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      for (var i = 0; i < data.length; i++) {
+        var d = data[i];
+
+        if (d['status'] == 'in_city') {
+          final int level = d['level'] - 1;
+          final int offsetTransition = (d['city'] - 1) * 4;
+          final int offsetCity = (d['city'] - 1) * 6;
+
+          d['current_checkpoint'] = level + offsetTransition + offsetCity;
+        } else {
+          final int level = d['level'] - 1;
+          final int offsetTransition = (d['city_from'] - 1) * 4;
+          final int offsetCity = d['city_from'] * 6;
+
+          d['current_checkpoint'] = level + offsetTransition + offsetCity;
+        }
+      }
+
+      return data;
+    } else {
+      throw Exception('Failed to load world positions');
+    }
+  }
+
+  Future<Map<String, dynamic>> _getDecorationImages(String country) async {
+    final String url =
+        '${dotenv.env['SERVER_BASE_URL']}/api/social/get-decoration-images/$country/';
+    final String? token = await storage.read(key: 'token');
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Token $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      return data;
+    } else {
+      throw Exception('Failed to load decoration images');
+    }
+  }
+
+  List<Road> _createRoads(Map<String, dynamic> decorationImages) {
+    List<Road> roads = [];
+    combinedPath = Path();
+
+    Size screenSize = MediaQueryData.fromView(
+            WidgetsBinding.instance.platformDispatcher.views.first)
+        .size;
+
+    double height = screenSize.height * (nbCities + (nbCities - 1) * 0.5);
+    double startY = height;
+    Offset scale = Offset(
+      screenSize.width / 411,
+      height / (nbCities + (nbCities - 1) * 0.5) / 830,
+    );
+
+    for (int i = 0; i <= nbCities; i++) {
+      Road road;
+
+      if (i % 2 == 0) {
+        road = CityRoad(
+          startY: startY,
+          scale: scale,
+          decorationImages: decorationImages,
+          cityIndex: i,
+        );
+      } else {
+        road = TransitionRoad(
+          startY: startY,
+          scale: scale,
+          decorationImages: decorationImages,
+          cityIndex: i,
+        );
+      }
+      startY = road.getStartY();
+      roads.add(road);
+      combinedPath.addPath(road.path, Offset.zero);
+    }
+
+    return roads;
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<List<dynamic>> _loadPositionsAndImages() async {
+    final positions = await _getWorldPositions();
+    final String country = positions.first['country'];
+    final decorationImages = await _getDecorationImages(country);
+    Map<String, dynamic> images = {
+      'tree': await UIImageCacheManager().loadImageFromNetwork(
+          '${dotenv.env['SERVER_BASE_URL']}${decorationImages['tree']}'),
+      'flag': await UIImageCacheManager().loadImageFromNetwork(
+          '${dotenv.env['SERVER_BASE_URL']}${decorationImages['flag']}'),
+      'building': await UIImageCacheManager().loadImageFromNetwork(
+          '${dotenv.env['SERVER_BASE_URL']}${decorationImages['building']}'),
+      'country': [],
+    };
+
+    for (var i = 0; i < decorationImages['country'].length; i++) {
+      final countryImages = await Future.wait(
+        decorationImages['country'][i].map<Future<ui.Image>>((imageUrl) async {
+          final fullUrl = '${dotenv.env['SERVER_BASE_URL']}$imageUrl';
+
+          return await UIImageCacheManager().loadImageFromNetwork(fullUrl);
+        }).toList(),
+      );
+      images['country'].add(countryImages);
+    }
+
+    return [images, positions];
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: GameWidget(
-        game: AdventureGame(),
-      ),
+    Size screenSize = MediaQuery.of(context).size;
+    double height = screenSize.height * (nbCities + (nbCities - 1) * 0.5);
+
+    return FutureBuilder(
+      future: _loadPositionsAndImages(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final String serverBaseUrl = dotenv.env['SERVER_BASE_URL']!;
+        final images = snapshot.data![0] as Map<String, dynamic>;
+        final worldPositions = snapshot.data![1] as List<dynamic>;
+        final roads = _createRoads(images);
+
+        checkpoints = roads
+            .map((road) => road.getCheckpoints().map((c) => c.position))
+            .expand((element) => element)
+            .toList();
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToCharacter(worldPositions);
+        });
+
+        return Scaffold(
+          body: SizedBox(
+            height: screenSize.height * 2,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              reverse: true,
+              child: Stack(
+                children: [
+                  RepaintBoundary(
+                    child: CustomPaint(
+                      size: Size(screenSize.width, height),
+                      painter: _RoadPainter(roads),
+                    ),
+                  ),
+                  ...[
+                    for (int i = 0; i < worldPositions.length; i++)
+                      if (i == 0 ||
+                          worldPositions[i]['country'] ==
+                              worldPositions[0]['country'])
+                        Character(
+                          position: checkpoints[worldPositions[i]
+                              ['current_checkpoint']],
+                          scale: const Offset(0.15, 0.15),
+                          size: const Size(410, 732),
+                          isFlipped:
+                              worldPositions[i]['current_checkpoint'] % 2 == 0,
+                          isMe: i == 0,
+                          images: {
+                            'base_character':
+                                '$serverBaseUrl${worldPositions[i]['character']['base_character']['image']}',
+                            'hat':
+                                '$serverBaseUrl${worldPositions[i]['character']['hat']}',
+                            'backpack':
+                                '$serverBaseUrl${worldPositions[i]['character']['backpack']}',
+                            'shirt':
+                                '$serverBaseUrl${worldPositions[i]['character']['shirt']}',
+                            'pants':
+                                '$serverBaseUrl${worldPositions[i]['character']['pants']}',
+                            'shoes':
+                                '$serverBaseUrl${worldPositions[i]['character']['shoes']}',
+                            'gloves':
+                                '$serverBaseUrl${worldPositions[i]['character']['gloves']}',
+                          },
+                        ),
+                  ]
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
 
-class AdventureGame extends FlameGame {
-  late SpriteComponent character;
-  late List<LevelCircle> levelCircles;
+class _RoadPainter extends CustomPainter {
+  final List<Road> roads;
+
+  _RoadPainter(this.roads);
+
+  void drawWhiteTopGradient(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomLeft,
+        colors: [
+          Colors.white,
+          Colors.white.withAlpha(0),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, 292));
+
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, 292), paint);
+  }
 
   @override
-  Color backgroundColor() => const Color(0xFF87CEEB);
-
-  @override
-  Future<void> onLoad() async {
-    super.onLoad();
-
-    // Add the road FIRST so it's drawn below other elements
-    final road = RoadComponent(size); // Pass game size to road
-    add(road);
-
-    // Add buildings, tree, and light post in separate places
-    addBuilding(Vector2(size.x * 0.15, size.y * 0.2)); // Left side
-    addBuilding(Vector2(size.x * 0.73, size.y * 0.55)); // Right side
-    addTree(Vector2(size.x * 0.8, size.y * 0.3)); // Right side
-    addLight(Vector2(size.x * 0.2, size.y * 0.7)); // Lower left side
-
-    // Add interactive level circles (checkpoints)
-    levelCircles = [
-      LevelCircle(Vector2(size.x * 0.37, size.y * 0.63), 1, 'checkpointNotPass.png'),
-      LevelCircle(Vector2(size.x * 0.53, size.y * 0.43), 2, 'checkpointNotPass.png'),
-      LevelCircle(Vector2(size.x * 0.47, size.y * 0.07), 3, 'checkpointNotPass.png'),
-
-    ];
-    for (var circle in levelCircles) {
-      add(circle);
+  void paint(Canvas canvas, Size size) {
+    for (Road road in roads) {
+      road.drawBackground(canvas);
     }
 
-    // Add the character on the road
-    character = SpriteComponent()
-      ..sprite = await loadSprite('characterMap.png')
-      ..size = Vector2(80, 120)
-      ..position = Vector2(size.x * 0.37, size.y * 0.8); // Adjusted character position
-    add(character);
-  }
+    for (Road road in roads) {
+      road.paint(canvas, size);
+    }
 
-  // Helper methods to add assets in correct positions
-  void addBuilding(Vector2 position) async {
-    final building = SpriteComponent()
-      ..sprite = await loadSprite('building.png')
-      ..position = position
-      ..size = Vector2(100, 200);
-    add(building);
-  }
-
-  void addTree(Vector2 position) async {
-    final tree = SpriteComponent()
-      ..sprite = await loadSprite('tree.png')
-      ..position = position
-      ..size = Vector2(50, 100);
-    add(tree);
-  }
-
-  void addLight(Vector2 position) async {
-    final light = SpriteComponent()
-      ..sprite = await loadSprite('light.png')
-      ..position = position
-      ..size = Vector2(30, 60);
-    add(light);
-  }
-}
-
-// Interactive level circles (checkpoints)
-class LevelCircle extends SpriteComponent {
-  final String assetName;
-
-  LevelCircle(Vector2 position, int levelNumber, this.assetName) {
-    this.position = position;
-    size = Vector2(50, 50);
+    drawWhiteTopGradient(canvas, size);
   }
 
   @override
-  Future<void> onLoad() async {
-    sprite = await Sprite.load(assetName);
-  }
-}
-
-// Road Component (Now Works Properly)
-class RoadComponent extends PositionComponent {
-  final Vector2 gameSize;
-
-  RoadComponent(this.gameSize) {
-    size = Vector2(gameSize.x, gameSize.y); // Set size properly
-  }
-
-  @override
-  void render(Canvas canvas) {
-    final paint = Paint()
-      ..color = const Color(0xFF4B4B4B) // Dark grey road
-      ..style = PaintingStyle.fill; // Solid shape
-
-    final path = Path();
-
-    // Define road width
-    const roadWidth = 120;
-
-    // Create a zigzag road shape
-    path.moveTo(gameSize.x * 0.5 - roadWidth / 2, gameSize.y); // Bottom left of road
-    path.lineTo(gameSize.x * 0.4 - roadWidth / 2, gameSize.y * 0.65);
-    path.lineTo(gameSize.x * 0.6 - roadWidth / 2, gameSize.y * 0.45);
-    path.lineTo(gameSize.x * 0.5 - roadWidth / 2, 0); // Top left of road
-
-    path.lineTo(gameSize.x * 0.5 + roadWidth / 2, 0); // Top right of road
-    path.lineTo(gameSize.x * 0.6 + roadWidth / 2, gameSize.y * 0.45);
-    path.lineTo(gameSize.x * 0.4 + roadWidth / 2, gameSize.y * 0.65);
-    path.lineTo(gameSize.x * 0.5 + roadWidth / 2, gameSize.y); // Bottom right of road
-
-    path.close();
-
-    canvas.drawPath(path, paint);
-  }
-
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

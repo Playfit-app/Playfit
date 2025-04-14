@@ -14,7 +14,7 @@ class NotificationProvider extends ChangeNotifier {
   void connect(String token) {
     if (_channel != null) return;
 
-    final url = "${dotenv.env['SERVER_BASE_WS_URL']}ws/notifications/";
+    final url = "${dotenv.env['SERVER_BASE_WS_URL']}/ws/notifications/";
 
     _channel = IOWebSocketChannel.connect(
       Uri.parse(url),

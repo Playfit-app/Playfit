@@ -24,7 +24,11 @@ from utilities.expiring_password_reset_token import ExpiringPasswordResetTokenGe
 from social.models import (
     City,
     WorldPosition,
+    Customization,
+    BaseCharacter,
+    Notification,
 )
+from social.utils import send_notification
 from .models import CustomUser, UserAchievement
 from .serializers import (
     CustomUserSerializer,
@@ -57,6 +61,7 @@ class RegisterView(APIView):
     )
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
+
         if serializer.is_valid():
             try:
                 user = serializer.create(serializer.validated_data)
@@ -67,6 +72,10 @@ class RegisterView(APIView):
                     user=user,
                     city=City.objects.get(name="Paris"),
                     city_level=1,
+                )
+                Customization.objects.create(
+                    user=user,
+                    base_character=BaseCharacter.objects.get(id=serializer.validated_data['character_image_id']),
                 )
                 return Response({
                     'token': token.key,
@@ -148,6 +157,26 @@ class LogoutView(APIView):
         try:
             token = Token.objects.get(user=request.user)
             token.delete()
+            followers = list(request.user.get_followers())
+            notifications = [
+                Notification(
+                    user=follower,
+                    sender=request.user,
+                    notification_type="world_position",
+                    post=None,
+                )
+                for follower in followers
+            ]
+            Notification.objects.bulk_create(notifications)
+            for follower in followers:
+                send_notification(follower, {
+                    'id': notifications[followers.index(follower)].id,
+                    'sender': request.user.username,
+                    'notification_type': notifications[followers.index(follower)].notification_type,
+                    'created_at': notifications[followers.index(follower)].created_at.isoformat(),
+                    'post': None,
+                    'seen': notifications[followers.index(follower)].seen,
+                })
             return Response({'success': "Successfully logged out"}, status=status.HTTP_200_OK)
         except Token.DoesNotExist:
             return Response({'error': "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -200,7 +229,7 @@ class GoogleOAuthLoginView(APIView):
                     return Response({'status': 'success', 'message': 'Logged in using Google', 'token': django_token.key}, status=status.HTTP_200_OK)
                 else:
                     return Response({'status': 'error', 'message': 'Cannot log in with email and password'}, status=status.HTTP_400_BAD_REQUEST)
-            except CustomUser.DoesNotExist:
+            except CustomUser.Does75 back end user success badgesNotExist:
                 birth_date = get_user_birthdate(token)
                 if not birth_date:
                     return Response({'status': 'error', 'message': 'Aucune date de naissance renseignée, impossible de vérifier votre âge'}, status=status.HTTP_400_BAD_REQUEST)

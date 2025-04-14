@@ -1,5 +1,14 @@
 from django.contrib import admin
-from .models import Continent, Country, City, WorldPosition
+from .models import (
+    Continent,
+    Country,
+    City,
+    WorldPosition,
+    BaseCharacter,
+    CustomizationItem,
+    Customization,
+    CityDecorationImage,
+)
 
 class ContinentAdmin(admin.ModelAdmin):
     list_display = ['name']
@@ -15,3 +24,7 @@ admin.site.register(Continent, ContinentAdmin)
 admin.site.register(Country, CountryAdmin)
 admin.site.register(City, CityAdmin)
 admin.site.register(WorldPosition)
+admin.site.register(BaseCharacter)
+admin.site.register(CustomizationItem)
+admin.site.register(Customization)
+admin.site.register(CityDecorationImage)

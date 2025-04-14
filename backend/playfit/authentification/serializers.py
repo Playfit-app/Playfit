@@ -40,7 +40,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'terms_and_conditions': 'You must accept the terms and conditions', 'privacy_policy': 'You must accept the privacy policy'})
         if value['character_image_id'] < 0 or value['character_image_id'] > 4:
             raise serializers.ValidationError({'character_image_id': 'Invalid character image'})
-        print("Everything is ok")
         return value
 
 class UserConsentSerializer(serializers.ModelSerializer):

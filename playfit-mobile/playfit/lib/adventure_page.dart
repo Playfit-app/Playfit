@@ -1,6 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui' as ui;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:playfit/components/adventure/roads/city_road.dart';
 import 'package:playfit/components/adventure/roads/road.dart';
 import 'package:playfit/components/adventure/roads/transition_road.dart';
@@ -22,13 +26,15 @@ class AdventurePage extends StatefulWidget {
 class _AdventurePageState extends State<AdventurePage>
     with SingleTickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
+  final FlutterSecureStorage storage = const FlutterSecureStorage();
   // late AnimationController _animationController;
   // late Animation<double> _animation;
   late Path combinedPath;
+  late List<Offset> checkpoints;
   late int nbCities;
-  int currentCheckpoint = 0;
+  // int currentCheckpoint = 0;
   final List<String> imagePaths = [
-    'assets/images/paris/france/eiffel_tower.png',
+    'assets/images/france/paris/eiffel_tower.png',
     'assets/images/france/paris/apt.png',
     'assets/images/tree.png',
   ];
@@ -37,18 +43,85 @@ class _AdventurePageState extends State<AdventurePage>
   void initState() {
     super.initState();
     nbCities = 2;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollController.jumpTo(_scrollController.position.minScrollExtent);
-    });
-    _scrollController.addListener(() {
-      if (_scrollController.offset < 0) {
-        _scrollController.jumpTo(0);
-      }
-    });
+    // _worldPositions = _getWorldPositions();
   }
 
-  List<Road> _createRoads(Map<String, ui.Image> decorationImages) {
+  void _scrollToCharacter(List<dynamic> worldPositions) {
+    if (checkpoints.isNotEmpty && worldPositions.isNotEmpty) {
+      final targetOffset = checkpoints[worldPositions[0]['current_checkpoint']];
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent -
+            targetOffset.dy +
+            (MediaQuery.of(context).size.height * 0.85),
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      throw Exception(
+          'No checkpoints or world positions available. Please try again later.');
+    }
+  }
+
+  Future<List<dynamic>> _getWorldPositions() async {
+    final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/social';
+    final String? token = await storage.read(key: 'token');
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/get-world-positions/'),
+      headers: {
+        'Authorization': 'Token $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      for (var i = 0; i < data.length; i++) {
+        var d = data[i];
+
+        if (d['status'] == 'in_city') {
+          final int level = d['level'] - 1;
+          final int offsetTransition = (d['city'] - 1) * 4;
+          final int offsetCity = (d['city'] - 1) * 6;
+
+          d['current_checkpoint'] = level + offsetTransition + offsetCity;
+        } else {
+          final int level = d['level'] - 1;
+          final int offsetTransition = (d['city_from'] - 1) * 4;
+          final int offsetCity = d['city_from'] * 6;
+
+          d['current_checkpoint'] = level + offsetTransition + offsetCity;
+        }
+      }
+
+      return data;
+    } else {
+      throw Exception('Failed to load world positions');
+    }
+  }
+
+  Future<Map<String, dynamic>> _getDecorationImages(String country) async {
+    final String url =
+        '${dotenv.env['SERVER_BASE_URL']}/api/social/get-decoration-images/$country/';
+    final String? token = await storage.read(key: 'token');
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Token $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      return data;
+    } else {
+      throw Exception('Failed to load decoration images');
+    }
+  }
+
+  List<Road> _createRoads(Map<String, dynamic> decorationImages) {
     List<Road> roads = [];
     combinedPath = Path();
 
@@ -71,12 +144,14 @@ class _AdventurePageState extends State<AdventurePage>
           startY: startY,
           scale: scale,
           decorationImages: decorationImages,
+          cityIndex: i,
         );
       } else {
         road = TransitionRoad(
           startY: startY,
           scale: scale,
           decorationImages: decorationImages,
+          cityIndex: i,
         );
       }
       startY = road.getStartY();
@@ -93,32 +168,58 @@ class _AdventurePageState extends State<AdventurePage>
     super.dispose();
   }
 
+  Future<List<dynamic>> _loadPositionsAndImages() async {
+    final positions = await _getWorldPositions();
+    final String country = positions.first['country'];
+    final decorationImages = await _getDecorationImages(country);
+    Map<String, dynamic> images = {
+      'tree': await UIImageCacheManager().loadImageFromNetwork(
+          '${dotenv.env['SERVER_BASE_URL']}${decorationImages['tree']}'),
+      'flag': await UIImageCacheManager().loadImageFromNetwork(
+          '${dotenv.env['SERVER_BASE_URL']}${decorationImages['flag']}'),
+      'building': await UIImageCacheManager().loadImageFromNetwork(
+          '${dotenv.env['SERVER_BASE_URL']}${decorationImages['building']}'),
+      'country': [],
+    };
+
+    for (var i = 0; i < decorationImages['country'].length; i++) {
+      final countryImages = await Future.wait(
+        decorationImages['country'][i].map<Future<ui.Image>>((imageUrl) async {
+          final fullUrl = '${dotenv.env['SERVER_BASE_URL']}$imageUrl';
+
+          return await UIImageCacheManager().loadImageFromNetwork(fullUrl);
+        }).toList(),
+      );
+      images['country'].add(countryImages);
+    }
+
+    return [images, positions];
+  }
+
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     double height = screenSize.height * (nbCities + (nbCities - 1) * 0.5);
 
     return FutureBuilder(
-      future: Future.wait(
-        imagePaths.map((imagePath) {
-          return UIImageCacheManager().loadImageFromAssets(imagePath);
-        }),
-      ),
+      future: _loadPositionsAndImages(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
+        final String serverBaseUrl = dotenv.env['SERVER_BASE_URL']!;
+        final images = snapshot.data![0] as Map<String, dynamic>;
+        final worldPositions = snapshot.data![1] as List<dynamic>;
+        final roads = _createRoads(images);
 
-        final decorationImages = {
-          "landmark": snapshot.data![0],
-          "building": snapshot.data![1],
-          "tree": snapshot.data![2],
-        };
-        final roads = _createRoads(decorationImages);
-        final checkpoints = roads
+        checkpoints = roads
             .map((road) => road.getCheckpoints().map((c) => c.position))
             .expand((element) => element)
             .toList();
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToCharacter(worldPositions);
+        });
 
         return Scaffold(
           body: SizedBox(
@@ -134,12 +235,37 @@ class _AdventurePageState extends State<AdventurePage>
                       painter: _RoadPainter(roads),
                     ),
                   ),
-                  Character(
-                    position: checkpoints[currentCheckpoint],
-                    scale: const Offset(0.15, 0.15),
-                    size: const Size(410, 732),
-                    isFlipped: currentCheckpoint % 2 == 0,
-                  )
+                  ...[
+                    for (int i = 0; i < worldPositions.length; i++)
+                      if (i == 0 ||
+                          worldPositions[i]['country'] ==
+                              worldPositions[0]['country'])
+                        Character(
+                          position: checkpoints[worldPositions[i]
+                              ['current_checkpoint']],
+                          scale: const Offset(0.15, 0.15),
+                          size: const Size(410, 732),
+                          isFlipped:
+                              worldPositions[i]['current_checkpoint'] % 2 == 0,
+                          isMe: i == 0,
+                          images: {
+                            'base_character':
+                                '$serverBaseUrl${worldPositions[i]['character']['base_character']['image']}',
+                            'hat':
+                                '$serverBaseUrl${worldPositions[i]['character']['hat']}',
+                            'backpack':
+                                '$serverBaseUrl${worldPositions[i]['character']['backpack']}',
+                            'shirt':
+                                '$serverBaseUrl${worldPositions[i]['character']['shirt']}',
+                            'pants':
+                                '$serverBaseUrl${worldPositions[i]['character']['pants']}',
+                            'shoes':
+                                '$serverBaseUrl${worldPositions[i]['character']['shoes']}',
+                            'gloves':
+                                '$serverBaseUrl${worldPositions[i]['character']['gloves']}',
+                          },
+                        ),
+                  ]
                 ],
               ),
             ),

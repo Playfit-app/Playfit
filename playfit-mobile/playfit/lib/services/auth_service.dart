@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:playfit/providers/notification_provider.dart';
 
 class AuthService {
-  final String? baseUrl = '${dotenv.env['SERVER_BASE_URL']}api/auth/';
+  final String? baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/auth/';
   final FlutterSecureStorage storage = const FlutterSecureStorage();
   final GoogleSignIn googleSignIn = GoogleSignIn(
     scopes: <String>[
@@ -54,15 +54,17 @@ class AuthService {
   }
 
   Future<Map<String, String>> register(
-      BuildContext context,
-      String email,
-      String username,
-      String password,
-      String dateOfBirth,
-      double height,
-      double weight,
-      bool isConsentGiven,
-      bool isMarketingConsentGiven) async {
+    BuildContext context,
+    String email,
+    String username,
+    String password,
+    String dateOfBirth,
+    double height,
+    double weight,
+    bool isConsentGiven,
+    bool isMarketingConsentGiven,
+    int index,
+  ) async {
     try {
       final data = <String, dynamic>{
         'email': email,
@@ -74,6 +76,7 @@ class AuthService {
         'terms_and_conditions': isConsentGiven,
         'privacy_policy': isConsentGiven,
         'marketing': isMarketingConsentGiven,
+        'character_image_id': index + 1,
       };
       final response = await http.post(
         Uri.parse('${baseUrl}register/'),

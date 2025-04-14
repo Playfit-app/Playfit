@@ -8,12 +8,13 @@ class CustomUserSerializer(serializers.ModelSerializer):
     terms_and_conditions = serializers.BooleanField(write_only=True)
     privacy_policy = serializers.BooleanField(write_only=True)
     marketing = serializers.BooleanField(write_only=True)
+    character_image_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = CustomUser
         fields = [
             'email', 'username', 'password', 'date_of_birth', 'height', 'weight',
-            'terms_and_conditions', 'privacy_policy', 'marketing'
+            'terms_and_conditions', 'privacy_policy', 'marketing', 'character_image_id',
         ]
 
     def create(self, validated_data):
@@ -37,6 +38,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
         if not value['terms_and_conditions'] or not value['privacy_policy']:
             raise serializers.ValidationError({'terms_and_conditions': 'You must accept the terms and conditions', 'privacy_policy': 'You must accept the privacy policy'})
+        if value['character_image_id'] < 0 or value['character_image_id'] > 4:
+            raise serializers.ValidationError({'character_image_id': 'Invalid character image'})
         return value
 
 class UserConsentSerializer(serializers.ModelSerializer):

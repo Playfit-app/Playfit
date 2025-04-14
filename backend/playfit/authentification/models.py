@@ -11,6 +11,7 @@ class CustomUserManager(BaseUserManager):
         terms_and_conditions = extra_fields.pop('terms_and_conditions', True)
         privacy_policy = extra_fields.pop('privacy_policy', True)
         marketing = extra_fields.pop('marketing', False)
+        extra_fields.pop('character_image_id', None)
         user = self.model(email=email, username=username, **extra_fields)
         user.set_password(password)
         user.email_hash = hash(email)

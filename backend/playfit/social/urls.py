@@ -12,12 +12,14 @@ from .views import (
     CommentCreateView,
     CommentDeleteView,
     NotificationReadAllView,
-    WorldPositionView,
-    FollowingWorldPositionView,
+    # WorldPositionView,
+    # FollowingWorldPositionView,
+    WorldPositionsListView,
     CustomizationItemListView,
     CustomizationItemByCategoryListView,
     CustomizationUpdateView,
     CustomizationView,
+    GetDecorationImagesView,
 )
 
 urlpatterns = [
@@ -33,10 +35,12 @@ urlpatterns = [
     path('posts/<int:id>/comment/', CommentCreateView.as_view(), name='comment'),
     path('comments/<int:id>/delete/', CommentDeleteView.as_view(), name='delete_comment'),
     path('notifications/read/all/', NotificationReadAllView.as_view(), name='read_all_notifications'),
-    path('get-my-position/', WorldPositionView.as_view(), name='get_my_position'),
-    path('get-following-positions/', FollowingWorldPositionView.as_view(), name='get_following_positions'),
+    # path('get-my-position/', WorldPositionView.as_view(), name='get_my_position'),
+    # path('get-following-positions/', FollowingWorldPositionView.as_view(), name='get_following_positions'),
+    path("get-world-positions/", WorldPositionsListView.as_view(), name="get_world_positionq"),
     path("customization-items/", CustomizationItemListView.as_view(), name="customization_items"),
     path("customization-items/<str:category>/", CustomizationItemByCategoryListView.as_view(), name="customization_items_by_category"),
     path("update-customization/", CustomizationUpdateView.as_view(), name="update_customization"),
     path("customization/", CustomizationView.as_view(), name="customization"),
+    path("get-decoration-images/<str:country>/", GetDecorationImagesView.as_view(), name="get_decoration_images"),
 ]

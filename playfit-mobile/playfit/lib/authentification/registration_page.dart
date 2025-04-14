@@ -28,6 +28,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   final TextEditingController _weightController = TextEditingController();
   bool isConsentGiven = false;
   bool isMarketingConsentGiven = false;
+  int selectedCharacter = 0;
   final AuthService authService = AuthService();
   int _currentStep = 0;
   bool _isStep1Valid = false;
@@ -74,6 +75,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
       double.parse(_weightController.text),
       isConsentGiven,
       isMarketingConsentGiven,
+      selectedCharacter,
     );
     if (!mounted) return;
     if (result["status"] == 'success') {
@@ -205,7 +207,13 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                     if (_currentStep == 2)
                       Form(
                         key: _step3FormKey,
-                        child: const RegistrationStep3(),
+                        child: RegistrationStep3(
+                          onPageChanged: (value) {
+                            setState(() {
+                              selectedCharacter = value;
+                            });
+                          },
+                        ),
                         onChanged: () => _validateStep(_step3FormKey),
                       ),
                     SizedBox(height: screenHeight * 0.02),

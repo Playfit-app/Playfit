@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 class RegistrationStep3 extends StatefulWidget {
-
   // final TextEditingController _objectiveController;
+  final Function(int) onPageChanged;
 
   const RegistrationStep3({
     super.key,
-
+    required this.onPageChanged,
     // required this._objectiveController,
   });
 
@@ -27,7 +27,6 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40.0),
@@ -36,34 +35,35 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
           const SizedBox(height: 5),
           // Consent form as dialog
           const Text(
-          "Choisi ton avatar",
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+            "Choisi ton avatar",
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        SizedBox(height: screenHeight * 0.02),
-        CarouselSlider(
-          options: CarouselOptions(
-            height: 250,
-            enlargeCenterPage: true,
-            enableInfiniteScroll: true,
-            onPageChanged: (index, reason) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
+          SizedBox(height: screenHeight * 0.02),
+          CarouselSlider(
+            options: CarouselOptions(
+              height: 250,
+              enlargeCenterPage: true,
+              enableInfiniteScroll: true,
+              onPageChanged: (index, reason) {
+                setState(() {
+                  _currentIndex = index;
+                });
+                widget.onPageChanged(index);
+              },
+            ),
+            items: _characterImages.map((imagePath) {
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.asset(
+                  imagePath,
+                  fit: BoxFit.contain,
+                ),
+              );
+            }).toList(),
           ),
-          items: _characterImages.map((imagePath) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.contain,
-              ),
-            );
-          }).toList(),
-        ),
         ],
       ),
     );

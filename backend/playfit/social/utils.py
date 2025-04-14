@@ -1,3 +1,4 @@
+import sys
 from PIL import Image
 from io import BytesIO
 from django.core.files.base import ContentFile
@@ -28,10 +29,18 @@ def create_test_image():
     return SimpleUploadedFile("test_image.png", buffer.read(), content_type="image/png")
 
 def send_push_notification(user, title, message):
-    devices = GCMDevice.objects.filter(user=user)
+    devices = GCMDevice.objects.filter(user=user, active=True)
 
+    print(f"Devices: {devices}")
     for device in devices:
-        device.send_message(title=title, message=message)
+        try:
+            print(f"Sending push notification to device: {device}")
+            device.send_message(title=title, message=message)
+            print(f"Push notification sent to device: {device}")
+        except Exception as e:
+            device.active = False
+            device.save()
+            print(f"Error sending push notification: {e}")
 
 def send_notification(user, notification_data):
     channel_layer = get_channel_layer()
@@ -59,6 +68,7 @@ def send_notification(user, notification_data):
         elif notification_data["notification_type"] == "post":
             message = f"{notification_data['sender']} posted"
 
+        print(f"User {user.id} is offline, sending notification via push notification of type {notification_data['notification_type']}", file=sys.stderr)
         send_push_notification(user, "Playfit", message)
 
 async def send_notification_async(user, notification_data):
@@ -66,6 +76,7 @@ async def send_notification_async(user, notification_data):
     group_name = f"notifications_{user.id}"
 
     if redis_client.exists(f"user_{user.id}"):
+        print(f"User {user.id} is online, sending notification via WebSocket")
         await channel_layer.group_send(
             group_name,
             {
@@ -76,6 +87,7 @@ async def send_notification_async(user, notification_data):
             },
         )
     else:
+        print(f"User {user.id} is offline, sending notification via push notification")
         message = ""
 
         if notification_data["notification_type"] == "like":

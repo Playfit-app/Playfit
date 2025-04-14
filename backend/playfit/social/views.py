@@ -22,6 +22,9 @@ from .models import (
     WorldPosition,
     CustomizationItem,
     Customization,
+    Country,
+    City,
+    CityDecorationImage,
 )
 from .serializers import (
     UserSerializer,
@@ -570,3 +573,29 @@ class CustomizationView(APIView):
         customization = Customization.objects.get(user=user)
         serializer = CustomizationSerializer(customization)
         return Response(serializer.data)
+
+class GetDecorationImagesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, country: str):
+        c = get_object_or_404(Country, name=country)
+        cities = City.objects.filter(country=c)
+        decoration_images = {
+            'tree': '/media/decorations/tree.webp',
+            'building': '/media/decorations/building.webp',
+            'flag': '/media/decorations/flag.webp',
+            'country': []
+        }
+
+        for city in cities:
+            images = CityDecorationImage.objects.filter(city=city)
+            temp_images = []
+
+            for image in images:
+                temp_images.append(image.image.url)
+            decoration_images['country'].append(temp_images)
+
+        # Temporary solution to avoid empty list
+        decoration_images['country'][1] = decoration_images['country'][0]
+        decoration_images['country'][2] = decoration_images['country'][0]
+        return Response(decoration_images, status=status.HTTP_200_OK)

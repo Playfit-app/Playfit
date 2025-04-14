@@ -7,6 +7,7 @@ from .models import (
     BaseCharacter,
     CustomizationItem,
     Customization,
+    CityDecorationImage,
 )
 
 class ContinentAdmin(admin.ModelAdmin):
@@ -26,3 +27,4 @@ admin.site.register(WorldPosition)
 admin.site.register(BaseCharacter)
 admin.site.register(CustomizationItem)
 admin.site.register(Customization)
+admin.site.register(CityDecorationImage)

@@ -19,6 +19,7 @@ from .views import (
     CustomizationItemByCategoryListView,
     CustomizationUpdateView,
     CustomizationView,
+    GetDecorationImagesView,
 )
 
 urlpatterns = [
@@ -41,4 +42,5 @@ urlpatterns = [
     path("customization-items/<str:category>/", CustomizationItemByCategoryListView.as_view(), name="customization_items_by_category"),
     path("update-customization/", CustomizationUpdateView.as_view(), name="update_customization"),
     path("customization/", CustomizationView.as_view(), name="customization"),
+    path("get-decoration-images/<str:country>/", GetDecorationImagesView.as_view(), name="get_decoration_images"),
 ]

@@ -1,11 +1,9 @@
 import datetime
-import json
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
-from rest_framework.parsers import JSONParser
 from django.contrib.auth import authenticate, login
 from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
@@ -229,7 +227,7 @@ class GoogleOAuthLoginView(APIView):
                     return Response({'status': 'success', 'message': 'Logged in using Google', 'token': django_token.key}, status=status.HTTP_200_OK)
                 else:
                     return Response({'status': 'error', 'message': 'Cannot log in with email and password'}, status=status.HTTP_400_BAD_REQUEST)
-            except CustomUser.Does75 back end user success badgesNotExist:
+            except CustomUser.DoesNotExist:
                 birth_date = get_user_birthdate(token)
                 if not birth_date:
                     return Response({'status': 'error', 'message': 'Aucune date de naissance renseignée, impossible de vérifier votre âge'}, status=status.HTTP_400_BAD_REQUEST)

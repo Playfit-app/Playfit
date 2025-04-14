@@ -2,7 +2,6 @@ import django.contrib.auth.password_validation as validators
 from rest_framework import serializers
 from utilities.encrypted_fields import hash
 from .models import CustomUser, UserConsent, UserAchievement
-import json
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)

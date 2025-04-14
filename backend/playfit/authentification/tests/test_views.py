@@ -283,5 +283,5 @@ class UserAchievementTests(APITestCase):
                 'current_streak': 1,
             },
         }
-        response = self.client.post(self.url, data, format='json')
+        self.client.post(self.url, data, format='json')
         

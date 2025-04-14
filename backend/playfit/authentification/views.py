@@ -164,7 +164,7 @@ class LogoutView(APIView):
             for follower in followers:
                 send_notification(follower, {
                     'id': notifications[followers.index(follower)].id,
-                    'sender': request.usserializer.instance.ider.username,
+                    'sender': request.user.username,
                     'notification_type': notifications[followers.index(follower)].notification_type,
                     'created_at': notifications[followers.index(follower)].created_at.isoformat(),
                     'post': None,

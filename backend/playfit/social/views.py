@@ -584,7 +584,7 @@ class GetDecorationImagesView(APIView):
             'tree': '/media/decorations/tree.webp',
             'building': '/media/decorations/building.webp',
             'flag': '/media/decorations/flag.webp',
-            'country': []
+            'country': [],
         }
 
         for city in cities:

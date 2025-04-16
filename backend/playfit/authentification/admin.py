@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+from .models import CustomUser, GameAchievement, UserAchievement, UserProgress
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
@@ -22,4 +22,12 @@ class CustomUserAdmin(UserAdmin):
         }),
     ]
 
+class UserAchievementAdmin(admin.ModelAdmin):
+    list_display = ['user', 'achievement']
+    search_fields = ['user__username', 'achievement__name']
+
+
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(GameAchievement)
+admin.site.register(UserAchievement, UserAchievementAdmin)
+admin.site.register(UserProgress)

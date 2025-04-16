@@ -3,7 +3,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from authentification.models import CustomUser
 from social.models import City
-from social.utils import convert_to_webp
+from utilities.images import convert_to_webp
 
 def exercises_image_path(instance, filename):
     filename_without_ext = filename.split('.')[0]

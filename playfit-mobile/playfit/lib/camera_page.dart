@@ -3,9 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:playfit/workout_analyzer.dart';
 import 'package:playfit/image_converter.dart';
+import 'package:playfit/components/camera/left_box_widget.dart';
+import 'package:playfit/components/camera/bottom_box_widget.dart';
+import 'package:playfit/components/camera/celebration_overlay.dart'; // New widget
+
+enum BoxType { left, bottom }
 
 class CameraView extends StatefulWidget {
-  const CameraView({super.key});
+  final BoxType boxType;
+
+  const CameraView({super.key, required this.boxType});
 
   @override
   State<CameraView> createState() => _CameraViewState();
@@ -18,6 +25,10 @@ class _CameraViewState extends State<CameraView> {
   Timer? _timer;
   Duration _elapsedTime = Duration.zero;
 
+  int _count = 0; // Your current count
+  final int _targetCount = 5; // Change this to your target
+  bool _showCelebration = false;
+
   @override
   void initState() {
     super.initState();
@@ -29,6 +40,15 @@ class _CameraViewState extends State<CameraView> {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() {
         _elapsedTime += const Duration(seconds: 1);
+
+        // Simulate incrementing the counter every 3 seconds
+        if (_elapsedTime.inSeconds % 3 == 0 && _count < _targetCount) {
+          _count++;
+        }
+
+        if (_count == _targetCount) {
+          _showCelebration = true;
+        }
       });
     });
   }
@@ -79,112 +99,14 @@ class _CameraViewState extends State<CameraView> {
                     ),
                   ),
                 ),
+                if (widget.boxType == BoxType.left)
+                  LeftBoxWidget(elapsedTime: _elapsedTime, count: _count),
+                if (widget.boxType == BoxType.bottom)
+                  BottomBoxWidget(elapsedTime: _elapsedTime, count: _count),
 
-                // Nouvelle BOX à gauche, centrée verticalement, collée à l'écran
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    width: 85,
-                    padding: const EdgeInsets.symmetric(vertical: 40),
-                    margin: const EdgeInsets.only(left: 0),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.horizontal(
-                        right: Radius.circular(20),
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Column(
-                          children: [
-                            const Icon(Icons.timer, color: Colors.orange, size: 36),
-                            const SizedBox(height: 8),
-                            Text(
-                               '${_elapsedTime.inMinutes}:${(_elapsedTime.inSeconds % 60).toString().padLeft(2, '0')}',
-                               style: const TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 30),
-                        const Column(
-                          children: [
-                            Icon(Icons.fitness_center,
-                                color: Colors.orange, size: 36),
-                            SizedBox(height: 8),
-                            Text(
-                              '1',
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 30),
-                        const SizedBox(
-                          height: 100,
-                          child: Image(
-                            image: AssetImage("assets/images/mascot.png"),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Ancienne BOX en bas (désactivée via commentaire)
-                // Align(
-                //   alignment: Alignment.bottomCenter,
-                //   child: Container(
-                //     height: 100,
-                //     padding: const EdgeInsets.symmetric(horizontal: 50),
-                //     decoration: const BoxDecoration(
-                //       color: Colors.white,
-                //       borderRadius:
-                //           BorderRadius.vertical(top: Radius.circular(20)),
-                //     ),
-                //     child: Row(
-                //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //       children: [
-                //         Row(
-                //           children: [
-                //             const Icon(Icons.timer, color: Colors.orange, size: 30),
-                //             const SizedBox(width: 5),
-                //             Text(
-                //               '${_elapsedTime.inMinutes}:${(_elapsedTime.inSeconds % 60).toString().padLeft(2, '0')}',
-                //               style: const TextStyle(
-                //                 fontSize: 34,
-                //                 fontWeight: FontWeight.bold,
-                //               ),
-                //             ),
-                //           ],
-                //         ),
-                //         const Row(
-                //           children: [
-                //             Icon(Icons.fitness_center, color: Colors.orange, size: 30),
-                //             SizedBox(width: 5),
-                //             Text(
-                //               '1',
-                //               style: TextStyle(
-                //                 fontSize: 34,
-                //                 fontWeight: FontWeight.bold,
-                //               ),
-                //             ),
-                //           ],
-                //         ),
-                //         SizedBox(
-                //           height: 80,
-                //           child: Image.asset("assets/images/mascot.png"),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-                // ),
+                // Overlay when count hits the target
+                if (_showCelebration)
+                  const CelebrationOverlay(),
               ],
             )
           : const Center(child: CircularProgressIndicator()),

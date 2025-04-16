@@ -1,27 +1,38 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class Success extends StatelessWidget {
   final String image;
   final bool completed;
-  final String? title;
-  final int? meters;
+  final String title;
+  final String description;
+  final int target;
+  final int current;
+  final String? awardedAt;
 
   const Success({
     super.key,
     required this.image,
     required this.completed,
-    this.title,
-    this.meters,
+    required this.title,
+    required this.description,
+    required this.target,
+    required this.current,
+    this.awardedAt,
   });
 
-  void _showSuccessPopup(BuildContext context) {
-    if (!completed) return;
+  String get _formattedDate {
+    if (awardedAt != null) {
+      final dateTime = DateTime.parse(awardedAt!);
+      return "${dateTime.day}/${dateTime.month}/${dateTime.year}";
+    }
+    return "";
+  }
 
+  void _showSuccessPopup(BuildContext context) {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      barrierLabel: "Success Dialog",
+      barrierLabel: '',
       barrierColor: Colors.black.withAlpha((0.2 * 255).toInt()),
       pageBuilder: (context, animation, secondaryAnimation) {
         return Center(
@@ -48,24 +59,50 @@ class Success extends StatelessWidget {
                   const SizedBox(height: 10),
                   CircleAvatar(
                     radius: 60,
-                    backgroundImage: AssetImage(image),
+                    backgroundImage: NetworkImage(image),
                   ),
                   const SizedBox(height: 16),
-                  if (title != null)
-                    Text(
-                      title!,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
                     ),
-                  const Divider(color: Colors.orange),
+                  ),
                   const SizedBox(height: 8),
-                  if (meters != null)
-                    Text(
-                      "Parcourir $meters mètres",
-                      style: const TextStyle(fontSize: 16),
+                  Text(
+                    description,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  LinearProgressIndicator(
+                    value: current / target,
+                    backgroundColor: Colors.grey[300],
+                    color: Colors.orange,
+                    minHeight: 8,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "$current / $target",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  awardedAt != null
+                      ? Text(
+                          "Awarded at: $_formattedDate",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ],
               ),
             ),
@@ -92,11 +129,10 @@ class Success extends StatelessWidget {
             ),
           ),
           child: ClipOval(
-            child: Image.asset(
-              image,
-              fit: BoxFit.cover,
-            ),
-          ),
+              child: Image.network(
+            image,
+            fit: BoxFit.cover,
+          )),
         ),
       ),
     );

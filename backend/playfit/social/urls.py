@@ -7,19 +7,19 @@ from .views import (
     FollowDeleteView,
     PostCreateView,
     PostListView,
+    PostDetailView,
     LikePostView,
     UnlikePostView,
     CommentCreateView,
     CommentDeleteView,
     NotificationReadAllView,
-    # WorldPositionView,
-    # FollowingWorldPositionView,
     WorldPositionsListView,
     CustomizationItemListView,
     CustomizationItemByCategoryListView,
     CustomizationUpdateView,
     CustomizationView,
     GetDecorationImagesView,
+    UserSearchView,
 )
 
 urlpatterns = [
@@ -29,6 +29,7 @@ urlpatterns = [
     path('follow/', FollowCreateView.as_view(), name='follow'),
     path('unfollow/<int:id>/', FollowDeleteView.as_view(), name='unfollow'),
     path('posts/', PostListView.as_view(), name='posts'),
+    path('posts/<int:id>/', PostDetailView.as_view(), name='post_detail'),
     path('posts/<int:id>/like/', LikePostView.as_view(), name='like'),
     path('posts/<int:id>/unlike/', UnlikePostView.as_view(), name='unlike'),
     path('posts/create/', PostCreateView.as_view(), name='create_post'),
@@ -43,4 +44,5 @@ urlpatterns = [
     path("update-customization/", CustomizationUpdateView.as_view(), name="update_customization"),
     path("customization/", CustomizationView.as_view(), name="customization"),
     path("get-decoration-images/<str:country>/", GetDecorationImagesView.as_view(), name="get_decoration_images"),
+    path("search-users/", UserSearchView.as_view(), name="user_search"),
 ]

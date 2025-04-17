@@ -1,15 +1,17 @@
-from rest_framework import status
+from django.utils import timezone
+from rest_framework import status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.generics import (
+    RetrieveAPIView,
     ListAPIView,
     CreateAPIView,
     UpdateAPIView,
     DestroyAPIView,
     get_object_or_404,
 )
-
+from rest_framework.pagination import PageNumberPagination
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from authentification.models import CustomUser
@@ -29,6 +31,7 @@ from .models import (
 from .serializers import (
     UserSerializer,
     PostSerializer,
+    PostListSerializer,
     LikeSerializer,
     CommentSerializer,
     NotificationSerializer,
@@ -36,6 +39,7 @@ from .serializers import (
     WorldPositionResponseSerializer,
     CustomizationItemSerializer,
     CustomizationSerializer,
+    UserSearchSerializer,
 )
 from .utils import send_notification
 
@@ -276,33 +280,17 @@ class PostCreateView(CreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-class PostListView(ListAPIView):
+class PostDetailView(RetrieveAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
+    queryset = Post.objects.all()
+    lookup_field = "id"
 
     @swagger_auto_schema(
         responses={
-            200: openapi.Response(
-                description="List of posts",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_ARRAY,
-                    items=openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        properties={
-                            'id': openapi.Schema(type=openapi.TYPE_INTEGER),
-                            'user': openapi.Schema(type=openapi.TYPE_OBJECT, ref=UserSerializer),
-                            'content': openapi.Schema(type=openapi.TYPE_STRING),
-                            'media': openapi.Schema(type=openapi.TYPE_STRING),
-                            'created_at': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME),
-                            # 'likes': openapi.Schema(type=openapi.TYPE_INTEGER),
-                            # 'comments': openapi.Schema(type=openapi.TYPE_INTEGER),
-                        },
-                    ),
-                ),
-            ),
-            400: openapi.Response(
-                description="Bad request",
+            200: openapi.Response("Post retrieved", PostSerializer),
+            404: openapi.Response(
+                description="Not found",
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
@@ -312,11 +300,26 @@ class PostListView(ListAPIView):
             ),
         }
     )
+    def get(self, request, *args, **kwargs):
+        post = self.get_object()
+        serializer = self.get_serializer(post, context={"request": request})
+        return Response(serializer.data)
+
+class PostListView(ListAPIView):
+    serializer_class = PostListSerializer
+    permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
         user: CustomUser = self.request.user
-        if self.request.query_params.get("profile"):
-            return user.posts.all()
-        return Post.objects.filter(user__in=user.get_following())
+        followings = user.get_following()
+
+        # Get posts from their followings of the last 2 weeks
+        posts = Post.objects.filter(
+            user__in=followings,
+            created_at__gte=timezone.now() - timezone.timedelta(weeks=2)
+        ).order_by("-created_at")
+
+        return posts
 
 class LikePostView(CreateAPIView):
     serializer_class = LikeSerializer
@@ -599,3 +602,15 @@ class GetDecorationImagesView(APIView):
         decoration_images['country'][1] = decoration_images['country'][0]
         decoration_images['country'][2] = decoration_images['country'][0]
         return Response(decoration_images, status=status.HTTP_200_OK)
+
+class UserSearchPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+
+class UserSearchView(ListAPIView):
+    serializer_class = UserSearchSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = UserSearchPagination
+    queryset = CustomUser.objects.filter(is_active=True)
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username']

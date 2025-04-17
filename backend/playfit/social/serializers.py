@@ -72,7 +72,7 @@ class PostListSerializer(serializers.ModelSerializer):
         return obj.comments.count()
     
     def get_comments(self, obj):
-        comments = obj.comments.all()[:3]
+        comments = obj.comments.order_by('-created_at')[:3]
         return CommentSerializer(comments, many=True).data
 
     def get_is_liked(self, obj):

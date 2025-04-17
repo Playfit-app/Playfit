@@ -541,7 +541,14 @@ class ProfileView(APIView):
         }
     )
     def get(self, request, id: str):
-        user = request.user if id == "me" else CustomUser.objects.get(id=int(id))
+        if id == "me":
+            user = request.user
+        else:
+            try:
+                user_id = int(id)
+            except ValueError:
+                return Response({"error": "Invalid user ID format."}, status=status.HTTP_400_BAD_REQUEST)
+            user = get_object_or_404(CustomUser, id=user_id)
         achievements = UserAchievement.objects.filter(user=user)
         progress = UserProgress.objects.get(user=user)
         customization = Customization.objects.get(user=user)

@@ -49,13 +49,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-
-      // setState(() {
-      //   _isFollowing = data['is_following'];
-      //   _followerCount = data['followers'];
-      // });
-      return data;
+      return json.decode(response.body);
     } else {
       throw Exception('Failed to load user data');
     }

@@ -2,9 +2,9 @@ import random
 import requests
 import base64
 import struct
-from django.utils import timezone
-from rest_framework.response import Response
-from rest_framework import status
+# from django.utils import timezone
+# from rest_framework.response import Response
+# from rest_framework import status
 from social.models import WorldPosition
 from .models import CustomUser, UserAchievement, GameAchievement
 
@@ -40,31 +40,31 @@ def generate_uid_from_id(id: int) -> str:
 def get_id_from_uid(uid: str) -> int:
     return struct.unpack("I", base64.urlsafe_b64decode(uid + "=="))[0]
 
-def evaluate_achievements(user, progress):
-    # Get all achievements
-    achievements = GameAchievement.objects.all()
+# def evaluate_achievements(user, progress):
+#     # Get all achievements
+#     achievements = GameAchievement.objects.all()
 
-    for achievement in achievements:
-        for criterias in achievement.criteria:
-            for key, value in criterias.items():
-                if key in progress:
-                    user_achievement = UserAchievement.objects.get(user=user, achievement=achievement)
-                    if user_achievement.is_completed:
-                        continue
-                    if key == 'current_streak':
-                        if progress[key] >= value:
-                            user_achievement.is_completed = True
-                            user_achievement.awarded_at = timezone.now()
-                            user_achievement.save()
-                            # Add XP reward to the user
-                            # user.xp += achievement.xp_reward
-                            # user.save()
-                    else:
-                        if progress[key] >= value:
-                            user_achievement.progress[key] = progress[key]
-                            user_achievement.save()
+#     for achievement in achievements:
+#         for criterias in achievement.criteria:
+#             for key, value in criterias.items():
+#                 if key in progress:
+#                     user_achievement = UserAchievement.objects.get(user=user, achievement=achievement)
+#                     if user_achievement.is_completed:
+#                         continue
+#                     if key == 'current_streak':
+#                         if progress[key] >= value:
+#                             user_achievement.is_completed = True
+#                             user_achievement.awarded_at = timezone.now()
+#                             user_achievement.save()
+#                             # Add XP reward to the user
+#                             # user.xp += achievement.xp_reward
+#                             # user.save()
+#                     else:
+#                         if progress[key] >= value:
+#                             user_achievement.progress[key] = progress[key]
+#                             user_achievement.save()
     
-    return Response({'message': 'Achievement progress updated'}, status=status.HTTP_200_OK)
+#     return Response({'message': 'Achievement progress updated'}, status=status.HTTP_200_OK)
 
 def link_achievements_to_user(user):
     # Get all achievements

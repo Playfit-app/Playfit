@@ -3,7 +3,13 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from utilities.encrypted_fields import hash, EncryptedCharField, EncryptedEmailField, EncryptedDateField, EncryptedTextField
+from utilities.images import convert_to_webp
+
+def city_decoration_image_path(instance, filename):
+    filename_without_ext = filename.split('.')[0]
+    return f'achievements/images/{filename_without_ext}.webp'
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, username, password, **extra_fields):
@@ -146,30 +152,124 @@ class UserConsent(models.Model):
         return f"Consent for {self.user.username} - {self.consent_date}"
 
 class GameAchievement(models.Model):
+    GAME_ACHIEVEMENT_CHOICES = [
+        ("reps", "Reps"),
+        ("workouts", "Workouts"),
+        ("level", "Level"),
+        ("duration", "Duration"),
+        ("calories", "Calories"),
+        ("active_days", "Active Days"),
+        ("pushups", "Pushups"),
+        ("squats", "Squats"),
+        ("pullups", "Pullups"),
+        ("jumping_jacks", "Jumping Jacks"),
+    ]
+
     name = models.CharField(max_length=250)
     description = models.TextField()
-    criteria = models.JSONField()
+    type = models.CharField(max_length=50, choices=GAME_ACHIEVEMENT_CHOICES, default="reps")
+    target = models.PositiveIntegerField(default=0)
+    image = models.ImageField(upload_to=city_decoration_image_path, null=True, blank=True)
     xp_reward = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if self.image:
+            ext = self.image.name.split('.')[-1].lower()
+            if ext == 'png':
+                self.image = convert_to_webp(self.image)
+            elif ext != 'webp':
+                raise ValidationError("The image must be a PNG or WebP file")
+        super().save(*args, **kwargs)
+
 class UserAchievement(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='achievements')
     achievement = models.ForeignKey(GameAchievement, on_delete=models.CASCADE)
     is_completed = models.BooleanField(default=False)
-    progress = models.JSONField(default=dict)
-    awarded_at = models.DateTimeField(auto_now_add=False, null=True)
+    current_value = models.PositiveIntegerField(default=0)
+    awarded_at = models.DateTimeField(auto_now_add=False, null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.achievement.name}"
 
-class UserStats(models.Model):
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='stats')
-    total_workouts = models.PositiveIntegerField(default=0)
+    def update_progress(self, workout_session):
+        if self.is_completed:
+            return
+
+        if self.achievement.type == "reps":
+            pass
+        elif self.achievement.type == "workouts":
+            self.current_value += 1
+        elif self.achievement.type == "streak":
+            pass
+        elif self.achievement.type == "level":
+            pass
+        elif self.achievement.type == "duration":
+            pass
+        elif self.achievement.type == "calories":
+            pass
+        elif self.achievement.type == "active_days":
+            pass
+        elif self.achievement.type == "pushups":
+            pass
+        elif self.achievement.type == "squats":
+            pass
+        elif self.achievement.type == "pullups":
+            pass
+        elif self.achievement.type == "jumping_jacks":
+            pass
+
+        if self.current_value >= self.achievement.target:
+            self.is_completed = True
+            self.awarded_at = timezone.now().date()
+
+        self.save()
+
+class UserProgress(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='progress')
     longest_streak = models.PositiveIntegerField(default=0)
     current_streak = models.PositiveIntegerField(default=0)
+    cities_finished = models.PositiveIntegerField(default=0)
+    last_workout_date = models.DateTimeField(null=True, blank=True)
+
+    level = models.PositiveIntegerField(default=1)
+    xp = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"Stats for {self.user.username}"
+
+    def update_after_workout(self):
+        today = timezone.now().date()
+
+        if self.last_workout_date:
+            if self.last_workout_date == today:
+                return
+
+            if self.last_workout_date == today - datetime.timedelta(days=1):
+                self.current_streak += 1
+            else:
+                self.current_streak = 1
+
+        else:
+            self.current_streak = 1
+            self.longest_streak = 1
+
+        self.last_workout_date = today
+        self.longest_streak = max(self.longest_streak, self.current_streak)
+        self.save()
+
+    def add_xp(self, xp):
+        self.xp += xp
+
+        while self.xp >= self.required_xp_for_next_level():
+            self.xp -= self.required_xp_for_next_level()
+            self.level += 1
+            # Add reward on level up
+
+        self.save()
+
+    def required_xp_for_next_level(self):
+        return 100 * (self.level ** 2) + 100 * self.level

@@ -2,7 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
-from .utils import convert_to_webp
+from utilities.images import convert_to_webp
 
 User = get_user_model()
 
@@ -15,6 +15,10 @@ def city_decoration_image_path(instance, filename):
     country_name = slugify(instance.city.country.name)
     city_name = slugify(instance.city.name)
     return f'decorations/countries/{country_name}/{city_name}/{filename_without_ext}.webp'
+
+def mountain_decoration_image_path(instance, filename):
+    filename_without_ext = filename.split('.')[0]
+    return f'decorations/mountains/{filename_without_ext}.webp'
 
 class CustomizationItem(models.Model):
     CATEGORY_CHOICES = [
@@ -217,13 +221,6 @@ class WorldPosition(models.Model):
             return f"{self.user} is transitioning from {self.transition_from} to {self.transition_to} (Level {self.transition_level})"
         return f"{self.user} is in the void"
 
-# class CountryDecorationImage(models.Model):
-#     country = models.ForeignKey(Country, related_name='decorations', on_delete=models.CASCADE)
-#     image = models.ImageField(upload_to='decorations/')
-
-#     def __str__(self):
-#         return f"{self.country} decoration ({self.created_at})"
-
 class CityDecorationImage(models.Model):
     city = models.ForeignKey(City, related_name='decorations', on_delete=models.CASCADE)
     image = models.ImageField(upload_to=city_decoration_image_path)
@@ -232,6 +229,23 @@ class CityDecorationImage(models.Model):
 
     def __str__(self):
         return f"{self.label} decoration for {self.city} ({self.created_at})"
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            ext = self.image.name.split('.')[-1].lower()
+            if ext == 'png':
+                self.image = convert_to_webp(self.image)
+            elif ext != 'webp':
+                raise ValidationError("The image must be a PNG or WebP file")
+        super().save(*args, **kwargs)
+
+class MountainDecorationImage(models.Model):
+    image = models.ImageField(upload_to=mountain_decoration_image_path)
+    label = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.label} decoration ({self.created_at})"
 
     def save(self, *args, **kwargs):
         if self.image:

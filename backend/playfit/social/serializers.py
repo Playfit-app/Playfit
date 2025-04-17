@@ -93,21 +93,6 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = ["id", "user", "sender", "notification_type", "post", "created_at"]
 
-# class WorldPositionSerializer(serializers.ModelSerializer):
-#     user = UserSerializer(read_only=True)
-
-#     class Meta:
-#         model = WorldPosition
-#         fields = "__all__"
-
-#     def to_representation(self, instance):
-#         base = super().to_representation(instance)
-
-#         if instance.is_in_city():
-#             return {
-
-#             }
-
 class WorldPositionResponseSerializer(serializers.Serializer):
     user = UserSerializer(read_only=True)
     character = CustomizationSerializer()

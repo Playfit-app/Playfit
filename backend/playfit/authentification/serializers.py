@@ -117,20 +117,17 @@ class UserTestSerializer(serializers.ModelSerializer):
 
 class UserAchievementSerializer(serializers.ModelSerializer):
     user = UserTestSerializer(read_only=True)
-    progress = serializers.DictField()
+    name = serializers.CharField(source='achievement.name', read_only=True)
+    description = serializers.CharField(source='achievement.description', read_only=True)
+    image = serializers.ImageField(source='achievement.image', read_only=True)
+    target = serializers.IntegerField(source='achievement.target', read_only=True)
+    current_value = serializers.IntegerField(read_only=True)
+    is_completed = serializers.BooleanField(read_only=True)
+    awarded_at = serializers.DateTimeField(read_only=True)
+
     class Meta:
         model = UserAchievement
-        fields = ['progress', 'user']
-    
-    def validate(self, data):
-        user = self.context['request'].user
-        
-        if not data:
-            raise serializers.ValidationError({'data': 'Data not found'})
-        if not data['progress']:
-            raise serializers.ValidationError({'progress': 'Progress not found'})
-        if not user:
-            raise serializers.ValidationError({'user': 'User not found'})
-        if data['progress'] == '' or data['progress'] == "":
-            raise serializers.ValidationError({'progress': 'Progress cannot be empty'})
-        return data
+        fields = [
+            'user', 'name', 'description', 'image',
+            'target', 'current_value', 'is_completed', 'awarded_at',
+        ]

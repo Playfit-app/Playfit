@@ -11,7 +11,12 @@ import 'package:playfit/components/historic_chart.dart';
 import 'package:playfit/components/level_progression_dialog.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final int? userId;
+
+  const ProfilePage({
+    super.key,
+    this.userId,
+  });
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -19,6 +24,8 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final FlutterSecureStorage storage = const FlutterSecureStorage();
+  bool _isFollowing = false;
+  int _followerCount = 0;
 
   String _formatDate(String rawDate) {
     final DateTime dateTime = DateTime.parse(rawDate);
@@ -27,7 +34,11 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<Map<String, dynamic>> fetchUserData() async {
-    final String url = '${dotenv.env['SERVER_BASE_URL']}/api/auth/profile/';
+    final String userId =
+        widget.userId != null ? widget.userId.toString() : 'me';
+    debugPrint("Fetching user data for userId: $userId");
+    final String url =
+        '${dotenv.env['SERVER_BASE_URL']}/api/auth/profile/$userId/';
     final String? token = await storage.read(key: 'token');
 
     final response = await http.get(
@@ -38,9 +49,66 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      final data = json.decode(response.body);
+
+      // setState(() {
+      //   _isFollowing = data['is_following'];
+      //   _followerCount = data['followers'];
+      // });
+      return data;
     } else {
       throw Exception('Failed to load user data');
+    }
+  }
+
+  void _follow() async {
+    if (widget.userId == null) return;
+
+    final String url = '${dotenv.env['SERVER_BASE_URL']}/api/social/follow/';
+    final String? token = await storage.read(key: 'token');
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Token $token',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'id': widget.userId,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      setState(() {
+        _isFollowing = true;
+        _followerCount += 1;
+      });
+    } else {
+      // Handle error
+      debugPrint("Failed to follow user: ${response.statusCode}");
+    }
+  }
+
+  void _unfollow() async {
+    if (widget.userId == null) return;
+
+    final String url =
+        '${dotenv.env['SERVER_BASE_URL']}/api/social/unfollow/${widget.userId}/';
+    final String? token = await storage.read(key: 'token');
+    final response = await http.delete(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Token $token',
+      },
+    );
+
+    if (response.statusCode == 204) {
+      setState(() {
+        _isFollowing = false;
+        _followerCount -= 1;
+      });
+    } else {
+      // Handle error
+      debugPrint("Failed to unfollow user: ${response.statusCode}");
     }
   }
 
@@ -56,6 +124,13 @@ class _ProfilePageState extends State<ProfilePage> {
         final userData = snapshot.data as Map<String, dynamic>;
         final double screenWidth = MediaQuery.of(context).size.width;
         final double screenHeight = MediaQuery.of(context).size.height;
+
+        if (userData['is_following'] != null) {
+          _isFollowing = userData['is_following'];
+        }
+        if (userData['followers'] != null) {
+          _followerCount = userData['followers'];
+        }
 
         return Scaffold(
           extendBodyBehindAppBar: true,
@@ -148,6 +223,44 @@ class _ProfilePageState extends State<ProfilePage> {
                                             : 36),
                                   ),
                                 ),
+                                // Completely to the right
+                                const Spacer(),
+                                if (widget.userId != null)
+                                  // Button to follow/unfollow
+                                  TextButton(
+                                    onPressed: () {
+                                      if (_isFollowing) {
+                                        _unfollow();
+                                      } else {
+                                        _follow();
+                                      }
+                                    },
+                                    style: ButtonStyle(
+                                      backgroundColor: WidgetStateProperty.all(
+                                        const Color(0XFFF8871F),
+                                      ),
+                                      shape: WidgetStateProperty.all(
+                                        RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                      ),
+                                      child: Text(
+                                        !_isFollowing
+                                            ? "Suivre"
+                                            : "Ne plus suivre",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
                             Align(
@@ -164,7 +277,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             Row(
                               children: [
                                 Text(
-                                  userData['followers'].toString(),
+                                  _followerCount.toString(),
                                   style: TextStyle(fontSize: 14),
                                 ),
                                 Padding(
@@ -320,31 +433,33 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ],
                                   ),
                                 ),
-                                TextButton(
-                                  onPressed: () {},
-                                  style: ButtonStyle(
-                                    backgroundColor: WidgetStateProperty.all(
-                                      const Color(0XFFF8871F),
+                                if (widget.userId == null)
+                                  TextButton(
+                                    onPressed: () {},
+                                    style: ButtonStyle(
+                                      backgroundColor: WidgetStateProperty.all(
+                                        const Color(0XFFF8871F),
+                                      ),
+                                      shape: WidgetStateProperty.all(
+                                        RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                      ),
                                     ),
-                                    shape: WidgetStateProperty.all(
-                                      RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
+                                    child: const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                      ),
+                                      child: Text(
+                                        "Voir plus",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                    ),
-                                    child: Text(
-                                      "Voir plus",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
                               ],
                             ),
                             const SizedBox(height: 20),

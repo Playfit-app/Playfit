@@ -38,6 +38,8 @@ class AuthService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         String token = body['token'];
         await storage.write(key: 'token', value: token);
+        await storage.write(
+            key: 'userId', value: body['user']['id'].toString());
 
         if (context.mounted) {
           Provider.of<NotificationProvider>(context, listen: false)
@@ -88,6 +90,8 @@ class AuthService {
       if (response.statusCode == 201) {
         String token = body['token'];
         await storage.write(key: 'token', value: token);
+        await storage.write(
+            key: 'userId', value: body['user']['id'].toString());
 
         if (context.mounted) {
           Provider.of<NotificationProvider>(context, listen: false)
@@ -123,6 +127,8 @@ class AuthService {
           if (response.statusCode == 200) {
             String token = body['token'];
             await storage.write(key: 'token', value: token);
+            await storage.write(
+                key: 'userId', value: body['user']['id'].toString());
 
             if (context.mounted) {
               Provider.of<NotificationProvider>(context, listen: false)

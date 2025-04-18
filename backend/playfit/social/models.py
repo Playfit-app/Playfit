@@ -195,7 +195,7 @@ class WorldPosition(models.Model):
                     if next_city:
                         self.start_transition(next_city)
                 except City.DoesNotExist:
-                    pass
+                    print("Next city doesn't exist")
         elif self.is_in_transition():
             if self.transition_level < 4:
                 self.transition_level += 1
@@ -205,6 +205,7 @@ class WorldPosition(models.Model):
                 self.transition_from = None
                 self.transition_to = None
                 self.transition_level = None
+        self.save()
 
     def start_transition(self, next_city):
         self.transition_from = self.city

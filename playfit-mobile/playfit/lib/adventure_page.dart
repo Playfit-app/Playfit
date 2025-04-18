@@ -13,10 +13,12 @@ import 'package:playfit/utils/image.dart';
 
 class AdventurePage extends StatefulWidget {
   final bool moveCharacter;
+  final String? completedDifficulty;
 
   const AdventurePage({
     super.key,
     this.moveCharacter = false,
+    this.completedDifficulty,
   });
 
   @override
@@ -33,17 +35,31 @@ class _AdventurePageState extends State<AdventurePage>
   late List<Offset> checkpoints;
   late int nbCities;
   // int currentCheckpoint = 0;
-  final List<String> imagePaths = [
-    'assets/images/france/paris/eiffel_tower.png',
-    'assets/images/france/paris/apt.png',
-    'assets/images/tree.png',
-  ];
+  late Map<String, dynamic> _decorationImages;
 
   @override
   void initState() {
     super.initState();
     nbCities = 2;
     // _worldPositions = _getWorldPositions();
+  }
+
+  // call api to the
+  void completeWorkoutSession() async {
+    final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/workout';
+    final String? token = await storage.read(key: 'token');
+
+    final response = await http
+        .patch(Uri.parse('$baseUrl/update_workout_session/'), headers: {
+      'Authorization': 'Token $token',
+    }, body: {
+      'difficulty': widget.completedDifficulty!,
+    });
+
+    if (response.statusCode == 200) {
+    } else {
+      print("Can't update workout session");
+    }
   }
 
   void _scrollToCharacter(List<dynamic> worldPositions) {
@@ -171,20 +187,20 @@ class _AdventurePageState extends State<AdventurePage>
   Future<List<dynamic>> _loadPositionsAndImages() async {
     final positions = await _getWorldPositions();
     final String country = positions.first['country'];
-    final decorationImages = await _getDecorationImages(country);
+    _decorationImages = await _getDecorationImages(country);
     Map<String, dynamic> images = {
       'tree': await UIImageCacheManager().loadImageFromNetwork(
-          '${dotenv.env['SERVER_BASE_URL']}${decorationImages['tree']}'),
+          '${dotenv.env['SERVER_BASE_URL']}${_decorationImages['tree']}'),
       'flag': await UIImageCacheManager().loadImageFromNetwork(
-          '${dotenv.env['SERVER_BASE_URL']}${decorationImages['flag']}'),
+          '${dotenv.env['SERVER_BASE_URL']}${_decorationImages['flag']}'),
       'building': await UIImageCacheManager().loadImageFromNetwork(
-          '${dotenv.env['SERVER_BASE_URL']}${decorationImages['building']}'),
+          '${dotenv.env['SERVER_BASE_URL']}${_decorationImages['building']}'),
       'country': [],
     };
 
-    for (var i = 0; i < decorationImages['country'].length; i++) {
+    for (var i = 0; i < _decorationImages['country'].length; i++) {
       final countryImages = await Future.wait(
-        decorationImages['country'][i].map<Future<ui.Image>>((imageUrl) async {
+        _decorationImages['country'][i].map<Future<ui.Image>>((imageUrl) async {
           final fullUrl = '${dotenv.env['SERVER_BASE_URL']}$imageUrl';
 
           return await UIImageCacheManager().loadImageFromNetwork(fullUrl);
@@ -245,8 +261,11 @@ class _AdventurePageState extends State<AdventurePage>
                                   checkpoints[worldPositions[0]
                                       ['current_checkpoint']])
                         Character(
-                          position: checkpoints[worldPositions[i]
-                              ['current_checkpoint']],
+                          position: (i == 0 && widget.moveCharacter)
+                              ? checkpoints[
+                                  worldPositions[i]['current_checkpoint'] + 1]
+                              : checkpoints[worldPositions[i]
+                                  ['current_checkpoint']],
                           scale: const Offset(0.15, 0.15),
                           size: const Size(410, 732),
                           isFlipped:
@@ -269,9 +288,10 @@ class _AdventurePageState extends State<AdventurePage>
                                 '$serverBaseUrl${worldPositions[i]['character']['gloves']}',
                             'landmark': (worldPositions[0]['status'] ==
                                     'in_city')
-                                ? '$serverBaseUrl${worldPositions[0][checkpoints[worldPositions[0]['current_checkpoint']]]}'
-                                : "${dotenv.env['SERVER_BASE_URL']}/media/decorations/flag.webp",
+                                ? '${_decorationImages['country'][worldPositions[0]['city'] - 1][worldPositions[0]['level'] - 1]}'
+                                : "/media/decorations/flag.webp",
                           },
+                          sessionLevel: worldPositions[0]['level'],
                         ),
                   ]
                 ],

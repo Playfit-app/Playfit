@@ -17,6 +17,7 @@ class CameraView extends StatefulWidget {
   final String difficulty;
   final int currentExerciseIndex;
   final String landmarkImageUrl;
+  final Map<String, String?> characterImages;
   final BoxType boxType;
 
   const CameraView({
@@ -25,6 +26,7 @@ class CameraView extends StatefulWidget {
     required this.difficulty,
     required this.currentExerciseIndex,
     required this.landmarkImageUrl,
+    required this.characterImages,
     this.boxType = BoxType.left,
   });
 
@@ -43,6 +45,25 @@ class _CameraViewState extends State<CameraView> {
   int _count = 0;
   late int _targetCount;
   bool _showCelebration = false;
+  bool _showStartButton = true;
+  int _celebrationCountdown = 5;
+  Timer? _celebrationTimer;
+  bool _celebrationStarted = false;
+
+  WorkoutType workoutTypeFromName(String name) {
+    switch (name.toLowerCase().replaceAll('-', '')) {
+      case 'squat':
+        return WorkoutType.squat;
+      case 'jumpingjack':
+        return WorkoutType.jumpingJack;
+      case 'pushup':
+        return WorkoutType.pushUp;
+      case 'pullup':
+        return WorkoutType.pullUp;
+      default:
+        throw Exception('Workout type not recognized: $name');
+    }
+  }
 
   @override
   void initState() {
@@ -50,22 +71,19 @@ class _CameraViewState extends State<CameraView> {
 
     final exercise = widget.workoutSessionExercises[widget.difficulty]![
         widget.currentExerciseIndex];
-    _workoutType = WorkoutType.values.firstWhere(
-      (type) => type.toString().split('.').last == exercise['name'],
-    );
-    debugPrint('Workout type: $_workoutType');
+    _workoutType = workoutTypeFromName(exercise['name']);
     _targetCount = exercise['repetitions'];
 
     initCamera();
     _workoutAnalyzer.workoutCounts.addListener(() {
       final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
-      if (count != null && count > _count) {
+      if (count != null && count > _count && count <= _targetCount) {
         setState(() {
           _count = count;
-          if (_count == _targetCount) {
+          if (_count == _targetCount && !_celebrationStarted) {
+            _celebrationStarted = true;
             _showCelebration = true;
-            _stopDetecting();
-            _onRepsCompleted();
+            _stopDetecting(); // Triggers the countdown
           }
         });
       }
@@ -76,11 +94,6 @@ class _CameraViewState extends State<CameraView> {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() {
         _elapsedTime += const Duration(seconds: 1);
-
-        // Simulate incrementing the counter every 3 seconds
-        if (_elapsedTime.inSeconds % 3 == 0 && _count < _targetCount) {
-          _count++;
-        }
 
         if (_count == _targetCount) {
           _showCelebration = true;
@@ -99,13 +112,35 @@ class _CameraViewState extends State<CameraView> {
     );
     await _controller?.initialize();
 
+    _workoutAnalyzer.workoutCounts.addListener(() {
+      final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
+
+      if (count != null && count > _count && count <= _targetCount) {
+        setState(() {
+          _count = count;
+
+          if (_count == _targetCount && !_celebrationStarted) {
+            _celebrationStarted = true;
+            _showCelebration = true;
+            _stopDetecting();
+          }
+        });
+      }
+    });
+
     if (mounted) {
       setState(() {});
     }
   }
+  //end function after help
 
-  void _startDetecting() {
+  void _startDetecting() async {
     if (_controller != null) {
+      if (_controller!.value.isStreamingImages) return;
+      setState(() {
+        _showStartButton = false;
+      });
+
       _startTimer();
       _controller!.startImageStream((image) async {
         if (_isDetecting) return;
@@ -123,45 +158,50 @@ class _CameraViewState extends State<CameraView> {
     }
   }
 
-  void _stopDetecting() {
-    if (_controller != null) {
+  void _stopDetecting() async {
+    if (_controller != null && _controller!.value.isStreamingImages) {
       _timer?.cancel();
-      _controller!.stopImageStream();
+      await _controller!.stopImageStream();
+      _isDetecting = false;
     }
-  }
 
-  void _resetCount() {
-    setState(() {
-      _count = 0;
-      _elapsedTime = Duration.zero;
-      _showCelebration = false;
+    // Démarrer le compte à rebours
+    _celebrationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _celebrationCountdown--;
+      });
+      if (_celebrationCountdown == 0) {
+        _celebrationTimer?.cancel();
+        _goToProgressionPage();
+      }
     });
   }
 
-  void _onRepsCompleted() {
+  void _goToProgressionPage() {
     final Difficulty difficulty = widget.difficulty == "beginner"
         ? Difficulty.easy
         : widget.difficulty == "intermediate"
             ? Difficulty.medium
             : Difficulty.hard;
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-          builder: (context) => WorkoutProgressionPage(
-                difficulty: difficulty,
-                images: [
-                  "assets/images/pebble_path.png",
-                  "${dotenv.env['SERVER_BASE_URL']}/media/decorations/building.webp",
-                  "${dotenv.env['SERVER_BASE_URL']}/media/decorations/tree.webp",
-                  "${dotenv.env['SERVER_BASE_URL']}${widget.landmarkImageUrl}",
-                ],
-                startingPoint: widget.currentExerciseIndex,
-                workoutSessionExercises: widget.workoutSessionExercises,
-                currentExerciseIndex: widget.currentExerciseIndex + 1,
-              )),
-    ).then((_) {
-      _resetCount();
-    });
+        builder: (context) => WorkoutProgressionPage(
+          difficulty: difficulty,
+          images: [
+            "assets/images/pebble_path.jpg",
+            "${dotenv.env['SERVER_BASE_URL']}/media/decorations/building.webp",
+            "${dotenv.env['SERVER_BASE_URL']}/media/decorations/tree.webp",
+            "${dotenv.env['SERVER_BASE_URL']}${widget.landmarkImageUrl}",
+          ],
+          startingPoint: widget.currentExerciseIndex,
+          workoutSessionExercises: widget.workoutSessionExercises,
+          currentExerciseIndex: widget.currentExerciseIndex + 1,
+          characterImages: widget.characterImages,
+        ),
+      ),
+    );
   }
 
   @override
@@ -187,7 +227,53 @@ class _CameraViewState extends State<CameraView> {
                   BottomBoxWidget(elapsedTime: _elapsedTime, count: _count),
 
                 // Overlay when count hits the target
-                if (_showCelebration) const CelebrationOverlay(),
+                if (_showCelebration)
+                  CelebrationOverlay(finalTime: _elapsedTime),
+                if (_showCelebration && _celebrationCountdown > 0)
+                  Positioned(
+                    bottom: 40,
+                    left: 0,
+                    right: 0,
+                    child: Text(
+                      "Prochaine étape dans $_celebrationCountdown...",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 5.0,
+                            color: Colors.black,
+                            offset: Offset(1.5, 1.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                if (_showStartButton)
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Future.delayed(const Duration(seconds: 3), () {
+                          _startDetecting();
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: const Text(
+                        'Démarrer',
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                    ),
+                  ),
               ],
             )
           : const Center(child: CircularProgressIndicator()),
@@ -197,9 +283,14 @@ class _CameraViewState extends State<CameraView> {
   @override
   void dispose() {
     _timer?.cancel();
+    _celebrationTimer?.cancel();
     _workoutAnalyzer.dispose();
-    _controller?.stopImageStream();
-    _controller?.dispose();
+    if (_controller != null) {
+      if (_controller!.value.isStreamingImages) {
+        _controller!.stopImageStream();
+      }
+      _controller!.dispose();
+    }
     super.dispose();
   }
 }

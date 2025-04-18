@@ -5,12 +5,14 @@ class Character extends StatefulWidget {
   final Animation<double> animation;
   final List<Offset> points;
   final int startingPoint;
+  final Map<String, String?> images;
 
   const Character({
     super.key,
     required this.animation,
     required this.points,
     required this.startingPoint,
+    required this.images,
   });
 
   @override
@@ -46,8 +48,8 @@ class _CharacterState extends State<Character> {
         return Positioned(
           left: position.dx,
           top: position.dy,
-          child: Image.asset(
-            'assets/images/characterMap.png',
+          child: Image.network(
+            widget.images['base_character']!,
             width: 100,
             height: 100,
           ),

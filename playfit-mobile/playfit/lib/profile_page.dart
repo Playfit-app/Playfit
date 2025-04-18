@@ -36,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<Map<String, dynamic>> fetchUserData() async {
     final String userId =
         widget.userId != null ? widget.userId.toString() : 'me';
-    debugPrint("Fetching user data for userId: $userId");
+
     final String url =
         '${dotenv.env['SERVER_BASE_URL']}/api/auth/profile/$userId/';
     final String? token = await storage.read(key: 'token');
@@ -77,7 +77,6 @@ class _ProfilePageState extends State<ProfilePage> {
         _followerCount += 1;
       });
     } else {
-      // Handle error
       debugPrint("Failed to follow user: ${response.statusCode}");
     }
   }

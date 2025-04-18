@@ -9,9 +9,14 @@ import 'components/top_bar.dart';
 
 class HomePage extends StatefulWidget {
   final bool firstLogin;
+  final bool workoutDone;
+  final String? completedDifficulty;
+
   const HomePage({
     super.key,
     this.firstLogin = false,
+    this.workoutDone = false,
+    this.completedDifficulty,
   });
 
   @override
@@ -21,17 +26,21 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    const AdventurePage(),
-    const MissionsPage(),
-    const BoutiquePage(),
-    const SocialPage(),
-    const ProfilePage(),
-  ];
+  late List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
+    _pages = [
+      AdventurePage(
+        moveCharacter: widget.workoutDone,
+        completedDifficulty: widget.completedDifficulty,
+      ),
+      const MissionsPage(),
+      const BoutiquePage(),
+      const SocialPage(),
+      const ProfilePage(),
+    ];
     if (widget.firstLogin) {
       Future.delayed(const Duration(), () async {
         final service = NotificationService();

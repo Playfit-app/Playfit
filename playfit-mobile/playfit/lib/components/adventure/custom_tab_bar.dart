@@ -40,7 +40,7 @@ class _CustomTabBarState extends State<CustomTabBar>
       List<List<Map<String, dynamic>>> rows = [];
 
       for (var exercise in widget.workoutSessionExercises[difficulty]!) {
-        if (exercise['name'] == "jumping-jack") {
+        if (exercise['name'] == "jumpingJack") {
           rows.add([exercise]);
         } else {
           if (rows.isEmpty || rows.last.length == 2) {

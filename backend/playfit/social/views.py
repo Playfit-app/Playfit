@@ -527,6 +527,7 @@ class WorldPositionsListView(ListAPIView):
         followings = user.get_following()
         world_positions = []
 
+        print(world_position)
         world_positions.append({
             'user': user,
             'customization': customization,

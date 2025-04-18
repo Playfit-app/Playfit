@@ -12,6 +12,7 @@ class Character extends StatefulWidget {
   final bool isFlipped;
   final bool isMe;
   final Map<String, String?> images;
+  final int sessionLevel;
   final FlutterSecureStorage storage = const FlutterSecureStorage();
 
   Character({
@@ -22,6 +23,7 @@ class Character extends StatefulWidget {
     required this.isFlipped,
     required this.isMe,
     required this.images,
+    required this.sessionLevel,
   }) : position = Offset(
           position.dx - size.width * scale.dx / 2,
           position.dy - size.height * scale.dy,
@@ -111,6 +113,8 @@ class _CharacterState extends State<Character> {
                 return WorkoutSessionDialog(
                   workoutSessionExercises: workoutSessionExercises,
                   landmarkImageUrl: widget.images['landmark']!,
+                  sessionLevel: widget.sessionLevel,
+                  characterImages: widget.images,
                 );
               },
             );

@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from social.models import WorldPosition
 from .models import WorkoutSession, Exercise, WorkoutSessionExercise
 from .serializers import (
     WorkoutSessionSerializer,
@@ -126,26 +127,29 @@ class WorkoutSessionsView(APIView):
             400: openapi.Response("Bad request", "Invalid workout session data")
         }
     )
-    def patch(self, request, pk):
+    def patch(self, request):
+        wp: WorldPosition = request.user.position
+        workout_session: WorkoutSession = None
+
         try:
-            workout_session = WorkoutSession.objects.get(pk=pk, user=request.user)
+            if wp.is_in_city():
+                workout_session = WorkoutSession.objects.get(user=request.user, city=wp.city, city_level=wp.city_level)
+            elif wp.is_in_transition():
+                workout_session = WorkoutSession.objects.get(user=request.user, transition_from=wp.transition_from, transition_to=wp.transition_to, transition_level=wp.transition_level)
+
         except WorkoutSession.DoesNotExist:
             return Response("Workout session not found", status=status.HTTP_404_NOT_FOUND)
 
-        serializer = WorkoutSessionPatchSerializer(workout_session, data=request.data, partial=True)
-        if serializer.is_valid():
-            data = serializer.validated_data
+        workout_session.completed_date = now().date()
+        workout_session.save()
 
-            if data.get("completed"):
-                workout_session.completed_date = now().date()
-                workout_session.save()
+        difficulty = request.data.get("difficulty")
+        workout_session_exercises = WorkoutSessionExercise.objects.filter(workout_session=workout_session).exclude(difficulty__in=difficulty)
+        workout_session_exercises.delete()
 
-            if data.get("selected_difficulty"):
-                workout_session_exercises = WorkoutSessionExercise.objects.filter(workout_session=workout_session).exclude(difficulty__in=data["selected_difficulty"])
-                workout_session_exercises.delete()
+        wp.move_to_next_level()
 
-            return Response("Workout session updated successfully", status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response("Workout session updated successfully", status=status.HTTP_200_OK)
 
 class WorkoutSessionExerciseView(APIView):
     permission_classes = [IsAuthenticated]

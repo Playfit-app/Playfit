@@ -6,11 +6,15 @@ import 'package:playfit/camera_page.dart';
 class WorkoutSessionDialog extends StatefulWidget {
   final Map<String, List<dynamic>> workoutSessionExercises;
   final String landmarkImageUrl;
+  final int sessionLevel;
+  final Map<String, String?> characterImages;
 
   const WorkoutSessionDialog({
     super.key,
     required this.workoutSessionExercises,
     required this.landmarkImageUrl,
+    required this.sessionLevel,
+    required this.characterImages,
   });
 
   @override
@@ -18,7 +22,7 @@ class WorkoutSessionDialog extends StatefulWidget {
 }
 
 class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
-  String? difficulty;
+  String difficulty = 'beginner';
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +50,7 @@ class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 Text(
-                  'Session n°1',
+                  'Session n°${widget.sessionLevel.toString()}',
                   style: GoogleFonts.amaranth(
                     fontSize: 32,
                   ),
@@ -58,10 +62,10 @@ class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
             // Tab menu
             CustomTabBar(
               workoutSessionExercises: widget.workoutSessionExercises,
-              onTabChanged: (difficulty) => {
+              onTabChanged: (difficulty) {
                 setState(() {
                   this.difficulty = difficulty;
-                }),
+                });
               },
             ),
             ElevatedButton(
@@ -71,10 +75,11 @@ class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
                   MaterialPageRoute(
                     builder: (context) => CameraView(
                       workoutSessionExercises: widget.workoutSessionExercises,
-                      difficulty: difficulty!,
+                      difficulty: difficulty,
                       currentExerciseIndex: 0,
                       landmarkImageUrl: widget.landmarkImageUrl,
                       boxType: BoxType.left,
+                      characterImages: widget.characterImages,
                     ),
                   ),
                 );

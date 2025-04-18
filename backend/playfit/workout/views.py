@@ -179,6 +179,23 @@ class WorkoutSessionExerciseView(APIView):
                 transition_to=wp.transition_to if wp.is_in_transition() else None,
                 creation_date=now().date(),
             )
+            # Generate exercises for the workout session
+            try:
+                exercises = ['push-up', 'squat', 'jumping-jack']
+                for exercise in exercises:
+                    WorkoutSessionExercise.objects.create(
+                        workout_session=workout_session,
+                        exercise=Exercise.objects.get(name=exercise),
+                        sets=1,
+                        repetitions=10 if exercise == 'push-up' else 20 if exercise == 'squat' else 30,
+                        weight=0,
+                        difficulty="beginner",
+                    )
+            except Exercise.DoesNotExist:
+                return Response("Exercise not found", status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response(f"Error generating workout session: {str(e)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         workout_session_exercises = WorkoutSessionExercise.objects.filter(workout_session=workout_session)
         data = {
             'beginner': [],

@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:playfit/components/adventure/custom_tab_bar.dart';
+import 'package:playfit/camera_page.dart';
 
-class WorkoutSessionDialog extends StatelessWidget {
+class WorkoutSessionDialog extends StatefulWidget {
   final Map<String, List<dynamic>> workoutSessionExercises;
+  final String landmarkImageUrl;
 
   const WorkoutSessionDialog({
     super.key,
     required this.workoutSessionExercises,
+    required this.landmarkImageUrl,
   });
+
+  @override
+  State<WorkoutSessionDialog> createState() => _WorkoutSessionDialogState();
+}
+
+class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
+  String? difficulty;
 
   @override
   Widget build(BuildContext context) {
@@ -46,10 +56,28 @@ class WorkoutSessionDialog extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             // Tab menu
-            CustomTabBar(workoutSessionExercises: workoutSessionExercises),
+            CustomTabBar(
+              workoutSessionExercises: widget.workoutSessionExercises,
+              onTabChanged: (difficulty) => {
+                setState(() {
+                  this.difficulty = difficulty;
+                }),
+              },
+            ),
             ElevatedButton(
               onPressed: () {
-                // Handle start workout session
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CameraView(
+                      workoutSessionExercises: widget.workoutSessionExercises,
+                      difficulty: difficulty!,
+                      currentExerciseIndex: 0,
+                      landmarkImageUrl: widget.landmarkImageUrl,
+                      boxType: BoxType.left,
+                    ),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFF8871F),

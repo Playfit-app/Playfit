@@ -34,4 +34,16 @@ class UIImageCacheManager {
     });
     return completer.future;
   }
+
+  Future<ui.Image> loadImage(String image) async {
+    if (image.startsWith('http')) {
+      return await loadImageFromNetwork(image);
+    } else {
+      return await loadImageFromAssets(image);
+    }
+  }
+
+  void clearCache() {
+    _imageCache.clear();
+  }
 }

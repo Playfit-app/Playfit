@@ -267,6 +267,10 @@ class _AdventurePageState extends State<AdventurePage>
                                 '$serverBaseUrl${worldPositions[i]['character']['shoes']}',
                             'gloves':
                                 '$serverBaseUrl${worldPositions[i]['character']['gloves']}',
+                            'landmark': (worldPositions[0]['status'] ==
+                                    'in_city')
+                                ? '$serverBaseUrl${worldPositions[0][checkpoints[worldPositions[0]['current_checkpoint']]]}'
+                                : "${dotenv.env['SERVER_BASE_URL']}/media/decorations/flag.webp",
                           },
                         ),
                   ]

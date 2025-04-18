@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:playfit/camera_page.dart';
 import 'package:playfit/components/level_cinematic/character.dart';
 import 'package:playfit/components/level_cinematic/difficulty.dart';
 import 'package:playfit/utils/image.dart';
@@ -10,12 +11,16 @@ class WorkoutProgressionPage extends StatefulWidget {
   final List<String> images;
   final int startingPoint;
   final bool transition;
+  final Map<String, List<dynamic>> workoutSessionExercises;
+  final int currentExerciseIndex;
 
   const WorkoutProgressionPage({
     super.key,
     required this.difficulty,
     required this.images,
     required this.startingPoint,
+    required this.workoutSessionExercises,
+    required this.currentExerciseIndex,
     this.transition = false,
   });
 
@@ -40,6 +45,12 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
         .size;
     final scale = Offset(screenSize.width / 411, screenSize.height / 831);
 
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _onAnimationComplete();
+      }
+    });
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 5),
@@ -57,6 +68,26 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
     ];
   }
 
+  void _onAnimationComplete() {
+    final String difficulty = widget.difficulty.toString().split('.').last;
+    if (widget.startingPoint ==
+        widget.workoutSessionExercises[difficulty]!.length - 1) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final String imageUrl = widget.images[widget.startingPoint];
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => CameraView(
+          difficulty: difficulty,
+          currentExerciseIndex: widget.currentExerciseIndex,
+          landmarkImageUrl: imageUrl,
+          workoutSessionExercises: widget.workoutSessionExercises,
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -72,8 +103,8 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
 
     return FutureBuilder(
       future: Future.wait(
-        widget.images.map((imagePath) {
-          return UIImageCacheManager().loadImageFromAssets(imagePath);
+        widget.images.map((image) {
+          return UIImageCacheManager().loadImage(image);
         }),
       ),
       builder: (context, snapshot) {

@@ -110,6 +110,7 @@ class _CharacterState extends State<Character> {
               builder: (context) {
                 return WorkoutSessionDialog(
                   workoutSessionExercises: workoutSessionExercises,
+                  landmarkImageUrl: widget.images['landmark']!,
                 );
               },
             );

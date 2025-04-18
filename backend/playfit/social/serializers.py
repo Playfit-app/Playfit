@@ -53,36 +53,77 @@ class GCMDeviceSerializer(serializers.ModelSerializer):
         model = GCMDevice
         fields = ["id", "user", "registration_id"]
 
-class PostSerializer(serializers.ModelSerializer):
+class PostListSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    likes = serializers.SerializerMethodField()
+    nb_likes = serializers.SerializerMethodField()
+    nb_comments = serializers.SerializerMethodField()
     comments = serializers.SerializerMethodField()
+    media = serializers.ImageField(use_url=True)
+    is_liked = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ["id", "user", "content", "media", "created_at", "likes", "comments"]
+        fields = ["id", "user", "content", "media", "created_at", "nb_likes", "nb_comments", "comments", "is_liked"]
 
-    def get_likes(self, obj):
+    def get_nb_likes(self, obj):
         return obj.likes.count()
 
-    def get_comments(self, obj):
+    def get_nb_comments(self, obj):
         return obj.comments.count()
+    
+    def get_comments(self, obj):
+        comments = obj.comments.order_by('-created_at')[:3]
+        return CommentSerializer(comments, many=True).data
+
+    def get_is_liked(self, obj):
+        request = self.context.get("request")
+
+        if request and request.user.is_authenticated:
+            return obj.likes.filter(user=request.user).exists()
+        return False
+
+class PostSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    nb_likes = serializers.SerializerMethodField()
+    nb_comments = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
+    media = serializers.ImageField(use_url=True)
+    is_liked = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Post
+        fields = ["id", "user", "content", "media", "created_at", "nb_likes", "nb_comments", "comments", "is_liked"]
+
+    def get_nb_likes(self, obj):
+        return obj.likes.count()
+
+    def get_nb_comments(self, obj):
+        return obj.comments.count()
+    
+    def get_comments(self, obj):
+        comments = obj.comments.all()
+        return CommentSerializer(comments, many=True).data
+
+    def get_is_liked(self, obj):
+        request = self.context.get("request")
+
+        if request and request.user.is_authenticated:
+            return obj.likes.filter(user=request.user).exists()
+        return False
 
 class LikeSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    post = PostSerializer(read_only=True)
 
     class Meta:
         model = Like
-        fields = ["id", "user", "post", "created_at"]
+        fields = ["id", "user", "created_at"]
 
 class CommentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    post = PostSerializer(read_only=True)
 
     class Meta:
         model = Comment
-        fields = ["id", "user", "post", "content", "created_at"]
+        fields = ["id", "user", "content", "created_at"]
 
 class NotificationSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -130,3 +171,10 @@ class WorldPositionResponseSerializer(serializers.Serializer):
                 'city_to': position.transition_to.order,
                 'level': position.transition_level,
             }
+
+class UserSearchSerializer(serializers.ModelSerializer):
+    customizations = CustomizationSerializer()
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "customizations"]

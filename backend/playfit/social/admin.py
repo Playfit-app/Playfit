@@ -9,6 +9,10 @@ from .models import (
     Customization,
     CityDecorationImage,
     MountainDecorationImage,
+    Post,
+    Like,
+    Comment,
+    Follow,
 )
 
 class ContinentAdmin(admin.ModelAdmin):
@@ -30,3 +34,7 @@ admin.site.register(CustomizationItem)
 admin.site.register(Customization)
 admin.site.register(CityDecorationImage)
 admin.site.register(MountainDecorationImage)
+admin.site.register(Post)
+admin.site.register(Like)
+admin.site.register(Comment)
+admin.site.register(Follow)

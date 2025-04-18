@@ -239,7 +239,11 @@ class _AdventurePageState extends State<AdventurePage>
                     for (int i = 0; i < worldPositions.length; i++)
                       if (i == 0 ||
                           worldPositions[i]['country'] ==
-                              worldPositions[0]['country'])
+                                  worldPositions[0]['country'] &&
+                              checkpoints[worldPositions[i]
+                                      ['current_checkpoint']] !=
+                                  checkpoints[worldPositions[0]
+                                      ['current_checkpoint']])
                         Character(
                           position: checkpoints[worldPositions[i]
                               ['current_checkpoint']],

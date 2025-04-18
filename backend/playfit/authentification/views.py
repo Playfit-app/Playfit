@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.views import View
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.password_validation import validate_password
 from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
@@ -27,6 +27,7 @@ from social.models import (
     BaseCharacter,
     Notification,
     MountainDecorationImage,
+    Follow,
 )
 from social.utils import send_notification
 from workout.models import (
@@ -87,6 +88,10 @@ class RegisterView(APIView):
                     current_streak=0,
                 )
                 return Response({
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                    },
                     'token': token.key,
                     'position': {
                         'continent': "Europe",
@@ -138,6 +143,10 @@ class LoginView(APIView):
         position = user.position
         following_positions = WorldPosition.objects.filter(user__in=user.get_following())
         return Response({
+            'user': {
+                'id': user.id,
+                'username': user.username,
+            },
             'token': token.key,
             'position': get_position_data(position),
             'following_positions': [
@@ -521,7 +530,6 @@ class UserAchievementView(APIView):
         serializer = UserAchievementSerializer(achievements, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-# View to get data for profile page (custom user, success, progress, customization)
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -532,8 +540,15 @@ class ProfileView(APIView):
             400: "Invalid data or data not found",
         }
     )
-    def get(self, request):
-        user = request.user
+    def get(self, request, id: str):
+        if id == "me":
+            user = request.user
+        else:
+            try:
+                user_id = int(id)
+            except ValueError:
+                return Response({"error": "Invalid user ID format."}, status=status.HTTP_400_BAD_REQUEST)
+            user = get_object_or_404(CustomUser, id=user_id)
         achievements = UserAchievement.objects.filter(user=user)
         progress = UserProgress.objects.get(user=user)
         customization = Customization.objects.get(user=user)
@@ -559,8 +574,7 @@ class ProfileView(APIView):
         ]
         last_7_days_exercises.reverse()
 
-
-        return Response({
+        response = {
             'user': {
                 'id': user.id,
                 'username': user.username,
@@ -594,4 +608,12 @@ class ProfileView(APIView):
                 'dates': last_7_days,
                 'repetitions': last_7_days_exercises,
             },
-        }, status=status.HTTP_200_OK)
+        }
+
+        if id != "me":
+            response['is_following'] = Follow.objects.filter(
+                follower=request.user,
+                following=user
+            ).exists()
+
+        return Response(response, status=status.HTTP_200_OK)

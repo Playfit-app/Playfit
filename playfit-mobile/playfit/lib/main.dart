@@ -11,6 +11,7 @@ import 'package:playfit/authentification/registration_page.dart';
 import 'package:playfit/home_page.dart';
 import 'package:playfit/profile_page.dart';
 import 'package:playfit/camera_page.dart';
+import 'package:playfit/notification_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,6 +53,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomePage(), // Route to home page
         '/profile': (context) => const ProfilePage(), // Route to profile page
         '/camera': (context) => const CameraView(), // Route to camera page
+        '/notifications': (context) => const NotificationPage(),
       },
     );
   }

@@ -11,13 +11,6 @@ class TopBar extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        // Row(
-        //   children: [
-        //     Icon(Icons.favorite, color: Color.fromARGB(255, 231, 29, 54)),
-        //     Icon(Icons.favorite, color: Color.fromARGB(255, 231, 29, 54)),
-        //     Icon(Icons.heart_broken, color: Color.fromARGB(255, 186, 26, 26)),
-        //   ],
-        // ),
         badges.Badge(
           position: badges.BadgePosition.bottomEnd(),
           badgeContent: const Text(

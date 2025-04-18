@@ -26,7 +26,7 @@ class _CameraViewState extends State<CameraView> {
   Duration _elapsedTime = Duration.zero;
 
   int _count = 0; // Your current count
-  final int _targetCount = 5; // Change this to your target
+  final int _targetCount = 6; // Change this to your target
   bool _showCelebration = false;
 
   @override
@@ -47,6 +47,7 @@ class _CameraViewState extends State<CameraView> {
         }
 
         if (_count == _targetCount) {
+          _timer?.cancel();
           _showCelebration = true;
         }
       });
@@ -106,7 +107,7 @@ class _CameraViewState extends State<CameraView> {
 
                 // Overlay when count hits the target
                 if (_showCelebration)
-                  const CelebrationOverlay(),
+                  CelebrationOverlay(finalTime: _elapsedTime),
               ],
             )
           : const Center(child: CircularProgressIndicator()),

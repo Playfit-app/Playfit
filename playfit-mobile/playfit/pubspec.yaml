@@ -51,6 +51,8 @@ dependencies:
   firebase_core: ^3.12.1
   firebase_messaging: ^15.2.4
   flutter_local_notifications: ^18.0.1
+  timeago: ^3.2.2
+  badges: ^3.1.2
 
 dev_dependencies:
   flutter_test:
@@ -78,7 +80,6 @@ flutter:
   assets:
     - .env
     - assets/images/
-    - assets/images/paris/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

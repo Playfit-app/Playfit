@@ -1,19 +1,20 @@
 import django.contrib.auth.password_validation as validators
 from rest_framework import serializers
 from utilities.encrypted_fields import hash
-from .models import CustomUser, UserConsent
+from .models import CustomUser, UserConsent, UserAchievement
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     terms_and_conditions = serializers.BooleanField(write_only=True)
     privacy_policy = serializers.BooleanField(write_only=True)
     marketing = serializers.BooleanField(write_only=True)
+    character_image_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = CustomUser
         fields = [
             'email', 'username', 'password', 'date_of_birth', 'height', 'weight',
-            'terms_and_conditions', 'privacy_policy', 'marketing'
+            'terms_and_conditions', 'privacy_policy', 'marketing', 'character_image_id',
         ]
 
     def create(self, validated_data):
@@ -37,6 +38,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
         if not value['terms_and_conditions'] or not value['privacy_policy']:
             raise serializers.ValidationError({'terms_and_conditions': 'You must accept the terms and conditions', 'privacy_policy': 'You must accept the privacy policy'})
+        if value['character_image_id'] < 0 or value['character_image_id'] > 4:
+            raise serializers.ValidationError({'character_image_id': 'Invalid character image'})
         return value
 
 class UserConsentSerializer(serializers.ModelSerializer):
@@ -106,3 +109,25 @@ class AccountRecoveryRequestSerializer(serializers.Serializer):
         if not CustomUser.objects.filter(email_hash=hash(data['email'])).exists():
             raise serializers.ValidationError({'email': 'Email not found'})
         return data
+
+class UserTestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username']
+
+class UserAchievementSerializer(serializers.ModelSerializer):
+    user = UserTestSerializer(read_only=True)
+    name = serializers.CharField(source='achievement.name', read_only=True)
+    description = serializers.CharField(source='achievement.description', read_only=True)
+    image = serializers.ImageField(source='achievement.image', read_only=True)
+    target = serializers.IntegerField(source='achievement.target', read_only=True)
+    current_value = serializers.IntegerField(read_only=True)
+    is_completed = serializers.BooleanField(read_only=True)
+    awarded_at = serializers.DateTimeField(read_only=True)
+
+    class Meta:
+        model = UserAchievement
+        fields = [
+            'user', 'name', 'description', 'image',
+            'target', 'current_value', 'is_completed', 'awarded_at',
+        ]

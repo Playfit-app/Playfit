@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
 class CustomTabBar extends StatefulWidget {
+  final Map<String, List<dynamic>> workoutSessionExercises;
+
+  const CustomTabBar({
+    super.key,
+    required this.workoutSessionExercises,
+  });
+
   @override
   _CustomTabBarState createState() => _CustomTabBarState();
 }
@@ -8,6 +15,43 @@ class CustomTabBar extends StatefulWidget {
 class _CustomTabBarState extends State<CustomTabBar>
     with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
+  final Map<String, List<List<Map<String, dynamic>>>> _exercises = {
+    'beginner': [],
+    'intermediate': [],
+    'advanced': [],
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _exercises.addAll(_groupExercises());
+  }
+
+  Map<String, List<List<Map<String, dynamic>>>> _groupExercises() {
+    Map<String, List<List<Map<String, dynamic>>>> groupedExercises = {
+      'beginner': [],
+      'intermediate': [],
+      'advanced': [],
+    };
+
+    for (var difficulty in widget.workoutSessionExercises.keys) {
+      List<List<Map<String, dynamic>>> rows = [];
+
+      for (var exercise in widget.workoutSessionExercises[difficulty]!) {
+        if (exercise['name'] == "jumping-jack") {
+          rows.add([exercise]);
+        } else {
+          if (rows.isEmpty || rows.last.length == 2) {
+            rows.add([exercise]);
+          } else {
+            rows.last.add(exercise);
+          }
+        }
+      }
+      groupedExercises[difficulty] = rows;
+    }
+    return groupedExercises;
+  }
 
   void _onTabChanged(int index) {
     setState(() {
@@ -44,7 +88,7 @@ class _CustomTabBarState extends State<CustomTabBar>
             ],
           ),
           SizedBox(
-            height: MediaQuery.of(context).size.height * 0.5,
+            height: MediaQuery.of(context).size.height * 0.4,
             child: IndexedStack(
               sizing: StackFit.expand,
               index: _selectedIndex,
@@ -52,17 +96,17 @@ class _CustomTabBarState extends State<CustomTabBar>
                 _buildTabContent(
                   const Color.fromARGB(255, 187, 255, 137),
                   const Color.fromARGB(255, 232, 255, 215),
-                  'Contenu pour l\'onglet Facile',
+                  _exercises['beginner'] ?? [],
                 ),
                 _buildTabContent(
                   const Color.fromARGB(255, 255, 214, 110),
                   const Color.fromARGB(255, 255, 235, 185),
-                  'Contenu pour l\'onglet Moyen',
+                  _exercises['intermediate'] ?? [],
                 ),
                 _buildTabContent(
                   const Color.fromARGB(255, 255, 124, 124),
                   const Color.fromARGB(255, 255, 186, 186),
-                  'Contenu pour l\'onglet Facile',
+                  _exercises['advanced'] ?? [],
                 ),
               ],
             ),
@@ -96,15 +140,81 @@ class _CustomTabBarState extends State<CustomTabBar>
     );
   }
 
-  Widget _buildTabContent(Color borderColor, Color color, String text) {
+  Widget _buildTabContent(
+      Color borderColor, Color color, List<dynamic> content) {
     return Container(
-      decoration: BoxDecoration(color: color),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(10),
+          bottomRight: Radius.circular(10),
+        ),
+      ),
       child: Column(
         children: [
           Container(
             height: 9,
             width: double.infinity,
             color: borderColor,
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(8),
+              itemCount: content.length,
+              itemBuilder: (context, index) {
+                final row = content[index];
+
+                if (row.length == 1) {
+                  return _buildExerciseCard(row[0], fullWidth: true);
+                } else {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: _buildExerciseCard(row[0]),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildExerciseCard(row[1]),
+                      ),
+                    ],
+                  );
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExerciseCard(Map<String, dynamic> exercise,
+      {bool fullWidth = false}) {
+    final name = exercise['name'];
+    final image = exercise['image'];
+    final reps = exercise['repetitions'];
+
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+            child: Image.network(
+              image,
+              fit: BoxFit.cover,
+              height: fullWidth ? 140 : 100,
+            ),
+          ),
+          Text(
+            "$reps $name",
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

@@ -34,6 +34,13 @@ class WorkoutSessionSerializer(serializers.ModelSerializer):
         )
         return workout_session
 
+class WorkoutSessionPatchSerializer(serializers.ModelSerializer):
+    completed = serializers.BooleanField(required=False)
+    selected_difficulty = serializers.ListField(
+        child=serializers.ChoiceField(choices=WorkoutSessionExercise.DIFFICULTY_CHOICES),
+        required=False
+    )
+
 class WorkoutSessionExerciseSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkoutSessionExercise
@@ -44,10 +51,14 @@ class WorkoutSessionExerciseSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"sets": "Invalid number of sets."})
         if data['repetitions'] <= 0:
             raise serializers.ValidationError({"repetitions": "Invalid number of repetitions."})
-        if data['exercise'].difficulty == 'beginner' and ('weight' in data and data['weight'] is not None and data['weight'] > 0):
+        if data['workout_session'].difficulty == 'beginner' and ('weight' in data and data['weight'] is not None and data['weight'] > 0):
             raise serializers.ValidationError({"weight": "Beginner exercises should not have weight."})
-        if data['exercise'].difficulty != 'beginner' and ('weight' not in data or data['weight'] is None or data['weight'] <= 0):
+        if data['workout_session'].difficulty != 'beginner' and ('weight' not in data or data['weight'] is None or data['weight'] <= 0):
             raise serializers.ValidationError({"weight": "Invalid weight."})
+        if data['workout_session'].completed_date is not None:
+            raise serializers.ValidationError({"workout_session": "Workout session is already completed."})
+        if data['workout_session'].user != self.context['request'].user:
+            raise serializers.ValidationError({"workout_session": "User does not match."})
         return data
 
     def save(self):

@@ -12,6 +12,7 @@ class TransitionRoad extends Road {
     required super.startY,
     required super.scale,
     required super.decorationImages,
+    required super.cityIndex,
   }) {
     oldStartY = startY;
     buildBrownPath();
@@ -22,10 +23,8 @@ class TransitionRoad extends Road {
 
   @override
   void setDecorations() {
-    final ui.Image? treeImage = decorationImages['assets/images/tree.png'];
+    final ui.Image treeImage = decorationImages['tree'];
     const Size treeSize = Size(79, 118);
-
-    if (treeImage == null) return;
 
     decorations = [
       dec.Decoration(

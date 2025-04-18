@@ -1,6 +1,8 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/io.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class NotificationProvider extends ChangeNotifier {
@@ -14,7 +16,7 @@ class NotificationProvider extends ChangeNotifier {
   void connect(String token) {
     if (_channel != null) return;
 
-    final url = "${dotenv.env['SERVER_BASE_WS_URL']}ws/notifications/";
+    final url = "${dotenv.env['SERVER_BASE_WS_URL']}/ws/notifications/";
 
     _channel = IOWebSocketChannel.connect(
       Uri.parse(url),
@@ -42,5 +44,19 @@ class NotificationProvider extends ChangeNotifier {
   void disconnect() {
     _channel?.sink.close();
     _channel = null;
+  }
+
+  void markAllAsRead() async {
+    _unreadCount = 0;
+    final url =
+        "${dotenv.env['SERVER_BASE_URL']}/api/social/notifications/read/all/";
+    final token = await const FlutterSecureStorage().read(key: 'token');
+    await http.patch(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Token $token',
+      },
+    );
+    notifyListeners();
   }
 }

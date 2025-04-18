@@ -10,8 +10,9 @@ from django.core.exceptions import ValidationError
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.views import View
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.password_validation import validate_password
+from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from social_django.utils import load_strategy
@@ -22,14 +23,25 @@ from utilities.expiring_password_reset_token import ExpiringPasswordResetTokenGe
 from social.models import (
     City,
     WorldPosition,
+    Customization,
+    BaseCharacter,
+    Notification,
+    MountainDecorationImage,
+    Follow,
 )
-from .models import CustomUser
+from social.utils import send_notification
+from workout.models import (
+    WorkoutSession,
+    WorkoutSessionExercise,
+)
+from .models import CustomUser, UserAchievement, UserProgress
 from .serializers import (
     CustomUserSerializer,
     CustomUserRetrieveSerializer,
     CustomUserUpdateSerializer,
     CustomUserDeleteSerializer,
     AccountRecoveryRequestSerializer,
+    UserAchievementSerializer,
 )
 from .utils import (
     generate_username_with_number,
@@ -37,6 +49,8 @@ from .utils import (
     generate_uid_from_id,
     get_id_from_uid,
     get_position_data,
+    # evaluate_achievements,
+    link_achievements_to_user,
 )
 
 class RegisterView(APIView):
@@ -52,16 +66,32 @@ class RegisterView(APIView):
     )
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
+
         if serializer.is_valid():
             try:
                 user = serializer.create(serializer.validated_data)
                 token, _ = Token.objects.get_or_create(user=user)
+
+                link_achievements_to_user(user)
                 WorldPosition.objects.create(
                     user=user,
                     city=City.objects.get(name="Paris"),
                     city_level=1,
                 )
+                Customization.objects.create(
+                    user=user,
+                    base_character=BaseCharacter.objects.get(id=serializer.validated_data['character_image_id']),
+                )
+                UserProgress.objects.create(
+                    user=user,
+                    longest_streak=0,
+                    current_streak=0,
+                )
                 return Response({
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                    },
                     'token': token.key,
                     'position': {
                         'continent': "Europe",
@@ -113,6 +143,10 @@ class LoginView(APIView):
         position = user.position
         following_positions = WorldPosition.objects.filter(user__in=user.get_following())
         return Response({
+            'user': {
+                'id': user.id,
+                'username': user.username,
+            },
             'token': token.key,
             'position': get_position_data(position),
             'following_positions': [
@@ -141,6 +175,26 @@ class LogoutView(APIView):
         try:
             token = Token.objects.get(user=request.user)
             token.delete()
+            followers = list(request.user.get_followers())
+            notifications = [
+                Notification(
+                    user=follower,
+                    sender=request.user,
+                    notification_type="world_position",
+                    post=None,
+                )
+                for follower in followers
+            ]
+            Notification.objects.bulk_create(notifications)
+            for follower in followers:
+                send_notification(follower, {
+                    'id': notifications[followers.index(follower)].id,
+                    'sender': request.user.username,
+                    'notification_type': notifications[followers.index(follower)].notification_type,
+                    'created_at': notifications[followers.index(follower)].created_at.isoformat(),
+                    'post': None,
+                    'seen': notifications[followers.index(follower)].seen,
+                })
             return Response({'success': "Successfully logged out"}, status=status.HTTP_200_OK)
         except Token.DoesNotExist:
             return Response({'error': "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -459,3 +513,107 @@ class AccountRecoveryView(View):
             return render(request, "authentification/account_recovery.html", {'error': e.messages[0], 'email': email}, status=status.HTTP_400_BAD_REQUEST)
 
         return render(request, "authentification/account_recovery.html", {'message': 'Account recovered'}, status=status.HTTP_200_OK)
+
+class UserAchievementView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Get user achievements.",
+        responses={
+            200: openapi.Response("User achievements"),
+            400: "Invalid data or data not found",
+        }
+    )
+    def get(self, request):
+        user = request.user
+        achievements = UserAchievement.objects.filter(user=user)
+        serializer = UserAchievementSerializer(achievements, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Get user profile data.",
+        responses={
+            200: openapi.Response("User profile data"),
+            400: "Invalid data or data not found",
+        }
+    )
+    def get(self, request, id: str):
+        if id == "me":
+            user = request.user
+        else:
+            try:
+                user_id = int(id)
+            except ValueError:
+                return Response({"error": "Invalid user ID format."}, status=status.HTTP_400_BAD_REQUEST)
+            user = get_object_or_404(CustomUser, id=user_id)
+        achievements = UserAchievement.objects.filter(user=user)
+        progress = UserProgress.objects.get(user=user)
+        customization = Customization.objects.get(user=user)
+        last_7_days = [
+            (timezone.now() - datetime.timedelta(days=i)).strftime("%m/%d") for i in range(7)
+        ]
+        last_7_days.reverse()
+
+        # For each day, get the sessions completed.
+        last_7_days_sessions = [
+            WorkoutSession.objects.filter(
+                user=user,
+                completed_date=(timezone.now() - datetime.timedelta(days=i)).date()
+            ) for i in range(7)
+        ]
+        last_7_days_sessions.reverse()
+
+        # For each day, get the exercises completed.
+        last_7_days_exercises = [
+            WorkoutSessionExercise.objects.filter(
+                workout_session__in=last_7_days_sessions[i]
+            ).count() for i in range(7)
+        ]
+        last_7_days_exercises.reverse()
+
+        response = {
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'first_name': user.first_name,
+                'date_joined': user.date_joined,
+            },
+            'achievements': UserAchievementSerializer(achievements, many=True).data,
+            'progress': {
+                'current_streak': progress.current_streak,
+                'cities_finished': progress.cities_finished,
+                'level': progress.level,
+                'current_xp': progress.xp,
+                'required_xp': progress.required_xp_for_next_level(),
+            },
+            'customization': {
+                'base_character': customization.base_character.image.url,
+                'hat': customization.hat.image.url if customization.hat else None,
+                'backpack': customization.backpack.image.url if customization.backpack else None,
+                'shirt': customization.shirt.image.url if customization.shirt else None,
+                'pants': customization.pants.image.url if customization.pants else None,
+                'shoes': customization.shoes.image.url if customization.shoes else None,
+                'gloves': customization.gloves.image.url if customization.gloves else None,
+            },
+            'following': user.get_following().count(),
+            'followers': user.get_followers().count(),
+            'decorations': {
+                'mountains': [mountain.image.url for mountain in MountainDecorationImage.objects.all()],
+            },
+            # Last 7 days of progress
+            'last_7_days': {
+                'dates': last_7_days,
+                'repetitions': last_7_days_exercises,
+            },
+        }
+
+        if id != "me":
+            response['is_following'] = Follow.objects.filter(
+                follower=request.user,
+                following=user
+            ).exists()
+
+        return Response(response, status=status.HTTP_200_OK)

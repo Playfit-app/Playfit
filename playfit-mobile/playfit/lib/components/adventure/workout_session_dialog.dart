@@ -3,7 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:playfit/components/adventure/custom_tab_bar.dart';
 
 class WorkoutSessionDialog extends StatelessWidget {
-  const WorkoutSessionDialog({super.key});
+  final Map<String, List<dynamic>> workoutSessionExercises;
+
+  const WorkoutSessionDialog({
+    super.key,
+    required this.workoutSessionExercises,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +46,23 @@ class WorkoutSessionDialog extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             // Tab menu
-            CustomTabBar(),
+            CustomTabBar(workoutSessionExercises: workoutSessionExercises),
+            ElevatedButton(
+              onPressed: () {
+                // Handle start workout session
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF8871F),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: const Text('Démarrer',
+                  style: TextStyle(
+                    color: Colors.white,
+                  )),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

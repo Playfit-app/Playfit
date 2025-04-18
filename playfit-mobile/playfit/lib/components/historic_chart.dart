@@ -2,6 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class HistoricChart extends StatefulWidget {
+  final List<String> last7Dates;
+  final List<int> last7Exos;
+
+  const HistoricChart({
+    super.key,
+    required this.last7Dates,
+    required this.last7Exos,
+  });
+
   @override
   State<StatefulWidget> createState() => HistoricChartState();
 }
@@ -79,19 +88,19 @@ class HistoricChartState extends State<HistoricChart> {
                 getTitlesWidget: (value, meta) {
                   List<String> days = [
                     "",
-                    "Lun.",
-                    "Mar.",
-                    "Mer.",
-                    "Jeu.",
-                    "Ven.",
-                    "Sam.",
-                    "Dim.",
+                    widget.last7Dates[0],
+                    widget.last7Dates[1],
+                    widget.last7Dates[2],
+                    widget.last7Dates[3],
+                    widget.last7Dates[4],
+                    widget.last7Dates[5],
+                    widget.last7Dates[6],
                     ""
                   ];
                   if (value.toInt() >= 0 && value.toInt() < days.length) {
                     return Text(
                       days[value.toInt()],
-                      style: const TextStyle(color: Colors.black, fontSize: 12),
+                      style: const TextStyle(color: Colors.black, fontSize: 8),
                     );
                   }
                   return Container();
@@ -118,25 +127,21 @@ class HistoricChartState extends State<HistoricChart> {
             ),
           ),
           lineBarsData: [
-            // Blue Line (left axis)
+            // Blue Line (left axis) (exos)
             LineChartBarData(
-              spots: [
-                const FlSpot(1, 2),
-                const FlSpot(2, 3),
-                const FlSpot(3, 2),
-              ],
+              spots: List.generate(
+                widget.last7Exos.length,
+                (index) => FlSpot(
+                    index.toDouble(), widget.last7Exos[index].toDouble()),
+              ),
               isCurved: false,
               barWidth: 2,
               color: leftColor,
               dotData: const FlDotData(show: true),
             ),
-            // Red Line (right axis)
+            // Red Line (right axis) (bpm)
             LineChartBarData(
-              spots: [
-                FlSpot(1, normalizeRightAxis(100)),
-                FlSpot(2, normalizeRightAxis(125)),
-                FlSpot(3, normalizeRightAxis(80)),
-              ],
+              spots: [],
               isCurved: false,
               barWidth: 2,
               color: rightColor,

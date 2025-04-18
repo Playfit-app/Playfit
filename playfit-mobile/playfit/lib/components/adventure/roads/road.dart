@@ -9,12 +9,14 @@ abstract class Road extends CustomPainter {
   Path path = Path();
   List<Checkpoint> checkpoints = [];
   List<dec.Decoration> decorations = [];
-  Map<String, ui.Image> decorationImages;
+  Map<String, dynamic> decorationImages;
+  int cityIndex;
 
   Road({
     required this.startY,
     required this.scale,
     required this.decorationImages,
+    required this.cityIndex,
   });
 
   void setCheckpoints(int count) {

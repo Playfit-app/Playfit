@@ -4,6 +4,7 @@ import 'adventure_page.dart';
 import 'missions_page.dart';
 import 'boutique_page.dart';
 import 'profile_page.dart';
+import 'package:playfit/social_page.dart';
 import 'components/top_bar.dart';
 
 class HomePage extends StatefulWidget {
@@ -24,6 +25,7 @@ class _HomePageState extends State<HomePage> {
     const AdventurePage(),
     const MissionsPage(),
     const BoutiquePage(),
+    const SocialPage(),
     const ProfilePage(),
   ];
 
@@ -51,11 +53,13 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       extendBody: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const TopBar(),
-        automaticallyImplyLeading: false,
-      ),
+      appBar: _currentIndex == 4 || _currentIndex == 3
+          ? null
+          : AppBar(
+              backgroundColor: Colors.transparent,
+              title: const TopBar(),
+              automaticallyImplyLeading: false,
+            ),
       body: _pages[_currentIndex],
       bottomNavigationBar: SizedBox(
         height: 100,
@@ -76,7 +80,8 @@ class _HomePageState extends State<HomePage> {
                 _buildNavBarItem(Icons.fitness_center, 0),
                 _buildNavBarItem(Icons.list_alt, 1),
                 _buildNavBarItem(Icons.shopping_cart, 2),
-                _buildNavBarItem(Icons.person, 3),
+                _buildNavBarItem(Icons.group, 3),
+                _buildNavBarItem(Icons.person, 4),
               ],
             ),
           ),

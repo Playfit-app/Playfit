@@ -5,13 +5,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from authentification.models import UserAchievement, UserProgress
 from social.models import WorldPosition
 from .models import WorkoutSession, Exercise, WorkoutSessionExercise
 from .serializers import (
     WorkoutSessionSerializer,
     ExerciseSerializer,
     WorkoutSessionExerciseSerializer,
-    WorkoutSessionPatchSerializer,
 )
 
 class ExerciseView(APIView):
@@ -121,10 +121,12 @@ class WorkoutSessionsView(APIView):
 
     @swagger_auto_schema(
         operation_description="Update a workout session",
-        request_body=WorkoutSessionPatchSerializer,
+        # request_body=WorkoutSessionPatchSerializer,
         responses={
-            200: openapi.Response("Workout session updated", "Workout session updated successfully"),
-            400: openapi.Response("Bad request", "Invalid workout session data")
+            200: openapi.Response("Workout session updated successfully"),
+            400: openapi.Response("Bad request", "Invalid data"),
+            403: openapi.Response("Forbidden", "You are not authorized to update this workout session"),
+            404: openapi.Response("Not found", "Workout session not found")
         }
     )
     def patch(self, request):
@@ -140,14 +142,36 @@ class WorkoutSessionsView(APIView):
         except WorkoutSession.DoesNotExist:
             return Response("Workout session not found", status=status.HTTP_404_NOT_FOUND)
 
+        if workout_session is None:
+            return Response("Workout session not found", status=status.HTTP_404_NOT_FOUND)
+
         workout_session.completed_date = now().date()
         workout_session.save()
 
         difficulty = request.data.get("difficulty")
+        if difficulty is None:
+            return Response("Difficulty not found", status=status.HTTP_400_BAD_REQUEST)
+
+        if difficulty not in ["beginner", "intermediate", "advanced"]:
+            return Response("Invalid difficulty", status=status.HTTP_400_BAD_REQUEST)
+
         workout_session_exercises = WorkoutSessionExercise.objects.filter(workout_session=workout_session).exclude(difficulty__in=difficulty)
         workout_session_exercises.delete()
 
         wp.move_to_next_level()
+
+        # Update user progress
+        user_progress = UserProgress.objects.get(user=request.user)
+        user_progress.update_after_workout()
+
+        # Retrieve all user achievements
+        user_achievements = UserAchievement.objects.filter(user=request.user)
+
+        # Check if the user has any achievements
+        if user_achievements.exists():
+            # If the user has achievements, update them
+            for achievement in user_achievements:
+                achievement.update_progress(workout_session)
 
         return Response("Workout session updated successfully", status=status.HTTP_200_OK)
 

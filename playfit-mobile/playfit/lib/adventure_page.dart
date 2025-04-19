@@ -42,6 +42,9 @@ class _AdventurePageState extends State<AdventurePage>
     super.initState();
     nbCities = 2;
     // _worldPositions = _getWorldPositions();
+    if (widget.moveCharacter) {
+      completeWorkoutSession();
+    }
   }
 
   // call api to the

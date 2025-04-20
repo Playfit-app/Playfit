@@ -78,10 +78,10 @@ class TransitionRoad extends Road {
   void buildBrownPath() {
     final brownPath = Path();
     double offsetX = 22 * scale.dx;
-    double endY = (startY - 429 * scale.dy).roundToDouble();
+    double endY = ((startY - 399) * scale.dy).roundToDouble();
 
-    brownPath.moveTo((171.077 + offsetX) * scale.dx, startY);
-    brownPath.lineTo((171.077 + offsetX) * scale.dx, startY + 10);
+    brownPath.moveTo((171.077 + offsetX) * scale.dx, startY + (1 * scale.dy));
+    brownPath.lineTo((171.077 + offsetX) * scale.dx, startY - (20 * scale.dy));
     brownPath.cubicTo(
       (161.952 + offsetX) * scale.dx,
       357.739 * scale.dy + endY,
@@ -106,7 +106,7 @@ class TransitionRoad extends Road {
       (259.577 + offsetX) * scale.dx,
       endY,
     );
-    brownPath.lineTo((259.577 + offsetX) * scale.dx, (endY - 10) * scale.dy);
+    brownPath.lineTo((259.577 + offsetX) * scale.dx, endY - (4 * scale.dy));
 
     paths.add(brownPath);
   }
@@ -114,10 +114,10 @@ class TransitionRoad extends Road {
   void buildWhitePath() {
     final whitePath = Path();
     double offsetX = 22 * scale.dx * 2;
-    double endY = (startY - 429 * scale.dy).roundToDouble();
+    double endY = ((startY - 399) * scale.dy).roundToDouble();
 
-    whitePath.moveTo((147.077 + offsetX) * scale.dx, startY);
-    whitePath.lineTo((147.077 + offsetX) * scale.dx, startY + 10);
+    whitePath.moveTo((147.077 + offsetX) * scale.dx, startY + (1 * scale.dy));
+    whitePath.lineTo((147.077 + offsetX) * scale.dx, startY - (20 * scale.dy));
     whitePath.cubicTo(
       (137.952 + offsetX) * scale.dx,
       357.739 * scale.dy + endY,
@@ -142,8 +142,7 @@ class TransitionRoad extends Road {
       (235.577 + offsetX) * scale.dx,
       endY,
     );
-    whitePath.lineTo((235.577 + offsetX) * scale.dx, (endY - 10) * scale.dy);
-    startY = endY + 20 * scale.dy;
+    startY = (endY) * scale.dy;
 
     paths.add(whitePath);
   }
@@ -189,8 +188,7 @@ class TransitionRoad extends Road {
       ..style = PaintingStyle.fill;
 
     canvas.drawRect(
-      Rect.fromLTRB(
-          0, oldStartY - 439 * scale.dy, 411 * scale.dx, oldStartY + 10),
+      Rect.fromLTRB(0, oldStartY - 404 * scale.dy, 411 * scale.dx, oldStartY),
       backgroundPaint,
     );
   }

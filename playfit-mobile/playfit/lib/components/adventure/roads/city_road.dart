@@ -98,9 +98,9 @@ class CityRoad extends Road {
   void buildGreyPath() {
     final greyPath = Path();
     double offsetX = 22 * scale.dx;
-    double endY = (startY - 858 * scale.dy).roundToDouble();
+    double endY = ((startY - 798) * scale.dy).roundToDouble();
 
-    greyPath.moveTo((259.577 + offsetX) * scale.dx, 830 * scale.dy + endY);
+    greyPath.moveTo((259.577 + offsetX) * scale.dx, (endY + 798) * scale.dy);
     greyPath.cubicTo(
         (251.577 + offsetX) * scale.dx,
         635 * scale.dy + endY,
@@ -136,7 +136,6 @@ class CityRoad extends Road {
         24.5 * scale.dy + endY,
         (171.077 + offsetX) * scale.dx,
         endY);
-    greyPath.lineTo((171.077 + offsetX) * scale.dx, endY - 10 * scale.dy);
 
     paths.add(greyPath);
   }
@@ -144,9 +143,9 @@ class CityRoad extends Road {
   void buildWhitePath() {
     final whitePath = Path();
     double offsetX = 22 * scale.dx * 2;
-    double endY = (startY - 858 * scale.dy).roundToDouble();
+    double endY = ((startY - 798) * scale.dy).roundToDouble();
 
-    whitePath.moveTo((235.577 + offsetX) * scale.dx, 830 * scale.dy + endY);
+    whitePath.moveTo((235.577 + offsetX) * scale.dx, (endY + 798) * scale.dy);
     whitePath.cubicTo(
         (227.577 + offsetX) * scale.dx,
         635 * scale.dy + endY,
@@ -182,8 +181,7 @@ class CityRoad extends Road {
         24.5 * scale.dy + endY,
         (147.077 + offsetX) * scale.dx,
         endY);
-    whitePath.lineTo((147.077 + offsetX) * scale.dx, (endY - 10) * scale.dy);
-    startY = (endY - 20) * scale.dy;
+    startY = endY * scale.dy;
 
     paths.add(whitePath);
   }
@@ -229,8 +227,7 @@ class CityRoad extends Road {
       ..style = PaintingStyle.fill;
 
     canvas.drawRect(
-      Rect.fromLTRB(
-          0, oldStartY - 868 * scale.dy, 411 * scale.dx, oldStartY - 30),
+      Rect.fromLTRB(0, oldStartY - (802 * scale.dy), 411 * scale.dx, oldStartY),
       backgroundPaint,
     );
   }

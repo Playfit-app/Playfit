@@ -40,14 +40,11 @@ class _AdventurePageState extends State<AdventurePage>
   @override
   void initState() {
     super.initState();
-    nbCities = 2;
-    // _worldPositions = _getWorldPositions();
     if (widget.moveCharacter) {
       completeWorkoutSession();
     }
   }
 
-  // call api to the
   void completeWorkoutSession() async {
     final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/workout';
     final String? token = await storage.read(key: 'token');
@@ -148,14 +145,16 @@ class _AdventurePageState extends State<AdventurePage>
             WidgetsBinding.instance.platformDispatcher.views.first)
         .size;
 
-    double height = screenSize.height * (nbCities + (nbCities - 1) * 0.5);
+    double height = screenSize.height * nbCities +
+        (screenSize.height * 0.5 * (nbCities - 1));
     double startY = height;
     Offset scale = Offset(
       screenSize.width / 411,
-      height / (nbCities + (nbCities - 1) * 0.5) / 830,
+      screenSize.height / 798,
     );
+    int cityIndex = 0;
 
-    for (int i = 0; i <= nbCities; i++) {
+    for (int i = 0; i < nbCities + (nbCities - 1); i++) {
       Road road;
 
       if (i % 2 == 0) {
@@ -163,8 +162,9 @@ class _AdventurePageState extends State<AdventurePage>
           startY: startY,
           scale: scale,
           decorationImages: decorationImages,
-          cityIndex: i,
+          cityIndex: cityIndex,
         );
+        cityIndex++;
       } else {
         road = TransitionRoad(
           startY: startY,
@@ -218,7 +218,6 @@ class _AdventurePageState extends State<AdventurePage>
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
-    double height = screenSize.height * (nbCities + (nbCities - 1) * 0.5);
 
     return FutureBuilder(
       future: _loadPositionsAndImages(),
@@ -229,6 +228,11 @@ class _AdventurePageState extends State<AdventurePage>
         final String serverBaseUrl = dotenv.env['SERVER_BASE_URL']!;
         final images = snapshot.data![0] as Map<String, dynamic>;
         final worldPositions = snapshot.data![1] as List<dynamic>;
+
+        nbCities = images['country'].length;
+        double height = screenSize.height * nbCities +
+            (screenSize.height * 0.5 * (nbCities - 1));
+
         final roads = _createRoads(images);
 
         checkpoints = roads
@@ -242,7 +246,7 @@ class _AdventurePageState extends State<AdventurePage>
 
         return Scaffold(
           body: SizedBox(
-            height: screenSize.height * 2,
+            height: height,
             child: SingleChildScrollView(
               controller: _scrollController,
               reverse: true,

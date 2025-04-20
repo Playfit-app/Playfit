@@ -40,22 +40,22 @@ class CityRoad extends Road {
       // Trees
       dec.Decoration(
         image: treeImage,
-        position: Offset(100 * scale.dx, startY + 80 * scale.dy),
+        position: Offset(100 * scale.dx, startY + 60 * scale.dy),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(200 * scale.dx, startY + 245 * scale.dy),
+        position: Offset(200 * scale.dx, startY + 225 * scale.dy),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(220 * scale.dx, startY + 225 * scale.dy),
+        position: Offset(220 * scale.dx, startY + 205 * scale.dy),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(260 * scale.dx, startY + 270 * scale.dy),
+        position: Offset(260 * scale.dx, startY + 250 * scale.dy),
         size: treeSize,
       ),
       dec.Decoration(
@@ -67,17 +67,17 @@ class CityRoad extends Road {
       // Buildings
       dec.Decoration(
         image: buildingImage,
-        position: Offset(50 * scale.dx, startY + 70 * scale.dy),
+        position: Offset(50 * scale.dx, startY + 50 * scale.dy),
         size: buildingSize,
       ),
       dec.Decoration(
         image: buildingImage,
-        position: Offset(30 * scale.dx, startY + 400 * scale.dy),
+        position: Offset(30 * scale.dx, startY + 380 * scale.dy),
         size: buildingSize,
       ),
       dec.Decoration(
         image: buildingImage,
-        position: Offset(95 * scale.dx, startY + 400 * scale.dy),
+        position: Offset(95 * scale.dx, startY + 380 * scale.dy),
         size: buildingSize,
       ),
       dec.Decoration(

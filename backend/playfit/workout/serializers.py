@@ -21,7 +21,7 @@ class WorkoutSessionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['creation_date'] > datetime.date.today():
-            raise serializers.ValidationError({"date": "Invalid date."})
+            raise serializers.ValidationError({"creation_date": "Invalid date."})
         if data['duration'] <= datetime.timedelta(minutes=0):
             raise serializers.ValidationError({"duration": "Invalid duration."})
         return data

@@ -1,14 +1,12 @@
-### **BETA TEST PLAN – TEMPLATE**
-*This template serves as a structured example of what is expected for your Beta Test Plan.*
+### **BETA TEST PLAN – Playfit**
 
 ## **1. Core Functionalities for Beta Version**
-[List and describe the core functionalities that must be available for beta testing. Explain any changes made since the original Tech3 Action Plan.]
 
 | **Feature Name**  | **Description** | **Priority (High/Medium/Low)** | **Changes Since Tech3** |
 |-------------------|-----------------|--------------------------------|-------------------------|
 | Movement tracking for exercices | Users can choose an exercice and can do the exercice being tracked | High | - |
-| Data visualisation | Users can view their progress through graphs and charts | Medium | - |
 | Social interaction | Users interact with other users: search for an user, follow an user, view the profile of an user | Medium | New feature |
+| Data visualisation | Users can view their progress through graphs and charts | Low | - |
 
 ## **2. Beta Testing Scenarios**
 ### **2.1 User Roles**
@@ -52,21 +50,16 @@ For each core functionality, provide detailed test scenarios.
 - **Expected Outcome:** The user can see the profile of the user and the posts of the user. The user can also follow the user.
 
 ## **3. Success Criteria**
-[Define the metrics and conditions that determine if the beta version is successful.]
 
----
 
 ## **4. Known Issues & Limitations**
-[List any known bugs, incomplete features, or limitations that testers should be aware of.]
 
 | **Issue** | **Description** | **Impact** | **Planned Fix? (Yes/No)** |
-|----------|---------------|----------|----------------|
-| Issue 1  | [Brief description] | High | Yes |
-| Issue 2  | [Brief description] | Medium | No |
-
----
+|-----------|-----------------|---==-------|---------------------------|
+| User's distance to the camera | The user needs to be at a correct distance | Highest | Yes |
+| False positive during camera setup | A repetition could be counted when the user is setting up the camera's position | High | Yes |
+| Jumping jack exercice | The detection of jumping jack accuracy is low | High | Yes |
 
 ## **5. Conclusion**
-[Summarize the importance of this Beta Test Plan and what the team expects to achieve with it.]
 
 The team expects to achieve a successful beta test of the core functionalities of the application. The feedback from the beta testers will be crucial in identifying any issues and improving the overall user experience before the final release. The team expects to gather valuable insights from the beta testers and make necessary adjustments to ensure a smooth launch.

@@ -162,7 +162,6 @@ class _AdventurePageState extends State<AdventurePage>
       if (i % 2 == 0) {
         road = CityRoad(
           startY: startY,
-          screenSize: screenSize,
           scale: scale,
           decorationImages: decorationImages,
           cityIndex: cityIndex,
@@ -171,7 +170,6 @@ class _AdventurePageState extends State<AdventurePage>
       } else {
         road = TransitionRoad(
           startY: startY,
-          screenSize: screenSize,
           scale: scale,
           decorationImages: decorationImages,
           cityIndex: i,

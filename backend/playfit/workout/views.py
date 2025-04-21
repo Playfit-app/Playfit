@@ -47,14 +47,6 @@ class ExerciseView(APIView):
             "difficulty": exercise.difficulty
         } for exercise in exercises], status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        operation_description="Add a new exercise",
-        request_body=ExerciseSerializer,
-        responses={
-            201: openapi.Response("New exercise", ExerciseSerializer),
-            403: openapi.Response("Forbidden", "You are not authorized to add new exercises")
-        }
-    )
     def post(self, request):
         if not request.user.is_staff:
             return Response("You are not authorized to add new exercises", status=status.HTTP_403_FORBIDDEN)
@@ -122,8 +114,8 @@ class WorkoutSessionsView(APIView):
         operation_description="Update a workout session",
         request_body=WorkoutSessionPatchSerializer,
         responses={
-            200: openapi.Response("Workout session updated", "Workout session updated successfully"),
-            400: openapi.Response("Bad request", "Invalid workout session data")
+            200: openapi.Response(description="Workout session updated successfully"),
+            400: openapi.Response("Bad request, invalid workout session data")
         }
     )
     def patch(self, request, pk):

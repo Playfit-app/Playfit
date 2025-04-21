@@ -17,11 +17,11 @@ class ExerciseSerializer(serializers.ModelSerializer):
 class WorkoutSessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkoutSession
-        fields = ['date', 'duration']
+        fields = ['creation_date', 'duration']
 
     def validate(self, data):
-        if data['date'] > datetime.date.today():
-            raise serializers.ValidationError({"date": "Invalid date."})
+        if data['creation_date'] > datetime.date.today():
+            raise serializers.ValidationError({"creation_date": "Invalid date."})
         if data['duration'] <= datetime.timedelta(minutes=0):
             raise serializers.ValidationError({"duration": "Invalid duration."})
         return data
@@ -35,6 +35,9 @@ class WorkoutSessionSerializer(serializers.ModelSerializer):
         return workout_session
 
 class WorkoutSessionPatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkoutSession
+        fields = ['completed', 'selected_difficulty']
     completed = serializers.BooleanField(required=False)
     selected_difficulty = serializers.ListField(
         child=serializers.ChoiceField(choices=WorkoutSessionExercise.DIFFICULTY_CHOICES),

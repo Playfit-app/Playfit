@@ -114,7 +114,7 @@ class WorkoutSessionsView(APIView):
         operation_description="Update a workout session",
         request_body=WorkoutSessionPatchSerializer,
         responses={
-            200: openapi.Response("Workout session updated, workout session updated successfully"),
+            200: openapi.Response(description="Workout session updated successfully"),
             400: openapi.Response("Bad request, invalid workout session data")
         }
     )

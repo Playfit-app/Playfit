@@ -152,14 +152,20 @@ class FollowCreateView(CreateAPIView):
     @swagger_auto_schema(
         request_body=UserSerializer,
         responses={
-            201: openapi.Response("User followed"),
-            400: openapi.Response(
-                description="Bad request",
+            201: openapi.Response(
+                description="User followed successfully",
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
                         'detail': openapi.Schema(type=openapi.TYPE_STRING),
                     },
+                ),
+            ),
+            400: openapi.Response(
+                description="Bad request",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={'detail': openapi.Schema(type=openapi.TYPE_STRING)},
                 ),
             ),
             404: openapi.Response(

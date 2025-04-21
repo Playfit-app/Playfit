@@ -144,13 +144,15 @@ class _AdventurePageState extends State<AdventurePage>
     Size screenSize = MediaQueryData.fromView(
             WidgetsBinding.instance.platformDispatcher.views.first)
         .size;
+    double referenceScreenHeight = 798;
+    double referenceScreenWidth = 411;
 
-    double height = screenSize.height * nbCities +
-        (screenSize.height * 0.5 * (nbCities - 1));
+    double height = referenceScreenHeight * nbCities +
+        (referenceScreenHeight * 0.5 * (nbCities - 1));
     double startY = height;
     Offset scale = Offset(
-      screenSize.width / 411,
-      screenSize.height / 798,
+      screenSize.width / referenceScreenWidth,
+      screenSize.height / referenceScreenHeight,
     );
     int cityIndex = 0;
 
@@ -160,6 +162,7 @@ class _AdventurePageState extends State<AdventurePage>
       if (i % 2 == 0) {
         road = CityRoad(
           startY: startY,
+          screenSize: screenSize,
           scale: scale,
           decorationImages: decorationImages,
           cityIndex: cityIndex,
@@ -168,6 +171,7 @@ class _AdventurePageState extends State<AdventurePage>
       } else {
         road = TransitionRoad(
           startY: startY,
+          screenSize: screenSize,
           scale: scale,
           decorationImages: decorationImages,
           cityIndex: i,
@@ -230,8 +234,9 @@ class _AdventurePageState extends State<AdventurePage>
         final worldPositions = snapshot.data![1] as List<dynamic>;
 
         nbCities = images['country'].length;
-        double height = screenSize.height * nbCities +
-            (screenSize.height * 0.5 * (nbCities - 1));
+        double referenceScreenHeight = 798;
+        double height = referenceScreenHeight * nbCities +
+            (referenceScreenHeight * 0.5 * (nbCities - 1));
 
         final roads = _createRoads(images);
 
@@ -245,11 +250,12 @@ class _AdventurePageState extends State<AdventurePage>
         });
 
         return Scaffold(
-          body: SizedBox(
-            height: height,
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              reverse: true,
+          body: SingleChildScrollView(
+            controller: _scrollController,
+            reverse: true,
+            child: SizedBox(
+              height: height,
+              width: screenSize.width,
               child: Stack(
                 children: [
                   RepaintBoundary(

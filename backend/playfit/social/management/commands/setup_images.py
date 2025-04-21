@@ -1,5 +1,7 @@
 import os
+import json
 from django.core.management.base import BaseCommand
+from authentification.models import GameAchievement
 from social.models import (
     Continent,
     Country,
@@ -10,9 +12,7 @@ from social.models import (
     BaseCharacter,
     CustomizationItem,
 )
-from workout.models import (
-    Exercise,
-)
+from workout.models import Exercise
 
 EXTENSIONS: tuple[str] = (".png", ".webp")
 
@@ -102,6 +102,7 @@ class Command(BaseCommand):
         self.create_exercises(path)
         self.create_city_decorations(path)
         self.create_decorations(path)
+        self.create_achievements(path)
         self.stdout.write(self.style.SUCCESS("All images and data set up successfully."))
 
     def create_continents(self) -> None:
@@ -314,3 +315,44 @@ class Command(BaseCommand):
                         self.stdout.write(self.style.WARNING(f"Decoration image already exists for {city.name}: {city_decoration_image.label}"))
 
         self.stdout.write(self.style.SUCCESS("All city decoration images created."))
+
+    def create_achievements(self, base_path: str) -> None:
+        """
+        Create achievements in the database.
+        """
+        self.stdout.write(self.style.NOTICE("Creating achievements..."))
+        achievements_path = os.path.join(base_path, "achievements")
+
+        if not is_valid_directory(achievements_path):
+            self.stderr.write(self.style.ERROR(f"Achievements path {achievements_path} does not exist or is not a directory."))
+            return
+
+        config_path = os.path.join(achievements_path, "config.json")
+
+        with open(config_path, "r") as file:
+            achievements = json.load(file)
+        for achievement in achievements:
+            name = achievement["name"]
+            description = achievement["description"]
+            type = achievement["type"]
+            target = achievement["target"]
+            image_path = achievement["image"]
+            xp_reward = achievement["xp_reward"]
+
+            if not is_valid_file(os.path.join(achievements_path, image_path)):
+                self.stderr.write(self.style.ERROR(f"Image path {image_path} does not exist or is not a file."))
+                continue
+
+            a, created = GameAchievement.objects.get_or_create(
+                name=name,
+                description=description,
+                type=type,
+                target=target,
+                image=os.path.join(achievements_path, image_path),
+                xp_reward=xp_reward,
+            )
+            if created:
+                self.stdout.write(self.style.SUCCESS(f"Created achievement: {a.name}"))
+            else:
+                self.stdout.write(self.style.WARNING(f"Achievement already exists: {a.name}"))
+        self.stdout.write(self.style.SUCCESS("All achievements created."))

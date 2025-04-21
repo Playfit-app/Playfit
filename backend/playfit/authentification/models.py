@@ -204,8 +204,6 @@ class UserAchievement(models.Model):
                 self.current_value += exercise.sets * exercise.repetitions
         elif self.achievement.type == "workouts":
             self.current_value += 1
-        elif self.achievement.type == "streak":
-            self.current_value = self.user.progress.longest_streak
         elif self.achievement.type == "level":
             self.current_value = self.user.progress.level
         elif self.achievement.type == "duration":

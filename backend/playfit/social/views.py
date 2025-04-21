@@ -26,6 +26,7 @@ from .models import (
     Customization,
     Country,
     City,
+    DecorationImage,
     CityDecorationImage,
 )
 from .serializers import (
@@ -585,8 +586,11 @@ class GetDecorationImagesView(APIView):
         cities = City.objects.filter(country=c)
         decoration_images = {
             'tree': '/media/decorations/tree.webp',
+            # 'tree': DecorationImage.objects.get(name='tree').image.url,
             'building': '/media/decorations/building.webp',
+            # 'building': DecorationImage.objects.get(name='building').image.url,
             'flag': '/media/decorations/flag.webp',
+            # 'flag': DecorationImage.objects.get(name='flag').image.url,
             'country': [],
         }
 

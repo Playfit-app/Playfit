@@ -222,6 +222,23 @@ class WorldPosition(models.Model):
             return f"{self.user} is transitioning from {self.transition_from} to {self.transition_to} (Level {self.transition_level})"
         return f"{self.user} is in the void"
 
+class DecorationImage(models.Model):
+    image = models.ImageField(upload_to='decorations/')
+    label = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.label} decoration ({self.created_at})"
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            ext = self.image.name.split('.')[-1].lower()
+            if ext == 'png':
+                self.image = convert_to_webp(self.image)
+            elif ext != 'webp':
+                raise ValidationError("The image must be a PNG or WebP file")
+        super().save(*args, **kwargs)
+
 class CityDecorationImage(models.Model):
     city = models.ForeignKey(City, related_name='decorations', on_delete=models.CASCADE)
     image = models.ImageField(upload_to=city_decoration_image_path)

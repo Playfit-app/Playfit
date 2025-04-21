@@ -7,7 +7,7 @@ from django.utils import timezone
 from utilities.encrypted_fields import hash, EncryptedCharField, EncryptedEmailField, EncryptedDateField, EncryptedTextField
 from utilities.images import convert_to_webp
 
-def city_decoration_image_path(instance, filename):
+def achievement_decoration_image_path(instance, filename):
     filename_without_ext = filename.split('.')[0]
     return f'achievements/images/{filename_without_ext}.webp'
 
@@ -169,7 +169,7 @@ class GameAchievement(models.Model):
     description = models.TextField()
     type = models.CharField(max_length=50, choices=GAME_ACHIEVEMENT_CHOICES, default="reps")
     target = models.PositiveIntegerField(default=0)
-    image = models.ImageField(upload_to=city_decoration_image_path, null=True, blank=True)
+    image = models.ImageField(upload_to=achievement_decoration_image_path, null=True, blank=True)
     xp_reward = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 

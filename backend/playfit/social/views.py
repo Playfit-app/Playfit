@@ -153,14 +153,20 @@ class FollowCreateView(CreateAPIView):
     @swagger_auto_schema(
         request_body=UserSerializer,
         responses={
-            201: openapi.Response("User followed", {"detail": "User followed"}),
-            400: openapi.Response(
-                description="Bad request",
+            201: openapi.Response(
+                description="User followed successfully",
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
                         'detail': openapi.Schema(type=openapi.TYPE_STRING),
                     },
+                ),
+            ),
+            400: openapi.Response(
+                description="Bad request",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={'detail': openapi.Schema(type=openapi.TYPE_STRING)},
                 ),
             ),
             404: openapi.Response(
@@ -211,7 +217,7 @@ class FollowDeleteView(DestroyAPIView):
 
     @swagger_auto_schema(
         responses={
-            204: openapi.Response("User unfollowed", {"detail": "User unfollowed"}),
+            204: openapi.Response("User unfollowed"),
             404: openapi.Response(
                 description="Not found",
                 schema=openapi.Schema(
@@ -329,7 +335,7 @@ class LikePostView(CreateAPIView):
     @swagger_auto_schema(
         request_body=LikeSerializer,
         responses={
-            201: openapi.Response("Post liked", {"detail": "Post liked"}),
+            201: openapi.Response("Post liked"),
             400: openapi.Response(
                 description="Bad request",
                 schema=openapi.Schema(
@@ -382,7 +388,7 @@ class UnlikePostView(DestroyAPIView):
 
     @swagger_auto_schema(
         responses={
-            204: openapi.Response("Like removed", {"detail": "Like removed"}),
+            204: openapi.Response("Like removed"),
             404: openapi.Response(
                 description="Not found",
                 schema=openapi.Schema(
@@ -451,7 +457,7 @@ class CommentDeleteView(DestroyAPIView):
 
     @swagger_auto_schema(
         responses={
-            204: openapi.Response("Comment removed", {"detail": "Comment removed"}),
+            204: openapi.Response("Comment removed"),
             404: openapi.Response(
                 description="Not found",
                 schema=openapi.Schema(
@@ -477,7 +483,7 @@ class NotificationReadAllView(UpdateAPIView):
 
     @swagger_auto_schema(
         responses={
-            200: openapi.Response("All notifications read", {"detail": "All notifications read"}),
+            200: openapi.Response("All notifications read"),
         }
     )
     def patch(self, request, *args, **kwargs):
@@ -498,8 +504,8 @@ class WorldPositionsListView(ListAPIView):
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'user': openapi.Schema(type=openapi.TYPE_OBJECT, ref=UserSerializer),
-                        'character': openapi.Schema(type=openapi.TYPE_OBJECT, ref=CustomizationSerializer),
+                        'user': openapi.Schema(type=openapi.TYPE_OBJECT, ref='#/definitions/User'),
+                        'character': openapi.Schema(type=openapi.TYPE_OBJECT, ref='#/definitions/Customization'),
                         'status': openapi.Schema(type=openapi.TYPE_STRING, enum=["in_city", "in_transition"]),
                         'continent': openapi.Schema(type=openapi.TYPE_STRING),
                         'country': openapi.Schema(type=openapi.TYPE_STRING),

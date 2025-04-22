@@ -339,7 +339,7 @@ class Command(BaseCommand):
                         created = False
                     except CityDecorationImage.DoesNotExist:
                         city_decoration_image = CityDecorationImage(city=city, label=label)
-                        city_decoration_image.image.save(label, File(open(image_path, "rb")))
+                        city_decoration_image.image.save(label_with_extension, File(open(image_path, "rb")))
                         city_decoration_image.save()
                         created = True
 

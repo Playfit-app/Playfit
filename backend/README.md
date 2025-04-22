@@ -72,7 +72,7 @@ python3 manage.py createsuperuser
 ## Run the server
 
 ```bash
-python3 manage.py runserver 0.0.0.0:8000
+export DJANGO_SETTINGS_MODULE=playfit.settings ; daphne -b 0.0.0.0 -p 8000 playfit.asgi:application
 ```
 
 ## Deactivate the virtual environment

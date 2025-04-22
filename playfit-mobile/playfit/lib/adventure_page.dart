@@ -144,11 +144,13 @@ class _AdventurePageState extends State<AdventurePage>
     Size screenSize = MediaQueryData.fromView(
             WidgetsBinding.instance.platformDispatcher.views.first)
         .size;
+    debugPrint('Screen size: ${screenSize.width} x ${screenSize.height}');
     double referenceScreenHeight = 798;
     double referenceScreenWidth = 411;
 
-    double height = referenceScreenHeight * nbCities +
-        (referenceScreenHeight * 0.5 * (nbCities - 1));
+    double height = screenSize.height * nbCities +
+        (screenSize.height * 0.5 * (nbCities - 1)) +
+        screenSize.height * 0.3;
     double startY = height;
     Offset scale = Offset(
       screenSize.width / referenceScreenWidth,
@@ -162,6 +164,7 @@ class _AdventurePageState extends State<AdventurePage>
       if (i % 2 == 0) {
         road = CityRoad(
           startY: startY,
+          screenSize: screenSize,
           scale: scale,
           decorationImages: decorationImages,
           cityIndex: cityIndex,
@@ -170,6 +173,7 @@ class _AdventurePageState extends State<AdventurePage>
       } else {
         road = TransitionRoad(
           startY: startY,
+          screenSize: screenSize,
           scale: scale,
           decorationImages: decorationImages,
           cityIndex: i,
@@ -232,9 +236,10 @@ class _AdventurePageState extends State<AdventurePage>
         final worldPositions = snapshot.data![1] as List<dynamic>;
 
         nbCities = images['country'].length;
-        double referenceScreenHeight = 798;
-        double height = referenceScreenHeight * nbCities +
-            (referenceScreenHeight * 0.5 * (nbCities - 1));
+        // double referenceScreenHeight = 798;
+        double height = screenSize.height * nbCities +
+            (screenSize.height * 0.5 * (nbCities - 1)) +
+            screenSize.height * 0.3;
 
         final roads = _createRoads(images);
 

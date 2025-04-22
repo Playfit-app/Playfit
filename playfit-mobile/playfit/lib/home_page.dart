@@ -59,6 +59,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final double navBaseHeight = kBottomNavigationBarHeight; // = 56.0
+    final double curvedClipExtra = 40; // from your ClipPath curve
+    final double paddingExtra = 10; // your .only(top: 10)
+
+    final double navBarHeight = navBaseHeight + curvedClipExtra + paddingExtra;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       extendBody: true,
@@ -71,28 +77,25 @@ class _HomePageState extends State<HomePage> {
             ),
       body: _pages[_currentIndex],
       bottomNavigationBar: SizedBox(
-        height: 100,
+        height: navBarHeight,
         child: ClipPath(
           clipper: NavBarClipper(),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 10),
-            child: BottomNavigationBar(
-              backgroundColor: Colors.white,
-              type: BottomNavigationBarType.fixed,
-              selectedItemColor: const Color.fromARGB(255, 74, 68, 89),
-              unselectedItemColor: const Color.fromARGB(255, 74, 68, 89),
-              currentIndex: _currentIndex,
-              onTap: _onItemTapped,
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
-              items: [
-                _buildNavBarItem(Icons.fitness_center, 0),
-                _buildNavBarItem(Icons.list_alt, 1),
-                _buildNavBarItem(Icons.shopping_cart, 2),
-                _buildNavBarItem(Icons.group, 3),
-                _buildNavBarItem(Icons.person, 4),
-              ],
-            ),
+          child: BottomNavigationBar(
+            backgroundColor: Colors.white,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: const Color.fromARGB(255, 74, 68, 89),
+            unselectedItemColor: const Color.fromARGB(255, 74, 68, 89),
+            currentIndex: _currentIndex,
+            onTap: _onItemTapped,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            items: [
+              _buildNavBarItem(Icons.fitness_center, 0),
+              _buildNavBarItem(Icons.list_alt, 1),
+              _buildNavBarItem(Icons.shopping_cart, 2),
+              _buildNavBarItem(Icons.group, 3),
+              _buildNavBarItem(Icons.person, 4),
+            ],
           ),
         ),
       ),

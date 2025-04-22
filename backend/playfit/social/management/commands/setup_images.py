@@ -154,7 +154,6 @@ class Command(BaseCommand):
         cities = [
             ("Paris", "France", 1),
             ("Lyon", "France", 2),
-            ("Marseille", "France", 3),
         ]
 
         self.stdout.write(self.style.NOTICE("Creating cities..."))

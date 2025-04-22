@@ -1,6 +1,7 @@
 import os
 import json
 from django.core.management.base import BaseCommand
+from django.core.files import File
 from authentification.models import GameAchievement
 from social.models import (
     Continent,
@@ -28,13 +29,13 @@ def is_valid_directory(path: str) -> bool:
     """
     return os.path.exists(path) and os.path.isdir(path) and os.access(path, os.R_OK)
 
-def get_label_from_path(path: str, lower = True) -> str:
+def get_label_from_path(path: str, extension = False, lower = True) -> str:
     """
     Extracts the label from the given path.
     The label is the last part of the path without the file extension.
     """
     filename = os.path.basename(path)
-    label, _ = os.path.splitext(filename)
+    label = filename if extension else os.path.splitext(filename)[0]
     if lower:
         label = label.lower()
     return label
@@ -151,15 +152,15 @@ class Command(BaseCommand):
         Create cities in the database.
         """
         cities = [
-            ("Paris", "France"),
-            ("Lyon", "France"),
-            ("Marseille", "France"),
+            ("Paris", "France", 1),
+            ("Lyon", "France", 2),
+            ("Marseille", "France", 3),
         ]
 
         self.stdout.write(self.style.NOTICE("Creating cities..."))
-        for city_name, country_name in cities:
+        for city_name, country_name, order in cities:
             country = Country.objects.get(name=country_name)
-            city_obj, created = City.objects.get_or_create(name=city_name, country=country)
+            city_obj, created = City.objects.get_or_create(name=city_name, country=country, order=order)
             if created:
                 self.stdout.write(self.style.SUCCESS(f"Created city: {city_obj.name}"))
             else:
@@ -182,10 +183,17 @@ class Command(BaseCommand):
 
             if is_valid_file(full_path):
                 label = get_label_from_path(image_file)
-                decoration_image, created = DecorationImage.objects.get_or_create(
-                    image=full_path,
-                    label=label,
-                )
+                label_with_extension = get_label_from_path(image_file, extension=True)
+
+                try:
+                    decoration_image = DecorationImage.objects.get(label=label)
+                    created = False
+                except DecorationImage.DoesNotExist:
+                    decoration_image = DecorationImage(label=label)
+                    decoration_image.image.save(label_with_extension, File(open(full_path, "rb")))
+                    decoration_image.save()
+                    created = True
+
                 if created:
                     self.stdout.write(self.style.SUCCESS(f"Created decoration image: {decoration_image.label}"))
                 else:
@@ -208,10 +216,17 @@ class Command(BaseCommand):
 
         for image_path in sorted_files:
             label = get_label_from_path(image_path)
-            mountain_decoration_image, created = MountainDecorationImage.objects.get_or_create(
-                image=image_path,
-                label=label,
-            )
+            label_with_extension = get_label_from_path(image_path, extension=True)
+
+            try:
+                mountain_decoration_image = MountainDecorationImage.objects.get(label=label)
+                created = False
+            except MountainDecorationImage.DoesNotExist:
+                mountain_decoration_image = MountainDecorationImage(label=label)
+                mountain_decoration_image.image.save(label_with_extension, File(open(image_path, "rb")))
+                mountain_decoration_image.save()
+                created = True
+
             if created:
                 self.stdout.write(self.style.SUCCESS(f"Created decoration image: {mountain_decoration_image.label}"))
             else:
@@ -234,10 +249,18 @@ class Command(BaseCommand):
 
         for image_path in sorted_files:
             name = get_label_from_path(image_path)
-            base_character_image, created = BaseCharacter.objects.get_or_create(
-                image=image_path,
-                name=name,
-            )
+            name_with_extension = get_label_from_path(image_path, extension=True)
+
+            try:
+                base_character_image = BaseCharacter.objects.get(name=name)
+                created = False
+            except BaseCharacter.DoesNotExist:
+                base_character_image = BaseCharacter(name=name)
+                print(f"Creating base character image: {name} at {image_path}")
+                base_character_image.image.save(name_with_extension, File(open(image_path, "rb")))
+                base_character_image.save()
+                created = True
+
             if created:
                 self.stdout.write(self.style.SUCCESS(f"Created base character image: {base_character_image.name}"))
             else:
@@ -258,12 +281,18 @@ class Command(BaseCommand):
         for image_file in os.listdir(exercises_path):
             full_path = os.path.join(exercises_path, image_file)
             name = get_label_from_path(image_file, lower=False)
+            name_with_extension = get_label_from_path(image_file, extension=True, lower=False)
 
             if is_valid_file(full_path):
-                exercise_image, created = Exercise.objects.get_or_create(
-                    image=full_path,
-                    name=name,
-                )
+                try:
+                    exercise_image = Exercise.objects.get(name=name)
+                    created = False
+                except Exercise.DoesNotExist:
+                    exercise_image = Exercise(name=name)
+                    exercise_image.image.save(name_with_extension, File(open(full_path, "rb")))
+                    exercise_image.save()
+                    created = True
+
                 if created:
                     self.stdout.write(self.style.SUCCESS(f"Created exercise image: {exercise_image.name}"))
                 else:
@@ -304,11 +333,17 @@ class Command(BaseCommand):
 
                 for image_path in sorted_files:
                     label = get_label_from_path(image_path)
-                    city_decoration_image, created = CityDecorationImage.objects.get_or_create(
-                        city=city,
-                        image=image_path,
-                        label=label,
-                    )
+                    label_with_extension = get_label_from_path(image_path, extension=True)
+
+                    try:
+                        city_decoration_image = CityDecorationImage.objects.get(city=city, label=label)
+                        created = False
+                    except CityDecorationImage.DoesNotExist:
+                        city_decoration_image = CityDecorationImage(city=city, label=label)
+                        city_decoration_image.image.save(label, File(open(image_path, "rb")))
+                        city_decoration_image.save()
+                        created = True
+
                     if created:
                         self.stdout.write(self.style.SUCCESS(f"Created decoration image for {city.name}: {city_decoration_image.label}"))
                     else:
@@ -343,14 +378,21 @@ class Command(BaseCommand):
                 self.stderr.write(self.style.ERROR(f"Image path {image_path} does not exist or is not a file."))
                 continue
 
-            a, created = GameAchievement.objects.get_or_create(
-                name=name,
-                description=description,
-                type=type,
-                target=target,
-                image=os.path.join(achievements_path, image_path),
-                xp_reward=xp_reward,
-            )
+            try:
+                a = GameAchievement.objects.get(name=name)
+                created = False
+            except GameAchievement.DoesNotExist:
+                a = GameAchievement(
+                    name=name,
+                    description=description,
+                    type=type,
+                    target=target,
+                    xp_reward=xp_reward,
+                )
+                a.image.save(name, File(open(os.path.join(achievements_path, image_path), "rb")))
+                a.save()
+                created = True
+
             if created:
                 self.stdout.write(self.style.SUCCESS(f"Created achievement: {a.name}"))
             else:

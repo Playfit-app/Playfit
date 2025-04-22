@@ -41,6 +41,7 @@ class _CameraViewState extends State<CameraView> {
   Timer? _timer;
   Duration _elapsedTime = Duration.zero;
   late WorkoutType _workoutType;
+  late String _exerciseName;
 
   int _count = 0;
   late int _targetCount;
@@ -73,6 +74,7 @@ class _CameraViewState extends State<CameraView> {
         widget.currentExerciseIndex];
     _workoutType = workoutTypeFromName(exercise['name']);
     _targetCount = exercise['repetitions'];
+    _exerciseName = exercise['name'];
 
     initCamera();
     _workoutAnalyzer.workoutCounts.addListener(() {
@@ -211,6 +213,22 @@ class _CameraViewState extends State<CameraView> {
       body: _controller != null && _controller!.value.isInitialized
           ? Stack(
               children: [
+                Positioned(
+                  top: 40,
+                  left: 0,
+                  right: 0,
+                  child: Text(
+                    _exerciseName
+                        .toUpperCase(), // tu peux enlever le toUpperCase() si tu veux le nom original
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 1, 1, 1),
+                    ),
+                  ),
+                ),
+
                 Center(
                   child: FittedBox(
                     fit: BoxFit.cover,
@@ -222,9 +240,15 @@ class _CameraViewState extends State<CameraView> {
                   ),
                 ),
                 if (widget.boxType == BoxType.left)
-                  LeftBoxWidget(elapsedTime: _elapsedTime, count: _count),
+                  LeftBoxWidget(
+                      elapsedTime: _elapsedTime,
+                      count: _count,
+                      targetCount: _targetCount),
                 if (widget.boxType == BoxType.bottom)
-                  BottomBoxWidget(elapsedTime: _elapsedTime, count: _count),
+                  BottomBoxWidget(
+                      elapsedTime: _elapsedTime,
+                      count: _count,
+                      targetCount: _targetCount),
 
                 // Overlay when count hits the target
                 if (_showCelebration)

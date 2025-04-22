@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 class BottomBoxWidget extends StatelessWidget {
   final Duration elapsedTime;
-  final dynamic count;
+  final int count;
+  final int targetCount;
 
-  const BottomBoxWidget({super.key, required this.elapsedTime, required this.count});
+  const BottomBoxWidget({super.key, required this.elapsedTime, required this.count, required this.targetCount});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +39,7 @@ class BottomBoxWidget extends StatelessWidget {
                 const Icon(Icons.fitness_center, color: Colors.orange, size: 30),
                 const SizedBox(width: 5),
                 Text(
-                  '$count',
+                  '$count / $targetCount',
                   style: TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.bold,

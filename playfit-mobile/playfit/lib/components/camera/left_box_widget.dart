@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 class LeftBoxWidget extends StatelessWidget {
   final Duration elapsedTime;
-  final dynamic count;
+  final int count;
+  final int targetCount;
 
-  const LeftBoxWidget({super.key, required this.elapsedTime, required this.count});
+  const LeftBoxWidget({super.key, required this.elapsedTime, required this.count, required this.targetCount});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +44,7 @@ class LeftBoxWidget extends StatelessWidget {
                 const Icon(Icons.fitness_center, color: Colors.orange, size: 36),
                 const SizedBox(height: 8),
                 Text(
-                  '$count',
+                  '$count / $targetCount',
                   style: TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,

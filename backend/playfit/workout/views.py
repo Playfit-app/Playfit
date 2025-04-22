@@ -209,13 +209,13 @@ class WorkoutSessionExerciseView(APIView):
             )
             # Generate exercises for the workout session
             try:
-                exercises = ['push-up', 'squat', 'jumping-jack']
+                exercises = ['pushUp', 'squat', 'jumpingJack']
                 for exercise in exercises:
                     WorkoutSessionExercise.objects.create(
                         workout_session=workout_session,
                         exercise=Exercise.objects.get(name=exercise),
                         sets=1,
-                        repetitions=10 if exercise == 'push-up' else 20 if exercise == 'squat' else 30,
+                        repetitions=10 if exercise == 'pushUp' else 20 if exercise == 'squat' else 30,
                         weight=0,
                         difficulty="beginner",
                     )

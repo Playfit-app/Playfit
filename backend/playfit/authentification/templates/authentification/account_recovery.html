@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Récupération de votre compte</title>
+</head>
+<body>
+    {% if message %}
+        <p>{{ message }}</p>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="token" value="{{ token }}">
+            <input type="hidden" name="uid" value="{{ uid }}">
+            <label for="username">Nom d'utilisateur</label>
+            <input type="text" name="username" id="username" autocomplete="off" required />
+            <label for="email">Adresse email</label>
+            <input type="email" name="email" id="email" value="{{ email }}" autocomplete="off" readonly />
+            <label for="password">Mot de passe</label>
+            <input type="password" name="password" id="password" autocomplete="off" required />
+            <label for="confirm_password">Confirmez le mot de passe</label>
+            <input type="password" name="confirm_password" id="confirm_password" autocomplete="off" required />
+            <label for="date_of_birth">Date de naissance</label>
+            <input type="date" name="date_of_birth" id="date_of_birth" autocomplete="off" required />
+            <label for="height">Taille (en cm)</label>
+            <input type="number" name="height" id="height" autocomplete="off" min="100" max="250" required/>
+            <label for="weight">Poids (en kg)</label>
+            <input type="number" name="weight" id="weight" autocomplete="off" min="30" max="250" required/>
+            {% if error %}
+                <p>{{ error }}</p>
+            {% endif %}
+            <button type="submit">Valider</button>
+        </form>
+    {% endif %}
+</body>
+</html>

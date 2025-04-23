@@ -32,7 +32,6 @@ class WorkoutAnalyzer {
   Future<void> detectWorkout(InputImage inputImage, WorkoutType workout) async {
     try {
       final poses = await _poseDetector.processImage(inputImage);
-
       if (poses.isEmpty) {
         return;
       }
@@ -242,6 +241,7 @@ class WorkoutAnalyzer {
       ...workoutCounts.value,
       workoutType: workoutCounts.value[workoutType]! + 1,
     };
+    // notifyListeners();
   }
 
   void dispose() {

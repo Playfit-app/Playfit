@@ -7,6 +7,7 @@ from .models import (
     BaseCharacter,
     CustomizationItem,
     Customization,
+    DecorationImage,
     CityDecorationImage,
     MountainDecorationImage,
     Post,
@@ -32,6 +33,7 @@ admin.site.register(WorldPosition)
 admin.site.register(BaseCharacter)
 admin.site.register(CustomizationItem)
 admin.site.register(Customization)
+admin.site.register(DecorationImage)
 admin.site.register(CityDecorationImage)
 admin.site.register(MountainDecorationImage)
 admin.site.register(Post)

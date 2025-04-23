@@ -7,7 +7,7 @@ from django.utils import timezone
 from utilities.encrypted_fields import hash, EncryptedCharField, EncryptedEmailField, EncryptedDateField, EncryptedTextField
 from utilities.images import convert_to_webp
 
-def city_decoration_image_path(instance, filename):
+def achievement_decoration_image_path(instance, filename):
     filename_without_ext = filename.split('.')[0]
     return f'achievements/images/{filename_without_ext}.webp'
 
@@ -169,7 +169,7 @@ class GameAchievement(models.Model):
     description = models.TextField()
     type = models.CharField(max_length=50, choices=GAME_ACHIEVEMENT_CHOICES, default="reps")
     target = models.PositiveIntegerField(default=0)
-    image = models.ImageField(upload_to=city_decoration_image_path, null=True, blank=True)
+    image = models.ImageField(upload_to=achievement_decoration_image_path, null=True, blank=True)
     xp_reward = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -200,31 +200,48 @@ class UserAchievement(models.Model):
             return
 
         if self.achievement.type == "reps":
-            pass
+            for exercise in workout_session.exercises.all():
+                self.current_value += exercise.sets * exercise.repetitions
         elif self.achievement.type == "workouts":
             self.current_value += 1
-        elif self.achievement.type == "streak":
-            pass
         elif self.achievement.type == "level":
-            pass
+            self.current_value = self.user.progress.level
         elif self.achievement.type == "duration":
             pass
         elif self.achievement.type == "calories":
             pass
         elif self.achievement.type == "active_days":
-            pass
+            self.current_value = self.user.progress.current_streak
         elif self.achievement.type == "pushups":
-            pass
+            try:
+                exercise = workout_session.exercises.get(exercise__name="pushUp")
+                self.current_value += exercise.sets * exercise.repetitions
+            except Exception:
+                raise ValidationError("Pushup exercise not found in workout session.")
         elif self.achievement.type == "squats":
-            pass
+            try:
+                exercise = workout_session.exercises.get(exercise__name="squat")
+                self.current_value += exercise.sets * exercise.repetitions
+            except Exception:
+                raise ValidationError("Squat exercise not found in workout session.")
         elif self.achievement.type == "pullups":
-            pass
+            try:
+                exercise = workout_session.exercises.get(exercise__name="pullUp")
+                self.current_value += exercise.sets * exercise.repetitions
+            except Exception:
+                raise ValidationError("Pullup exercise not found in workout session.")
         elif self.achievement.type == "jumping_jacks":
-            pass
+            try:
+                exercise = workout_session.exercises.get(exercise__name="jumpingJack")
+                self.current_value += exercise.sets * exercise.repetitions
+            except Exception:
+                raise ValidationError("Jumping Jack exercise not found in workout session.")
 
-        if self.current_value >= self.achievement.target:
+        if self.current_value >= self.achievement.target and not self.is_completed:
+            self.current_value = self.achievement.target
             self.is_completed = True
             self.awarded_at = timezone.now().date()
+            self.user.progress.add_xp(self.achievement.xp_reward)
 
         self.save()
 
@@ -241,7 +258,7 @@ class UserProgress(models.Model):
     def __str__(self):
         return f"Stats for {self.user.username}"
 
-    def update_after_workout(self):
+    def update_after_workout(self, workout_session):
         today = timezone.now().date()
 
         if self.last_workout_date:
@@ -259,6 +276,7 @@ class UserProgress(models.Model):
 
         self.last_workout_date = today
         self.longest_streak = max(self.longest_streak, self.current_streak)
+
         self.save()
 
     def add_xp(self, xp):

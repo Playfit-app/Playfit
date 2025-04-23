@@ -51,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
       if (result["status"] == 'success') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
+          MaterialPageRoute(builder: (context) => HomePage()),
         );
       } else {
         debugPrint(result["message"]!);
@@ -75,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
     if (result["status"] == 'success') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        MaterialPageRoute(builder: (context) => HomePage()),
       );
     } else {
       setState(() {

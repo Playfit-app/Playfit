@@ -3,9 +3,16 @@ import 'package:provider/provider.dart';
 import 'package:playfit/providers/notification_provider.dart';
 import 'package:badges/badges.dart' as badges;
 
-class TopBar extends StatelessWidget {
-  const TopBar({super.key});
+class TopBar extends StatefulWidget {
+  final int currentStreak;
 
+  const TopBar({super.key, required this.currentStreak,});
+
+  @override
+  State<TopBar> createState() => _TopBarState();
+}
+
+class _TopBarState extends State<TopBar> {
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -13,8 +20,8 @@ class TopBar extends StatelessWidget {
       children: [
         badges.Badge(
           position: badges.BadgePosition.bottomEnd(),
-          badgeContent: const Text(
-            '1',
+          badgeContent: Text(
+            '${widget.currentStreak}',
             style: TextStyle(color: Colors.white),
           ),
           badgeStyle: const badges.BadgeStyle(

@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='gameachievement',
             name='image',
-            field=models.ImageField(blank=True, null=True, upload_to=authentification.models.city_decoration_image_path),
+            field=models.ImageField(blank=True, null=True, upload_to=authentification.models.achievement_decoration_image_path),
         ),
         migrations.AddField(
             model_name='gameachievement',

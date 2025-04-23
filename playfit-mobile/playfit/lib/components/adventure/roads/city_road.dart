@@ -10,6 +10,7 @@ class CityRoad extends Road {
 
   CityRoad({
     required super.startY,
+    required super.screenSize,
     required super.scale,
     required super.decorationImages,
     required super.cityIndex,
@@ -40,22 +41,22 @@ class CityRoad extends Road {
       // Trees
       dec.Decoration(
         image: treeImage,
-        position: Offset(100 * scale.dx, startY + 80 * scale.dy),
+        position: Offset(100 * scale.dx, startY + 60 * scale.dy),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(200 * scale.dx, startY + 245 * scale.dy),
+        position: Offset(200 * scale.dx, startY + 225 * scale.dy),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(220 * scale.dx, startY + 225 * scale.dy),
+        position: Offset(220 * scale.dx, startY + 205 * scale.dy),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(260 * scale.dx, startY + 270 * scale.dy),
+        position: Offset(260 * scale.dx, startY + 250 * scale.dy),
         size: treeSize,
       ),
       dec.Decoration(
@@ -67,17 +68,17 @@ class CityRoad extends Road {
       // Buildings
       dec.Decoration(
         image: buildingImage,
-        position: Offset(50 * scale.dx, startY + 70 * scale.dy),
+        position: Offset(50 * scale.dx, startY + 50 * scale.dy),
         size: buildingSize,
       ),
       dec.Decoration(
         image: buildingImage,
-        position: Offset(30 * scale.dx, startY + 400 * scale.dy),
+        position: Offset(30 * scale.dx, startY + 380 * scale.dy),
         size: buildingSize,
       ),
       dec.Decoration(
         image: buildingImage,
-        position: Offset(95 * scale.dx, startY + 400 * scale.dy),
+        position: Offset(95 * scale.dx, startY + 380 * scale.dy),
         size: buildingSize,
       ),
       dec.Decoration(
@@ -97,93 +98,135 @@ class CityRoad extends Road {
 
   void buildGreyPath() {
     final greyPath = Path();
-    double offsetX = 22 * scale.dx;
-    double endY = (startY - 858 * scale.dy).roundToDouble();
 
-    greyPath.moveTo((259.577 + offsetX) * scale.dx, 830 * scale.dy + endY);
+    // OffsetX based on 22px from 411px width → 22 / 411 ≈ 0.0535
+    double offsetX = screenSize.width * 0.0535;
+    double endY = (startY - screenSize.height * scale.dy).roundToDouble();
+
+    debugPrint("endY: $endY");
+
+    // Shortcut functions for percentage-based coordinates
+    double px(double originalX) =>
+        screenSize.width *
+        ((originalX / 411) + (offsetX / screenSize.width)) *
+        scale.dx;
+    double py(double originalY) =>
+        screenSize.height * (originalY / 798) * scale.dy + endY;
+
+    greyPath.moveTo(px(259.577), endY + screenSize.height * scale.dy);
+
     greyPath.cubicTo(
-        (251.577 + offsetX) * scale.dx,
-        635 * scale.dy + endY,
-        (-20.9231 + offsetX) * scale.dx,
-        668 * scale.dy + endY,
-        (33.0769 + offsetX) * scale.dx,
-        583 * scale.dy + endY);
+      px(251.577),
+      py(635),
+      px(-20.9231),
+      py(668),
+      px(33.0769),
+      py(583),
+    );
+
     greyPath.cubicTo(
-        (87.0769 + offsetX) * scale.dx,
-        498 * scale.dy + endY,
-        (307.577 + offsetX) * scale.dx,
-        583 * scale.dy + endY,
-        (313.577 + offsetX) * scale.dx,
-        470 * scale.dy + endY);
+      px(87.0769),
+      py(498),
+      px(307.577),
+      py(583),
+      px(313.577),
+      py(470),
+    );
+
     greyPath.cubicTo(
-        (319.577 + offsetX) * scale.dx,
-        357 * scale.dy + endY,
-        (15.5769 + offsetX) * scale.dx,
-        375.5 * scale.dy + endY,
-        (67.5769 + offsetX) * scale.dx,
-        258.5 * scale.dy + endY);
+      px(319.577),
+      py(357),
+      px(15.5769),
+      py(375.5),
+      px(67.5769),
+      py(258.5),
+    );
+
     greyPath.cubicTo(
-        (119.577 + offsetX) * scale.dx,
-        141.5 * scale.dy + endY,
-        (243.577 + offsetX) * scale.dx,
-        245.5 * scale.dy + endY,
-        (291.577 + offsetX) * scale.dx,
-        162.5 * scale.dy + endY);
+      px(119.577),
+      py(141.5),
+      px(243.577),
+      py(245.5),
+      px(291.577),
+      py(162.5),
+    );
+
     greyPath.cubicTo(
-        (339.577 + offsetX) * scale.dx,
-        79.5 * scale.dy + endY,
-        (171.077 + offsetX) * scale.dx,
-        24.5 * scale.dy + endY,
-        (171.077 + offsetX) * scale.dx,
-        endY);
-    greyPath.lineTo((171.077 + offsetX) * scale.dx, endY - 10 * scale.dy);
+      px(339.577),
+      py(79.5),
+      px(171.077),
+      py(24.5),
+      px(171.077),
+      endY < 0 ? 0 : endY,
+    );
 
     paths.add(greyPath);
   }
 
   void buildWhitePath() {
     final whitePath = Path();
-    double offsetX = 22 * scale.dx * 2;
-    double endY = (startY - 858 * scale.dy).roundToDouble();
 
-    whitePath.moveTo((235.577 + offsetX) * scale.dx, 830 * scale.dy + endY);
+    // 22 * 2 = 44 → offsetX as a percent of 411 width = 44 / 411 ≈ 0.1071
+    double offsetX = screenSize.width * 0.1071;
+    double endY = (startY - screenSize.height * scale.dy).roundToDouble();
+
+    // Helpers for clean coordinate translation
+    double px(double originalX) =>
+        screenSize.width *
+        ((originalX / 411) + (offsetX / screenSize.width)) *
+        scale.dx;
+    double py(double originalY) =>
+        screenSize.height * (originalY / 798) * scale.dy + endY;
+
+    whitePath.moveTo(px(235.577), endY + screenSize.height * scale.dy);
+
     whitePath.cubicTo(
-        (227.577 + offsetX) * scale.dx,
-        635 * scale.dy + endY,
-        (-44.9231 + offsetX) * scale.dx,
-        668 * scale.dy + endY,
-        (9.07689 + offsetX) * scale.dx,
-        583 * scale.dy + endY);
+      px(227.577),
+      py(635),
+      px(-44.9231),
+      py(668),
+      px(9.07689),
+      py(583),
+    );
+
     whitePath.cubicTo(
-        (63.0769 + offsetX) * scale.dx,
-        498 * scale.dy + endY,
-        (283.577 + offsetX) * scale.dx,
-        583 * scale.dy + endY,
-        (289.577 + offsetX) * scale.dx,
-        470 * scale.dy + endY);
+      px(63.0769),
+      py(498),
+      px(283.577),
+      py(583),
+      px(289.577),
+      py(470),
+    );
+
     whitePath.cubicTo(
-        (295.577 + offsetX) * scale.dx,
-        357 * scale.dy + endY,
-        (-8.4231 + offsetX) * scale.dx,
-        375.5 * scale.dy + endY,
-        (43.5769 + offsetX) * scale.dx,
-        258.5 * scale.dy + endY);
+      px(295.577),
+      py(357),
+      px(-8.4231),
+      py(375.5),
+      px(43.5769),
+      py(258.5),
+    );
+
     whitePath.cubicTo(
-        (95.5769 + offsetX) * scale.dx,
-        141.5 * scale.dy + endY,
-        (219.577 + offsetX) * scale.dx,
-        245.5 * scale.dy + endY,
-        (267.577 + offsetX) * scale.dx,
-        162.5 * scale.dy + endY);
+      px(95.5769),
+      py(141.5),
+      px(219.577),
+      py(245.5),
+      px(267.577),
+      py(162.5),
+    );
+
     whitePath.cubicTo(
-        (315.577 + offsetX) * scale.dx,
-        79.5 * scale.dy + endY,
-        (147.077 + offsetX) * scale.dx,
-        24.5 * scale.dy + endY,
-        (147.077 + offsetX) * scale.dx,
-        endY);
-    whitePath.lineTo((147.077 + offsetX) * scale.dx, (endY - 10) * scale.dy);
-    startY = (endY - 20) * scale.dy;
+      px(315.577),
+      py(79.5),
+      px(147.077),
+      py(24.5),
+      px(147.077),
+      endY < 0 ? 0 : endY,
+    );
+
+    // Update startY after the path
+    startY = endY;
 
     paths.add(whitePath);
   }
@@ -228,9 +271,15 @@ class CityRoad extends Road {
       ..color = const Color.fromARGB(255, 197, 222, 250)
       ..style = PaintingStyle.fill;
 
+    // Convert 411 and 798 to percentage-based dimensions
+    final double left = 0;
+    final double top =
+        oldStartY - (screenSize.height * scale.dy); // 798 is 100% of height
+    final double right = screenSize.width * scale.dx; // 411 is 100% of width
+    final double bottom = oldStartY;
+
     canvas.drawRect(
-      Rect.fromLTRB(
-          0, oldStartY - 868 * scale.dy, 411 * scale.dx, oldStartY - 30),
+      Rect.fromLTRB(left, top, right, bottom),
       backgroundPaint,
     );
   }

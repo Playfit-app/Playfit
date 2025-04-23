@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CelebrationOverlay extends StatelessWidget {
-  const CelebrationOverlay({super.key});
+  final Duration finalTime;
+  const CelebrationOverlay({super.key, required this.finalTime});
 
   @override
   Widget build(BuildContext context) {
@@ -72,32 +73,25 @@ class CelebrationOverlay extends StatelessWidget {
                       Icon(Icons.timer,
                           color: Colors.orange, size: screenWidth * 0.07),
                       SizedBox(height: screenHeight * 0.015),
-                      Icon(Icons.local_fire_department,
-                          color: Colors.orange, size: screenWidth * 0.07),
+                      // Icon(Icons.local_fire_department,
+                      //     color: Colors.orange, size: screenWidth * 0.07),
                     ],
                   ),
                   SizedBox(width: screenWidth * 0.04),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("1:30",
-                          style: TextStyle(fontSize: screenWidth * 0.05)),
+                      Text(
+                        '${finalTime.inMinutes}:${(finalTime.inSeconds % 60).toString().padLeft(2, '0')}',
+                        style: TextStyle(fontSize: screenWidth * 0.05),
+                      ),
                       SizedBox(height: screenHeight * 0.015),
-                      Text("800 Cal",
-                          style: TextStyle(fontSize: screenWidth * 0.05)),
+                      // Text("800 Cal",
+                      //     style: TextStyle(fontSize: screenWidth * 0.05)),
                     ],
                   ),
                 ],
               ),
-              SizedBox(height: screenHeight * 0.015),
-              // Uncomment and update if needed
-              // Row(
-              //   children: [
-              //     Icon(Icons.directions_run, color: Colors.orange, size: screenWidth * 0.07),
-              //     SizedBox(width: screenWidth * 0.03),
-              //     Text("30 mètres", style: TextStyle(fontSize: screenWidth * 0.05)),
-              //   ],
-              // ),
               SizedBox(height: screenHeight * 0.02),
               Divider(color: Colors.orange),
               SizedBox(height: screenHeight * 0.015),

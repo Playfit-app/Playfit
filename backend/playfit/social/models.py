@@ -195,7 +195,7 @@ class WorldPosition(models.Model):
                     if next_city:
                         self.start_transition(next_city)
                 except City.DoesNotExist:
-                    pass
+                    print("Next city doesn't exist")
         elif self.is_in_transition():
             if self.transition_level < 4:
                 self.transition_level += 1
@@ -205,6 +205,7 @@ class WorldPosition(models.Model):
                 self.transition_from = None
                 self.transition_to = None
                 self.transition_level = None
+        self.save()
 
     def start_transition(self, next_city):
         self.transition_from = self.city
@@ -220,6 +221,23 @@ class WorldPosition(models.Model):
         elif self.is_in_transition():
             return f"{self.user} is transitioning from {self.transition_from} to {self.transition_to} (Level {self.transition_level})"
         return f"{self.user} is in the void"
+
+class DecorationImage(models.Model):
+    image = models.ImageField(upload_to='decorations/')
+    label = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.label} decoration ({self.created_at})"
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            ext = self.image.name.split('.')[-1].lower()
+            if ext == 'png':
+                self.image = convert_to_webp(self.image)
+            elif ext != 'webp':
+                raise ValidationError("The image must be a PNG or WebP file")
+        super().save(*args, **kwargs)
 
 class CityDecorationImage(models.Model):
     city = models.ForeignKey(City, related_name='decorations', on_delete=models.CASCADE)

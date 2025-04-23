@@ -50,9 +50,8 @@ class MyApp extends StatelessWidget {
         '/register': (context) =>
             const CreateAccountPage(), // Route to registration page
         '/login': (context) => const LoginPage(), // Route to login page
-        '/home': (context) => const HomePage(), // Route to home page
+        '/home': (context) => HomePage(), // Route to home page
         '/profile': (context) => const ProfilePage(), // Route to profile page
-        '/camera': (context) => const CameraView(), // Route to camera page
         '/notifications': (context) => const NotificationPage(),
       },
     );

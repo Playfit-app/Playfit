@@ -10,6 +10,7 @@ class TransitionRoad extends Road {
 
   TransitionRoad({
     required super.startY,
+    required super.screenSize,
     required super.scale,
     required super.decorationImages,
     required super.cityIndex,
@@ -77,73 +78,119 @@ class TransitionRoad extends Road {
 
   void buildBrownPath() {
     final brownPath = Path();
-    double offsetX = 22 * scale.dx;
-    double endY = (startY - 429 * scale.dy).roundToDouble();
 
-    brownPath.moveTo((171.077 + offsetX) * scale.dx, startY);
-    brownPath.lineTo((171.077 + offsetX) * scale.dx, startY + 10);
-    brownPath.cubicTo(
-      (161.952 + offsetX) * scale.dx,
-      357.739 * scale.dy + endY,
-      (299.578 + offsetX) * scale.dx,
-      406.001 * scale.dy + endY,
-      (303.077 + offsetX) * scale.dx,
-      349.003 * scale.dy + endY,
+    // OffsetX based on 22 / 411 ≈ 0.0535
+    double offsetX = screenSize.width * 0.0535;
+    double endY =
+        (startY - (screenSize.height * 0.5) * scale.dy).roundToDouble();
+
+    // Helpers for relative positioning
+    double px(double originalX) =>
+        screenSize.width *
+        ((originalX / 411) + (offsetX / screenSize.width)) *
+        scale.dx;
+    double py(double originalY) =>
+        screenSize.height * (originalY / 798) * scale.dy + endY;
+
+    brownPath.moveTo(
+      px(171.077),
+      startY + (1 * scale.dy),
     );
-    brownPath.cubicTo(
-      (345.077 + offsetX) * scale.dx,
-      205 * scale.dy + endY,
-      (42.077 + offsetX) * scale.dx,
-      320.5 * scale.dy + endY,
-      (64.57771 + offsetX) * scale.dx,
-      216.5 * scale.dy + endY,
+
+    brownPath.lineTo(
+      px(171.077),
+      startY - (20 * scale.dy),
     );
+
     brownPath.cubicTo(
-      (66.25806 + offsetX) * scale.dx,
-      126.043 * scale.dy + endY,
-      (283.577 + offsetX) * scale.dx,
-      127.5 * scale.dy + endY,
-      (259.577 + offsetX) * scale.dx,
+      px(161.952),
+      py(357.739),
+      px(299.578),
+      py(406.001),
+      px(303.077),
+      py(349.003),
+    );
+
+    brownPath.cubicTo(
+      px(345.077),
+      py(205),
+      px(42.077),
+      py(320.5),
+      px(64.57771),
+      py(216.5),
+    );
+
+    brownPath.cubicTo(
+      px(66.25806),
+      py(126.043),
+      px(283.577),
+      py(127.5),
+      px(259.577),
       endY,
     );
-    brownPath.lineTo((259.577 + offsetX) * scale.dx, (endY - 10) * scale.dy);
+
+    brownPath.lineTo(
+      px(259.577),
+      endY - (4 * scale.dy),
+    );
 
     paths.add(brownPath);
   }
 
   void buildWhitePath() {
     final whitePath = Path();
-    double offsetX = 22 * scale.dx * 2;
-    double endY = (startY - 429 * scale.dy).roundToDouble();
 
-    whitePath.moveTo((147.077 + offsetX) * scale.dx, startY);
-    whitePath.lineTo((147.077 + offsetX) * scale.dx, startY + 10);
-    whitePath.cubicTo(
-      (137.952 + offsetX) * scale.dx,
-      357.739 * scale.dy + endY,
-      (275.578 + offsetX) * scale.dx,
-      406.001 * scale.dy + endY,
-      (279.077 + offsetX) * scale.dx,
-      349.003 * scale.dy + endY,
+    // 22 * 2 = 44 → 44 / 411 ≈ 0.1071
+    double offsetX = screenSize.width * 0.1071;
+    double endY =
+        (startY - (screenSize.height * 0.5) * scale.dy).roundToDouble();
+
+    // Helper functions
+    double px(double originalX) =>
+        screenSize.width *
+        ((originalX / 411) + (offsetX / screenSize.width)) *
+        scale.dx;
+    double py(double originalY) =>
+        screenSize.height * (originalY / 798) * scale.dy + endY;
+
+    whitePath.moveTo(
+      px(147.077),
+      startY + (1 * scale.dy),
     );
-    whitePath.cubicTo(
-      (321.077 + offsetX) * scale.dx,
-      205 * scale.dy + endY,
-      (18.077 + offsetX) * scale.dx,
-      320.5 * scale.dy + endY,
-      (40.57771 + offsetX) * scale.dx,
-      216.5 * scale.dy + endY,
+
+    whitePath.lineTo(
+      px(147.077),
+      startY - (20 * scale.dy),
     );
+
     whitePath.cubicTo(
-      (42.25806 + offsetX) * scale.dx,
-      126.043 * scale.dy + endY,
-      (259.577 + offsetX) * scale.dx,
-      127.5 * scale.dy + endY,
-      (235.577 + offsetX) * scale.dx,
+      px(137.952),
+      py(357.739),
+      px(275.578),
+      py(406.001),
+      px(279.077),
+      py(349.003),
+    );
+
+    whitePath.cubicTo(
+      px(321.077),
+      py(205),
+      px(18.077),
+      py(320.5),
+      px(40.57771),
+      py(216.5),
+    );
+
+    whitePath.cubicTo(
+      px(42.25806),
+      py(126.043),
+      px(259.577),
+      py(127.5),
+      px(235.577),
       endY,
     );
-    whitePath.lineTo((235.577 + offsetX) * scale.dx, (endY - 10) * scale.dy);
-    startY = endY + 20 * scale.dy;
+
+    startY = endY;
 
     paths.add(whitePath);
   }
@@ -185,12 +232,18 @@ class TransitionRoad extends Road {
   @override
   void drawBackground(Canvas canvas) {
     final backgroundPaint = Paint()
-      ..color = const Color(0XFF8AD091)
+      ..color = const Color(0xFF8AD091)
       ..style = PaintingStyle.fill;
 
+    // 404 / 798 ≈ 0.5063 → 50.63% of screen height
+    final double left = 0;
+    final double top = oldStartY - (screenSize.height * 0.5063 * scale.dy);
+    final double right =
+        screenSize.width * scale.dx; // full width (411 / 411 = 1)
+    final double bottom = oldStartY;
+
     canvas.drawRect(
-      Rect.fromLTRB(
-          0, oldStartY - 439 * scale.dy, 411 * scale.dx, oldStartY + 10),
+      Rect.fromLTRB(left, top, right, bottom),
       backgroundPaint,
     );
   }

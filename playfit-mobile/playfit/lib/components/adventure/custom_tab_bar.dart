@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 class CustomTabBar extends StatefulWidget {
   final Map<String, List<dynamic>> workoutSessionExercises;
+  final void Function(String difficulty)? onTabChanged;
 
   const CustomTabBar({
     super.key,
     required this.workoutSessionExercises,
+    this.onTabChanged,
   });
 
   @override
@@ -38,7 +40,7 @@ class _CustomTabBarState extends State<CustomTabBar>
       List<List<Map<String, dynamic>>> rows = [];
 
       for (var exercise in widget.workoutSessionExercises[difficulty]!) {
-        if (exercise['name'] == "jumping-jack") {
+        if (exercise['name'] == "jumpingJack") {
           rows.add([exercise]);
         } else {
           if (rows.isEmpty || rows.last.length == 2) {
@@ -57,6 +59,11 @@ class _CustomTabBarState extends State<CustomTabBar>
     setState(() {
       _selectedIndex = index;
     });
+
+    if (widget.onTabChanged != null) {
+      String difficulty = ['beginner', 'intermediate', 'advanced'][index];
+      widget.onTabChanged!(difficulty);
+    }
   }
 
   @override

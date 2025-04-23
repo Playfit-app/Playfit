@@ -51,7 +51,7 @@ class WorkoutSessionExercise(models.Model):
         ("advanced", "Advanced"),
     ]
 
-    workout_session = models.ForeignKey(WorkoutSession, on_delete=models.CASCADE)
+    workout_session = models.ForeignKey(WorkoutSession, on_delete=models.CASCADE, related_name='exercises')
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE)
     sets = models.PositiveIntegerField()
     repetitions = models.PositiveIntegerField()

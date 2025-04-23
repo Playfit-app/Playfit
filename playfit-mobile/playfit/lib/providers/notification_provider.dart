@@ -27,7 +27,6 @@ class NotificationProvider extends ChangeNotifier {
 
     _channel!.stream.listen((message) {
       final data = jsonDecode(message)['data'];
-      debugPrint('Received notification: $data');
       _notifications.insert(0, data);
       _unreadCount++;
       notifyListeners();

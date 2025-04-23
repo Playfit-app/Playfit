@@ -36,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<Map<String, dynamic>> fetchUserData() async {
     final String userId =
         widget.userId != null ? widget.userId.toString() : 'me';
-    debugPrint("Fetching user data for userId: $userId");
+
     final String url =
         '${dotenv.env['SERVER_BASE_URL']}/api/auth/profile/$userId/';
     final String? token = await storage.read(key: 'token');
@@ -77,7 +77,6 @@ class _ProfilePageState extends State<ProfilePage> {
         _followerCount += 1;
       });
     } else {
-      // Handle error
       debugPrint("Failed to follow user: ${response.statusCode}");
     }
   }
@@ -125,7 +124,7 @@ class _ProfilePageState extends State<ProfilePage> {
         if (userData['followers'] != null) {
           _followerCount = userData['followers'];
         }
-
+        debugPrint(userData['decorations']['mountains'].toString());
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(
@@ -309,7 +308,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    showLevelProgressionPopup(context);
+                                    showLevelProgressionPopup(context, userData['decorations']['mountains']);
                                   },
                                   child: ExperienceCircle(
                                     currentXP: (userData['progress']
@@ -427,33 +426,33 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ],
                                   ),
                                 ),
-                                if (widget.userId == null)
-                                  TextButton(
-                                    onPressed: () {},
-                                    style: ButtonStyle(
-                                      backgroundColor: WidgetStateProperty.all(
-                                        const Color(0XFFF8871F),
-                                      ),
-                                      shape: WidgetStateProperty.all(
-                                        RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                        ),
-                                      ),
-                                    ),
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                      ),
-                                      child: Text(
-                                        "Voir plus",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                // if (widget.userId == null)
+                                //   TextButton(
+                                //     onPressed: () {},
+                                //     style: ButtonStyle(
+                                //       backgroundColor: WidgetStateProperty.all(
+                                //         const Color(0XFFF8871F),
+                                //       ),
+                                //       shape: WidgetStateProperty.all(
+                                //         RoundedRectangleBorder(
+                                //           borderRadius:
+                                //               BorderRadius.circular(20),
+                                //         ),
+                                //       ),
+                                //     ),
+                                //     child: const Padding(
+                                //       padding: EdgeInsets.symmetric(
+                                //         horizontal: 10,
+                                //       ),
+                                //       child: Text(
+                                //         "Voir plus",
+                                //         style: TextStyle(
+                                //           fontSize: 14,
+                                //           color: Colors.white,
+                                //         ),
+                                //       ),
+                                //     ),
+                                //   ),
                               ],
                             ),
                             const SizedBox(height: 20),

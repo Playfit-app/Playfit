@@ -80,7 +80,7 @@ class RegisterView(APIView):
                 )
                 Customization.objects.create(
                     user=user,
-                    base_character=BaseCharacter.objects.get(id=serializer.validated_data['character_image_id']),
+                    base_character=BaseCharacter.objects.get(name=f"character{serializer.validated_data['character_image_id']}"),
                 )
                 UserProgress.objects.create(
                     user=user,
@@ -617,3 +617,25 @@ class ProfileView(APIView):
             ).exists()
 
         return Response(response, status=status.HTTP_200_OK)
+
+class GetMyProgressView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Get user progress data.",
+        responses={
+            200: openapi.Response("User progress data"),
+            400: "Invalid data or data not found",
+        }
+    )
+    def get(self, request):
+        user = request.user
+        progress = UserProgress.objects.get(user=user)
+
+        return Response({
+            'current_streak': progress.current_streak,
+            'cities_finished': progress.cities_finished,
+            'level': progress.level,
+            'current_xp': progress.xp,
+            'required_xp': progress.required_xp_for_next_level(),
+        }, status=status.HTTP_200_OK)

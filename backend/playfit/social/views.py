@@ -26,6 +26,7 @@ from .models import (
     Customization,
     Country,
     City,
+    DecorationImage,
     CityDecorationImage,
 )
 from .serializers import (
@@ -590,9 +591,9 @@ class GetDecorationImagesView(APIView):
         c = get_object_or_404(Country, name=country)
         cities = City.objects.filter(country=c)
         decoration_images = {
-            'tree': '/media/decorations/tree.webp',
-            'building': '/media/decorations/building.webp',
-            'flag': '/media/decorations/flag.webp',
+            'tree': DecorationImage.objects.get(label='tree').image.url,
+            'building': DecorationImage.objects.get(label='building').image.url,
+            'flag': DecorationImage.objects.get(label='flag').image.url,
             'country': [],
         }
 
@@ -604,9 +605,6 @@ class GetDecorationImagesView(APIView):
                 temp_images.append(image.image.url)
             decoration_images['country'].append(temp_images)
 
-        # Temporary solution to avoid empty list
-        decoration_images['country'][1] = decoration_images['country'][0]
-        decoration_images['country'][2] = decoration_images['country'][0]
         return Response(decoration_images, status=status.HTTP_200_OK)
 
 class UserSearchPagination(PageNumberPagination):
@@ -620,3 +618,5 @@ class UserSearchView(ListAPIView):
     queryset = CustomUser.objects.filter(is_active=True)
     filter_backends = [filters.SearchFilter]
     search_fields = ['username']
+
+# Get user progress

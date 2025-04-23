@@ -5,6 +5,7 @@ import 'package:playfit/components/adventure/decoration.dart' as dec;
 
 abstract class Road extends CustomPainter {
   double startY;
+  Size screenSize;
   Offset scale;
   Path path = Path();
   List<Checkpoint> checkpoints = [];
@@ -14,6 +15,7 @@ abstract class Road extends CustomPainter {
 
   Road({
     required this.startY,
+    required this.screenSize,
     required this.scale,
     required this.decorationImages,
     required this.cityIndex,

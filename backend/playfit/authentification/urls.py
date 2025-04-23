@@ -11,6 +11,7 @@ from .views import (
     AccountRecoveryView,
     UserAchievementView,
     ProfileView,
+    GetMyProgressView,
 )
 
 urlpatterns = [
@@ -28,4 +29,5 @@ urlpatterns = [
     path('google-login/', GoogleOAuthLoginView.as_view(), name='google-login'),
     path('user-achievements/', UserAchievementView.as_view(), name='user-achievements'),
     path('profile/<str:id>/', ProfileView.as_view(), name='profile'),
+    path('get_my_progress/', GetMyProgressView.as_view(), name='get_my_progress'),
 ]

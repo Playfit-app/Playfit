@@ -2,25 +2,27 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:playfit/components/experience_circle.dart';
 import 'package:playfit/components/dotted_line.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LevelProgressionDialog extends StatelessWidget {
-  const LevelProgressionDialog({super.key});
+  final List<dynamic> images;
+  const LevelProgressionDialog({super.key, required this.images});
 
   @override
   Widget build(BuildContext context) {
     List<Map<String, dynamic>> levels = [
       {
-        'image': 'assets/images/mountains/everest.png',
+        'image': '${dotenv.env['SERVER_BASE_URL']}${images[2]}',
         'completed': false,
         'title': 'Everest',
       },
       {
-        'image': 'assets/images/mountains/kilimanjaro.png',
+        'image': '${dotenv.env['SERVER_BASE_URL']}${images[1]}',
         'completed': false,
         'title': 'Kilimanjaro',
       },
       {
-        'image': 'assets/images/mountains/mont_blanc.png',
+        'image': '${dotenv.env['SERVER_BASE_URL']}${images[0]}',
         'completed': true,
         'title': 'Mont Blanc',
         'description':
@@ -89,7 +91,7 @@ class LevelProgressionDialog extends StatelessWidget {
                             opacity: level['completed'] ? 1.0 : 0.4,
                             child: CircleAvatar(
                               radius: (imageSize - 12) / 2,
-                              backgroundImage: AssetImage(level['image']),
+                              backgroundImage: NetworkImage(level['image']),
                             ),
                           ),
                         ),
@@ -98,7 +100,7 @@ class LevelProgressionDialog extends StatelessWidget {
                         opacity: level['completed'] ? 1.0 : 0.4,
                         child: CircleAvatar(
                           radius: imageSize / 2,
-                          backgroundImage: AssetImage(level['image']),
+                          backgroundImage: NetworkImage(level['image']),
                         ),
                       ),
                 // Dotted line (only if not last)
@@ -149,17 +151,17 @@ class LevelProgressionDialog extends StatelessWidget {
   }
 }
 
-void showLevelProgressionPopup(BuildContext context) {
+void showLevelProgressionPopup(BuildContext context, List<dynamic> images) {
   showGeneralDialog(
     context: context,
     barrierDismissible: true,
     barrierLabel: "Level Progression",
     barrierColor: Colors.black.withAlpha((0.2 * 255).toInt()),
     pageBuilder: (_, __, ___) {
-      return const Center(
+      return Center(
         child: Material(
           color: Colors.transparent,
-          child: LevelProgressionDialog(),
+          child: LevelProgressionDialog(images: images),
         ),
       );
     },

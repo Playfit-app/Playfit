@@ -124,7 +124,7 @@ class _ProfilePageState extends State<ProfilePage> {
         if (userData['followers'] != null) {
           _followerCount = userData['followers'];
         }
-
+        debugPrint(userData['decorations']['mountains'].toString());
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(
@@ -308,7 +308,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    showLevelProgressionPopup(context);
+                                    showLevelProgressionPopup(context, userData['decorations']['mountains']);
                                   },
                                   child: ExperienceCircle(
                                     currentXP: (userData['progress']
@@ -426,33 +426,33 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ],
                                   ),
                                 ),
-                                if (widget.userId == null)
-                                  TextButton(
-                                    onPressed: () {},
-                                    style: ButtonStyle(
-                                      backgroundColor: WidgetStateProperty.all(
-                                        const Color(0XFFF8871F),
-                                      ),
-                                      shape: WidgetStateProperty.all(
-                                        RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                        ),
-                                      ),
-                                    ),
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                      ),
-                                      child: Text(
-                                        "Voir plus",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                // if (widget.userId == null)
+                                //   TextButton(
+                                //     onPressed: () {},
+                                //     style: ButtonStyle(
+                                //       backgroundColor: WidgetStateProperty.all(
+                                //         const Color(0XFFF8871F),
+                                //       ),
+                                //       shape: WidgetStateProperty.all(
+                                //         RoundedRectangleBorder(
+                                //           borderRadius:
+                                //               BorderRadius.circular(20),
+                                //         ),
+                                //       ),
+                                //     ),
+                                //     child: const Padding(
+                                //       padding: EdgeInsets.symmetric(
+                                //         horizontal: 10,
+                                //       ),
+                                //       child: Text(
+                                //         "Voir plus",
+                                //         style: TextStyle(
+                                //           fontSize: 14,
+                                //           color: Colors.white,
+                                //         ),
+                                //       ),
+                                //     ),
+                                //   ),
                               ],
                             ),
                             const SizedBox(height: 20),

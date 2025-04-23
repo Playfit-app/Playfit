@@ -116,9 +116,9 @@ class WorkoutSessionsView(APIView):
         # request_body=WorkoutSessionPatchSerializer,
         responses={
             200: openapi.Response("Workout session updated successfully"),
-            400: openapi.Response("Bad request", "Invalid data"),
-            403: openapi.Response("Forbidden", "You are not authorized to update this workout session"),
-            404: openapi.Response("Not found", "Workout session not found")
+            400: openapi.Response("Bad request, invalid data"),
+            403: openapi.Response("Forbidden, you are not authorized to update this workout session"),
+            404: openapi.Response("Not found, workout session not found")
         }
     )
     def patch(self, request):

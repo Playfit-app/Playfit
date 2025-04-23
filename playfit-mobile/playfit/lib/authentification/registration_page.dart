@@ -82,7 +82,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => const HomePage(firstLogin: true)),
+            builder: (context) => HomePage(firstLogin: true)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

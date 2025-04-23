@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:playfit/services/push_notification_service.dart';
 import 'adventure_page.dart';
@@ -12,7 +16,7 @@ class HomePage extends StatefulWidget {
   final bool workoutDone;
   final String? completedDifficulty;
 
-  const HomePage({
+  HomePage({
     super.key,
     this.firstLogin = false,
     this.workoutDone = false,
@@ -25,12 +29,40 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
-
   late List<Widget> _pages;
+  late int currentStreak;
+  late Future<void> _userProgressFuture;
+
+  Future<void> _fetchUserProgress() async {
+    const storage = FlutterSecureStorage();
+    String? token = await storage.read(key: 'token');
+    String url = "${dotenv.env['SERVER_BASE_URL']}/api/auth/get_my_progress/";
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': "Token $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      int current_streak = data['current_streak'];
+
+      setState(() {
+        currentStreak = current_streak;
+      });
+    } else {
+      throw Exception('Failed to load user progress');
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    currentStreak = 0;
+    _userProgressFuture = _fetchUserProgress();
     _pages = [
       AdventurePage(
         moveCharacter: widget.workoutDone,
@@ -59,46 +91,58 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final double navBaseHeight = kBottomNavigationBarHeight; // = 56.0
-    final double curvedClipExtra = 40; // from your ClipPath curve
-    final double paddingExtra = 10; // your .only(top: 10)
+    return FutureBuilder(
+      future: _userProgressFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return const Center(child: Text('Error loading user progress'));
+        }
 
-    final double navBarHeight = navBaseHeight + curvedClipExtra + paddingExtra;
+        final double navBaseHeight = kBottomNavigationBarHeight; // = 56.0
+        final double curvedClipExtra = 40; // from your ClipPath curve
+        final double paddingExtra = 10; // your .only(top: 10)
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      extendBody: true,
-      appBar: _currentIndex == 4 || _currentIndex == 3
-          ? null
-          : AppBar(
-              backgroundColor: Colors.transparent,
-              title: const TopBar(),
-              automaticallyImplyLeading: false,
+        final double navBarHeight =
+            navBaseHeight + curvedClipExtra + paddingExtra;
+
+        return Scaffold(
+          extendBodyBehindAppBar: true,
+          extendBody: true,
+          appBar: _currentIndex == 4 || _currentIndex == 3
+              ? null
+              : AppBar(
+                  backgroundColor: Colors.transparent,
+                  title: TopBar(currentStreak: currentStreak),
+                  automaticallyImplyLeading: false,
+                ),
+          body: _pages[_currentIndex],
+          bottomNavigationBar: SizedBox(
+            height: navBarHeight,
+            child: ClipPath(
+              clipper: NavBarClipper(),
+              child: BottomNavigationBar(
+                backgroundColor: Colors.white,
+                type: BottomNavigationBarType.fixed,
+                selectedItemColor: const Color.fromARGB(255, 74, 68, 89),
+                unselectedItemColor: const Color.fromARGB(255, 74, 68, 89),
+                currentIndex: _currentIndex,
+                onTap: _onItemTapped,
+                showSelectedLabels: false,
+                showUnselectedLabels: false,
+                items: [
+                  _buildNavBarItem(Icons.fitness_center, 0),
+                  _buildNavBarItem(Icons.list_alt, 1),
+                  _buildNavBarItem(Icons.shopping_cart, 2),
+                  _buildNavBarItem(Icons.group, 3),
+                  _buildNavBarItem(Icons.person, 4),
+                ],
+              ),
             ),
-      body: _pages[_currentIndex],
-      bottomNavigationBar: SizedBox(
-        height: navBarHeight,
-        child: ClipPath(
-          clipper: NavBarClipper(),
-          child: BottomNavigationBar(
-            backgroundColor: Colors.white,
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: const Color.fromARGB(255, 74, 68, 89),
-            unselectedItemColor: const Color.fromARGB(255, 74, 68, 89),
-            currentIndex: _currentIndex,
-            onTap: _onItemTapped,
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
-            items: [
-              _buildNavBarItem(Icons.fitness_center, 0),
-              _buildNavBarItem(Icons.list_alt, 1),
-              _buildNavBarItem(Icons.shopping_cart, 2),
-              _buildNavBarItem(Icons.group, 3),
-              _buildNavBarItem(Icons.person, 4),
-            ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

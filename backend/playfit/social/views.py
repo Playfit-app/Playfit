@@ -618,3 +618,5 @@ class UserSearchView(ListAPIView):
     queryset = CustomUser.objects.filter(is_active=True)
     filter_backends = [filters.SearchFilter]
     search_fields = ['username']
+
+# Get user progress

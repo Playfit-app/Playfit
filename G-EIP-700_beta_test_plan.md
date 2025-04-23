@@ -6,6 +6,7 @@
 |-------------------|-----------------|--------------------------------|-------------------------|
 | Movement tracking for exercices | Users can choose an exercice and can do the exercice being tracked | High | - |
 | Social interaction | Users interact with other users: search for an user, follow an user, view the profile of an user | Medium | New feature |
+| Profile and settings | Users can view their profile and custom their avatar | High | - |
 | Data visualisation | Users can view their progress through graphs and charts | Low | - |
 
 ## **2. Beta Testing Scenarios**
@@ -28,16 +29,8 @@ For each core functionality, provide detailed test scenarios.
   3. Each repetition is tracked and counted
 - **Expected Outcome:** When the exercice is finished, the user can see the number of repetitions done and the time taken to do the exercice as recap.
 
-#### **Scenario 2: Data visualisation**
-- **Role Involved:** User
-- **Objective:** View data related to the exercices
-- **Preconditions:** Being logged, having done at least one exercice (see Scenario 1)
-- **Test Steps:**
-  1. Go to the profile page
-  2. Select the charts to view the data
-- **Expected Outcome:** The user can see the data visualisation of the exercices done each day.
 
-#### **Scenario 3: Social interaction**
+#### **Scenario 2: Social interaction**
 - **Role Involved:** User
 - **Objective:** Interact with other users
 - **Preconditions:** Being logged
@@ -48,6 +41,27 @@ For each core functionality, provide detailed test scenarios.
   4. View the profile of the user
   5. Follow the user
 - **Expected Outcome:** The user can see the profile of the user and the posts of the user. The user can also follow the user.
+
+#### **Scenario 3: Profile and avatar**
+- **Role Involved:** User
+- **Objective:** Customise the profile
+- **Preconditions:** Being logged
+- **Test Steps:**
+  1. Go to the profile page
+  2. Click on avatar picture profile to go to the avatar page
+  3. Select a one of the clothes weared by the avatar on avatar page
+  4. Change the clothe and save the changes
+  5. Go back to the profile page
+- **Expected Outcome:** The user can see the new clothe on the avatar picture profile.
+
+#### **Scenario : Data visualisation**
+- **Role Involved:** User
+- **Objective:** View data related to the exercices
+- **Preconditions:** Being logged, having done at least one exercice (see Scenario 1)
+- **Test Steps:**
+  1. Go to the profile page
+  2. Select the charts to view the data
+- **Expected Outcome:** The user can see the data visualisation of the exercices done each day.
 
 ## **3. Success Criteria**
 

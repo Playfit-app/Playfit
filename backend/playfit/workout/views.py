@@ -207,9 +207,25 @@ class WorkoutSessionExerciseView(APIView):
                         workout_session=workout_session,
                         exercise=Exercise.objects.get(name=exercise),
                         sets=1,
-                        repetitions=10 if exercise == 'pushUp' else 20 if exercise == 'squat' else 30,
+                        repetitions=3 if exercise == 'pushUp' else 10 if exercise == 'squat' else 15,
                         weight=0,
                         difficulty="beginner",
+                    )
+                    WorkoutSessionExercise.objects.create(
+                        workout_session=workout_session,
+                        exercise=Exercise.objects.get(name=exercise),
+                        sets=1,
+                        repetitions=7 if exercise == 'pushUp' else 15 if exercise == 'squat' else 25,
+                        weight=0,
+                        difficulty="intermediate",
+                    )
+                    WorkoutSessionExercise.objects.create(
+                        workout_session=workout_session,
+                        exercise=Exercise.objects.get(name=exercise),
+                        sets=1,
+                        repetitions=15 if exercise == 'pushUp' else 30 if exercise == 'squat' else 50,
+                        weight=0,
+                        difficulty="advanced",
                     )
             except Exercise.DoesNotExist:
                 return Response("Exercise not found", status=status.HTTP_404_NOT_FOUND)

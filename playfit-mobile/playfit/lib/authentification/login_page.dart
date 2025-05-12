@@ -54,7 +54,6 @@ class _LoginPageState extends State<LoginPage> {
           MaterialPageRoute(builder: (context) => HomePage()),
         );
       } else {
-        debugPrint(result["message"]!);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result["message"]!),

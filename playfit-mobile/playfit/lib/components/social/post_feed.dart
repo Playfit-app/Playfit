@@ -26,7 +26,9 @@ class _PostFeedState extends State<PostFeed> {
   }
 
   Future<void> _loadPosts() async {
-    debugPrint("Loading posts...");
+    setState(() {
+      _loading = true;
+    });
     final token = await storage.read(key: 'token');
     final url = Uri.parse("${dotenv.env['SERVER_BASE_URL']}/api/social/posts/");
 
@@ -71,7 +73,7 @@ class _PostFeedState extends State<PostFeed> {
           future: userIdFuture,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return const SizedBox.shrink(); // Placeholder while loading
+              return const SizedBox.shrink();
             }
 
             final bool isMine = post['user']['id'].toString() == snapshot.data;

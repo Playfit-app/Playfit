@@ -103,8 +103,6 @@ class CityRoad extends Road {
     double offsetX = screenSize.width * 0.0535;
     double endY = (startY - screenSize.height * scale.dy).roundToDouble();
 
-    debugPrint("endY: $endY");
-
     // Shortcut functions for percentage-based coordinates
     double px(double originalX) =>
         screenSize.width *

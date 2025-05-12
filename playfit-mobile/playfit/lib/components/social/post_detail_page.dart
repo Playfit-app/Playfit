@@ -50,7 +50,6 @@ class _PostDetailPageState extends State<PostDetailPage> {
         _loading = false;
       });
     } else {
-      debugPrint("Failed to load post");
       setState(() => _loading = false);
     }
   }

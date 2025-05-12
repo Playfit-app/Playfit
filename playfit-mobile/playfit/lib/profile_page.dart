@@ -58,6 +58,11 @@ class _ProfilePageState extends State<ProfilePage> {
   void _follow() async {
     if (widget.userId == null) return;
 
+    setState(() {
+        _isFollowing = true;
+        _followerCount += 1;
+      });
+
     final String url = '${dotenv.env['SERVER_BASE_URL']}/api/social/follow/';
     final String? token = await storage.read(key: 'token');
     final response = await http.post(
@@ -72,17 +77,21 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (response.statusCode == 201) {
-      setState(() {
-        _isFollowing = true;
-        _followerCount += 1;
-      });
     } else {
-      debugPrint("Failed to follow user: ${response.statusCode}");
+      setState(() {
+        _isFollowing = false;
+        _followerCount -= 1;
+      });
     }
   }
 
   void _unfollow() async {
     if (widget.userId == null) return;
+
+    setState(() {
+        _isFollowing = false;
+        _followerCount -= 1;
+      });
 
     final String url =
         '${dotenv.env['SERVER_BASE_URL']}/api/social/unfollow/${widget.userId}/';
@@ -95,13 +104,11 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (response.statusCode == 204) {
-      setState(() {
-        _isFollowing = false;
-        _followerCount -= 1;
-      });
     } else {
-      // Handle error
-      debugPrint("Failed to unfollow user: ${response.statusCode}");
+      setState(() {
+        _isFollowing = true;
+        _followerCount += 1;
+      });
     }
   }
 
@@ -124,7 +131,6 @@ class _ProfilePageState extends State<ProfilePage> {
         if (userData['followers'] != null) {
           _followerCount = userData['followers'];
         }
-        debugPrint(userData['decorations']['mountains'].toString());
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(

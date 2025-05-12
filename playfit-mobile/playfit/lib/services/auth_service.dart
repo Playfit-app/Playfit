@@ -47,7 +47,7 @@ class AuthService {
           return {'status': 'success', 'message': 'Login successful'};
         }
       } else {
-        return {'status': 'error', 'message': body["error"]};
+        return {'status': 'error', 'message': body.toString()};
       }
     } catch (error) {
       return {'status': 'error', 'message': error.toString()};
@@ -99,7 +99,7 @@ class AuthService {
           return {'status': 'success', 'message': 'Register successful'};
         }
       } else {
-        return {'status': 'error', 'message': body};
+        return {'status': 'error', 'message': body.toString()};
       }
     } catch (error) {
       return {'status': 'error', 'message': error.toString()};

@@ -144,7 +144,6 @@ class _AdventurePageState extends State<AdventurePage>
     Size screenSize = MediaQueryData.fromView(
             WidgetsBinding.instance.platformDispatcher.views.first)
         .size;
-    debugPrint('Screen size: ${screenSize.width} x ${screenSize.height}');
     double referenceScreenHeight = 798;
     double referenceScreenWidth = 411;
 

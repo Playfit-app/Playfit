@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:playfit/components/level_cinematic/difficulty.dart';
 import 'package:playfit/workout_analyzer.dart';
 import 'package:playfit/image_converter.dart';
@@ -50,6 +52,7 @@ class _CameraViewState extends State<CameraView> {
   int _celebrationCountdown = 5;
   Timer? _celebrationTimer;
   bool _celebrationStarted = false;
+  late FlutterTts flutterTts;
 
   WorkoutType workoutTypeFromName(String name) {
     switch (name.toLowerCase().replaceAll('-', '')) {
@@ -75,6 +78,8 @@ class _CameraViewState extends State<CameraView> {
     _workoutType = workoutTypeFromName(exercise['name']);
     _targetCount = exercise['repetitions'];
     _exerciseName = exercise['name'];
+    flutterTts = FlutterTts();
+    _configureTts();
 
     initCamera();
     _workoutAnalyzer.workoutCounts.addListener(() {
@@ -82,6 +87,7 @@ class _CameraViewState extends State<CameraView> {
       if (count != null && count > _count && count <= _targetCount) {
         setState(() {
           _count = count;
+          _announceCount();
           if (_count == _targetCount && !_celebrationStarted) {
             _celebrationStarted = true;
             _showCelebration = true;
@@ -90,6 +96,28 @@ class _CameraViewState extends State<CameraView> {
         });
       }
     });
+  }
+
+  Future<void> _configureTts() async {
+    final storage = const FlutterSecureStorage();
+    final selectedLocale = await storage.read(key: 'selected_locale');
+
+    if (selectedLocale != null) {
+      await flutterTts.setLanguage(selectedLocale);
+    } else {
+      await flutterTts.setLanguage('fr-FR');
+    }
+    await flutterTts.setPitch(1.0);
+    await flutterTts.setSpeechRate(0.5);
+  }
+
+  Future<void> _announceCount() async {
+    await flutterTts.stop();
+    if (_count == _targetCount) {
+      await flutterTts.speak("Bravo ! Vous avez atteint $_targetCount répétitions.");
+    } else {
+      await flutterTts.speak("$_count répétitions.");
+    }
   }
 
   void _startTimer() {
@@ -315,6 +343,7 @@ class _CameraViewState extends State<CameraView> {
       }
       _controller!.dispose();
     }
+    flutterTts.stop();
     super.dispose();
   }
 }

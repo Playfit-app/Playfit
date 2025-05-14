@@ -41,5 +41,63 @@
         "marketing_consent": "J'accepte de recevoir des communications marketing (Facultatif).",
         "avatar_choose": "Choisir ton avatar",
         "create_account": "Créer un compte"
+    },
+    "home": {
+        "error_loading": "Erreur lors du chargement des données."
+    },
+    "camera": {
+        "next_step_countdown": "Prochaine étape dans $seconds secondes...",
+        "start_workout": "Démarrer"
+    },
+    "notifications": {
+        "title": "Notifications",
+        "read_all": "Tout lire",
+        "empty": "Aucune notification pour le moment.",
+        "no_title": "Aucun titre",
+        "no_body": "Aucun contenu"
+    },
+    "profile": {
+        "follow": "Suivre",
+        "unfollow": "Ne plus suivre",
+        "member_since": "Membre depuis $date",
+        "followers": "abonnés",
+        "following": "abonnements",
+        "cities_finished": "Villes finies",
+        "nb_exercises_done_title": "Nombre d'exercices faits",
+        "bpm_title": "BPM (Battements par minute)",
+        "achievements": "Succès"
+    },
+    "social": {
+        "title": "Social"
+    },
+    "gdpr_consent_form": {
+        "title": "Consentement RGPD",
+        "description": "Conformément au Règlement Général sur la Protection des Données (RGPD), nous sommes tenus de vous informer sur la collecte, l'utilisation et le stockage de vos données personnelles.",
+        "data_collection": {
+            "title": "1. Données Collectées\n",
+            "description": "Nous collectons les données suivantes lors de l'inscription :\n",
+            "essential_data": " - Données essentielles : nom d'utilisateur, adresse e-mail, mot de passe, date de naissance pour accéder à l'application.\n",
+            "optional_data": " - Données facultatives : taille, poids, objectifs, niveau de forme physique, particularités physiques pour personnaliser votre expérience utilisateur.\n"
+        },
+        "data_usage": {
+            "title": "2. Utilisation des Données\n",
+            "description": "Nous utilisons vos données pour les finalités suivantes :\n",
+            "purposes_1": " - Vous permettre d'accéder à l'application et de profiter de ses fonctionnalités.\n",
+            "purposes_2": " - Personnaliser votre expérience utilisateur en fonction de vos objectifs et de votre niveau de forme physique.\n",
+            "purposes_3": " - Pour respecter nos obligations légales et réglementaires.\n"
+        },
+        "data_storage": {
+            "title": "3. Stockage des Données\n",
+            "description": "Vos données sont stockées de manière sécurisée sur nos serveurs et ne sont pas partagées avec des tiers sans votre consentement.\n"
+        },
+        "marketing_usage": {
+            "title": "4. Utilisation Marketing\n",
+            "description": "Nous utilisons vos données pour vous envoyer des e-mails marketing concernant des promotions, événements ou rappels liés à l'application.\n"
+        },
+        "accept_button": "Continuer"
+    },
+    "workout_session_dialog": {
+        "session_title": "Session n°$session_number",
+        "start_button": "Démarrer"
     }
 }

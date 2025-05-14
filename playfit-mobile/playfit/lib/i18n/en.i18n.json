@@ -41,5 +41,63 @@
         "marketing_consent": "I agree to receive marketing communications (Optional).",
         "avatar_choose": "Choose your avatar",
         "create_account": "Create an account"
+    },
+    "home": {
+        "error_loading": "Error loading data."
+    },
+    "camera": {
+        "next_step_countdown": "Next step in $seconds seconds...",
+        "start_workout": "Start"
+    },
+    "notifications": {
+        "title": "Notifications",
+        "read_all": "Read all",
+        "empty": "No notifications at the moment.",
+        "no_title": "No title",
+        "no_body": "No content"
+    },
+    "profile": {
+        "follow": "Follow",
+        "unfollow": "Unfollow",
+        "member_since": "Member since $date",
+        "followers": "followers",
+        "following": "following",
+        "cities_finished": "Cities finished",
+        "nb_exercises_done_title": "Number of exercises done",
+        "bpm_title": "BPM (Beats per minute)",
+        "achievements": "Achievements"
+    },
+    "social": {
+        "title": "Social"
+    },
+    "gdpr_consent_form": {
+        "title": "GDPR Consent",
+        "description": "In accordance with the General Data Protection Regulation (GDPR), we are required to inform you about the collection, use, and storage of your personal data.",
+        "data_collection": {
+            "title": "1. Data Collected\n",
+            "description": "We collect the following data during registration:\n",
+            "essential_data": " - Essential data: username, email address, password, date of birth to access the application.\n",
+            "optional_data": " - Optional data: height, weight, goals, fitness level, physical characteristics to personalize your user experience.\n"
+        },
+        "data_usage": {
+            "title": "2. Data Usage\n",
+            "description": "We use your data for the following purposes:\n",
+            "purposes_1": " - To allow you to access the application and enjoy its features.\n",
+            "purposes_2": " - To personalize your user experience based on your goals and fitness level.\n",
+            "purposes_3": " - To comply with our legal and regulatory obligations.\n"
+        },
+        "data_storage": {
+            "title": "3. Data Storage\n",
+            "description": "Your data is securely stored on our servers and is not shared with third parties without your consent.\n"
+        },
+        "marketing_usage": {
+            "title": "4. Marketing Usage\n",
+            "description": "We use your data to send you marketing emails regarding promotions, events, or reminders related to the application.\n"
+        },
+        "accept_button": "Continue"
+    },
+    "workout_session_dialog": {
+        "session_title": "Session n°$session_number",
+        "start_button": "Start"
     }
 }

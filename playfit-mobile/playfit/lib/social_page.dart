@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/social/user_search_bar.dart';
 import 'package:playfit/components/social/post_feed.dart';
 import 'package:playfit/profile_page.dart';
@@ -27,7 +28,7 @@ class _SocialPageState extends State<SocialPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Social'),
+        title: Text(t.social.title),
         centerTitle: true,
       ),
       body: Column(

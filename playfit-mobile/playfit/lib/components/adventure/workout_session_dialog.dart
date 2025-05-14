@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/adventure/custom_tab_bar.dart';
 import 'package:playfit/camera_page.dart';
 
@@ -50,7 +51,7 @@ class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 Text(
-                  'Session n°${widget.sessionLevel.toString()}',
+                  t.workout_session_dialog.session_title(session_number: widget.sessionLevel.toString()),
                   style: GoogleFonts.amaranth(
                     fontSize: 32,
                   ),
@@ -90,7 +91,7 @@ class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
-              child: const Text('Démarrer',
+              child: Text(t.workout_session_dialog.start_button,
                   style: TextStyle(
                     color: Colors.white,
                   )),

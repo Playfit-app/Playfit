@@ -114,9 +114,9 @@ class _CameraViewState extends State<CameraView> {
   Future<void> _announceCount() async {
     await flutterTts.stop();
     if (_count == _targetCount) {
-      await flutterTts.speak("Bravo ! Vous avez atteint $_targetCount répétitions.");
+      await flutterTts.speak("Bravo ! Tu as atteint $_targetCount répétitions.");
     } else {
-      await flutterTts.speak("$_count répétitions.");
+      await flutterTts.speak("$_count");
     }
   }
 

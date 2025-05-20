@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/services/push_notification_service.dart';
 import 'adventure_page.dart';
 import 'missions_page.dart';
@@ -97,12 +98,12 @@ class _HomePageState extends State<HomePage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return const Center(child: Text('Error loading user progress'));
+          return Center(child: Text(t.home.error_loading));
         }
 
-        final double navBaseHeight = kBottomNavigationBarHeight; // = 56.0
-        final double curvedClipExtra = 40; // from your ClipPath curve
-        final double paddingExtra = 10; // your .only(top: 10)
+        final double navBaseHeight = kBottomNavigationBarHeight;
+        final double curvedClipExtra = 40;
+        final double paddingExtra = 10;
 
         final double navBarHeight =
             navBaseHeight + curvedClipExtra + paddingExtra;

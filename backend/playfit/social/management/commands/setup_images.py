@@ -11,7 +11,7 @@ from social.models import (
     CityDecorationImage,
     MountainDecorationImage,
     BaseCharacter,
-    CustomizationItem,
+    # CustomizationItem,
 )
 from workout.models import Exercise
 

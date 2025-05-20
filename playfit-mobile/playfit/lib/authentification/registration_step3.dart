@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 class RegistrationStep3 extends StatefulWidget {
@@ -34,8 +35,8 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
         children: [
           const SizedBox(height: 5),
           // Consent form as dialog
-          const Text(
-            "Choisi ton avatar",
+          Text(
+            t.register.avatar_choose,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,

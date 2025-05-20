@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/providers/notification_provider.dart';
 
 class NotificationPage extends StatelessWidget {
@@ -11,14 +12,14 @@ class NotificationPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Notifications"),
+        title: Text(t.notifications.title),
         actions: [
           TextButton(
             onPressed: () async {
               provider.markAllAsRead();
             },
-            child: const Text(
-              "Read all",
+            child: Text(
+              t.notifications.read_all,
               style: TextStyle(color: Colors.black),
             ),
           ),
@@ -30,8 +31,8 @@ class NotificationPage extends StatelessWidget {
           final n = provider.notifications[index];
           return ListTile(
             leading: const Icon(Icons.notifications),
-            title: Text(n['title'] ?? "No title"),
-            subtitle: Text(n['body'] ?? "No content"),
+            title: Text(n['title'] ?? t.notifications.no_title),
+            subtitle: Text(n['body'] ?? t.notifications.no_body),
             trailing: Text(n['timestamp'] ?? ""),
           );
         },

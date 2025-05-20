@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/experience_circle.dart';
 import 'package:playfit/components/success.dart';
 import 'package:playfit/components/historic_chart.dart';
@@ -245,8 +246,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ),
                                       child: Text(
                                         !_isFollowing
-                                            ? "Suivre"
-                                            : "Ne plus suivre",
+                                            ? t.profile.follow
+                                            : t.profile.unfollow,
                                         style: TextStyle(
                                           fontSize: 14,
                                           color: Colors.white,
@@ -260,7 +261,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 // "Membre depuis ${userData['user']['date_joined'].substring(0, 7)}",
-                                "Membre depuis ${_formatDate(userData['user']['date_joined'])}",
+                                t.profile.member_since(date: _formatDate(userData['user']['date_joined'])),
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Color.fromARGB(255, 120, 119, 111),
@@ -276,7 +277,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Padding(
                                   padding: EdgeInsets.only(left: 4.0),
                                   child: Text(
-                                    "abonnés",
+                                    t.profile.followers,
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Color.fromARGB(255, 120, 119, 111),
@@ -293,7 +294,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Padding(
                                   padding: EdgeInsets.only(left: 4.0),
                                   child: Text(
-                                    "abonnements",
+                                    t.profile.following,
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Color.fromARGB(255, 120, 119, 111),
@@ -343,7 +344,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 _buildDivider(),
                                 _buildInfoSection(
                                   const Icon(Icons.flag_rounded, size: 24),
-                                  "${userData['progress']['cities_finished']}\nVilles finies",
+                                  "${userData['progress']['cities_finished']}\n${t.profile.cities_finished}",
                                 ),
                               ],
                             ),
@@ -383,9 +384,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          const Flexible(
+                                          Flexible(
                                             child: Text(
-                                              "Nombre d'exercices faits",
+                                              t.profile.nb_exercises_done_title,
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 color: Color(0XFF1D1B20),
@@ -409,9 +410,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          const Flexible(
+                                          Flexible(
                                             child: Text(
-                                              "BPM (Battements par minute)",
+                                              t.profile.bpm_title,
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 color: Color(0XFF1D1B20),
@@ -459,7 +460,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                "Succès",
+                                t.profile.achievements,
                                 style: GoogleFonts.amaranth(fontSize: 36),
                               ),
                             ),

@@ -1,0 +1,103 @@
+{
+    "login": {
+        "title": "Connexion",
+        "username": "Nom d'utilisateur",
+        "password": "Mot de passe",
+        "login": "Connexion",
+        "invalid_credentials": "Nom d'utilisateur ou mot de passe invalide.",
+        "empty_username": "Veuillez entrer votre nom d'utilisateur.",
+        "empty_password": "Veuillez entrer votre mot de passe.",
+        "first_time_login": "Première fois ? Créez un compte !"
+    },
+    "register": {
+        "title": "Créer un compte",
+        "previous": "Précédent",
+        "next": "Suivant",
+        "already_have_account": "Déjà un compte ? Connectez-vous !",
+        "username": "Nom d'utilisateur",
+        "empty_username": "Veuillez entrer un nom d'utilisateur.",
+        "invalid_username": "Le nom d'utilisateur doit contenir au moins 4 caractères",
+        "email": "Adresse e-mail",
+        "empty_email": "Veuillez entrer une adresse e-mail.",
+        "invalid_email": "Veuillez entrer une adresse e-mail valide.",
+        "password": "Mot de passe",
+        "empty_password": "Veuillez entrer un mot de passe.",
+        "invalid_password": "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre.",
+        "confirm_password": "Confirmer le mot de passe",
+        "empty_confirm_password": "Veuillez confirmer votre mot de passe.",
+        "passwords_do_not_match": "Les mots de passe ne correspondent pas.",
+        "birthdate": "Date de naissance",
+        "empty_birthdate": "Veuillez entrer votre date de naissance.",
+        "invalid_birthdate": "Vous devez avoir au moins 18 ans pour vous inscrire.",
+        "height": "Taille (cm)",
+        "empty_height": "Veuillez entrer votre taille.",
+        "invalid_height": "Veuillez entrer une taille valide.",
+        "weight": "Poids (kg)",
+        "empty_weight": "Veuillez entrer votre poids.",
+        "invalid_weight": "Veuillez entrer un poids valide.",
+        "gdpr_consent_title": "Consentement RGPD",
+        "gdpr_consent": "J'accepte le formulaire de consentement RGPD et la Politique de Confidentialité (Obligatoire).",
+        "gdpr_consent_invalid": "Vous devez accepter le formulaire de consentement RGPD et la Politique de Confidentialité.",
+        "marketing_consent": "J'accepte de recevoir des communications marketing (Facultatif).",
+        "avatar_choose": "Choisir ton avatar",
+        "create_account": "Créer un compte"
+    },
+    "home": {
+        "error_loading": "Erreur lors du chargement des données."
+    },
+    "camera": {
+        "next_step_countdown": "Prochaine étape dans $seconds secondes...",
+        "start_workout": "Démarrer"
+    },
+    "notifications": {
+        "title": "Notifications",
+        "read_all": "Tout lire",
+        "empty": "Aucune notification pour le moment.",
+        "no_title": "Aucun titre",
+        "no_body": "Aucun contenu"
+    },
+    "profile": {
+        "follow": "Suivre",
+        "unfollow": "Ne plus suivre",
+        "member_since": "Membre depuis $date",
+        "followers": "abonnés",
+        "following": "abonnements",
+        "cities_finished": "Villes finies",
+        "nb_exercises_done_title": "Nombre d'exercices faits",
+        "bpm_title": "BPM (Battements par minute)",
+        "achievements": "Succès"
+    },
+    "social": {
+        "title": "Social"
+    },
+    "gdpr_consent_form": {
+        "title": "Consentement RGPD",
+        "description": "Conformément au Règlement Général sur la Protection des Données (RGPD), nous sommes tenus de vous informer sur la collecte, l'utilisation et le stockage de vos données personnelles.",
+        "data_collection": {
+            "title": "1. Données Collectées\n",
+            "description": "Nous collectons les données suivantes lors de l'inscription :\n",
+            "essential_data": " - Données essentielles : nom d'utilisateur, adresse e-mail, mot de passe, date de naissance pour accéder à l'application.\n",
+            "optional_data": " - Données facultatives : taille, poids, objectifs, niveau de forme physique, particularités physiques pour personnaliser votre expérience utilisateur.\n"
+        },
+        "data_usage": {
+            "title": "2. Utilisation des Données\n",
+            "description": "Nous utilisons vos données pour les finalités suivantes :\n",
+            "purposes_1": " - Vous permettre d'accéder à l'application et de profiter de ses fonctionnalités.\n",
+            "purposes_2": " - Personnaliser votre expérience utilisateur en fonction de vos objectifs et de votre niveau de forme physique.\n",
+            "purposes_3": " - Pour respecter nos obligations légales et réglementaires.\n"
+        },
+        "data_storage": {
+            "title": "3. Stockage des Données\n",
+            "description": "Vos données sont stockées de manière sécurisée sur nos serveurs et ne sont pas partagées avec des tiers sans votre consentement.\n"
+        },
+        "marketing_usage": {
+            "title": "4. Utilisation Marketing\n",
+            "description": "Nous utilisons vos données pour vous envoyer des e-mails marketing concernant des promotions, événements ou rappels liés à l'application.\n"
+        },
+        "accept_button": "Continuer"
+    },
+    "workout_session_dialog": {
+        "session_title": "Session n°$session_number",
+        "start_button": "Démarrer"
+    }
+}

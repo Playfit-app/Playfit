@@ -49,5 +49,10 @@
 	<string>Nous avons besoin d'accéder à la caméra pour capturer des photos et vidéos.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Nous avons besoin d'accéder au microphone pour enregistrer l'audio.</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>fr</string>
+	</array>
 </dict>
 </plist>

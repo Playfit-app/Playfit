@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/services/auth_service.dart';
 import 'package:playfit/home_page.dart';
 import 'package:playfit/authentification/registration_page.dart';
@@ -137,7 +138,7 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     SizedBox(height: screenHeight * 0.03),
                     Text(
-                      'Connexion',
+                      t.login.title,
                       style: GoogleFonts.amaranth(
                         fontSize: 36,
                         color: Colors.black,
@@ -191,12 +192,12 @@ class _LoginPageState extends State<LoginPage> {
                                   borderRadius: BorderRadius.circular(10.0),
                                   borderSide: BorderSide.none,
                                 ),
-                                labelText: "Nom d'utilisateur",
+                                labelText: t.login.username,
                               ),
                               keyboardType: TextInputType.text,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Veuillez entrer votre nom d\'utilisateur';
+                                  return t.login.empty_username;
                                 }
                                 return null;
                               },
@@ -231,12 +232,12 @@ class _LoginPageState extends State<LoginPage> {
                                   borderRadius: BorderRadius.circular(10.0),
                                   borderSide: BorderSide.none,
                                 ),
-                                labelText: "Mot de passe",
+                                labelText: t.login.password,
                               ),
                               keyboardType: TextInputType.text,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Veuillez entrer votre mot de passe';
+                                  return t.login.empty_password;
                                 }
                                 return null;
                               },
@@ -258,8 +259,8 @@ class _LoginPageState extends State<LoginPage> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: screenWidth * 0.06, vertical: 10),
                             ),
-                            child: const Text(
-                              'Connexion',
+                            child: Text(
+                              t.login.login,
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.white,
@@ -269,8 +270,8 @@ class _LoginPageState extends State<LoginPage> {
                           SizedBox(height: screenHeight * 0.03),
                           TextButton(
                             onPressed: () => _navigateToCreateAccount(context),
-                            child: const Text(
-                              'Première fois ? Créez un compte !',
+                            child: Text(
+                              t.login.first_time_login,
                               style: TextStyle(
                                 color: Color.fromARGB(255, 30, 144, 255),
                                 fontSize: 12,

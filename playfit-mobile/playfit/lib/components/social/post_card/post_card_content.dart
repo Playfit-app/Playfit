@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:playfit/components/profile_icon.dart';
 
 class PostCardContent extends StatefulWidget {
   final FlutterSecureStorage storage;
@@ -103,8 +104,17 @@ class _PostCardContentState extends State<PostCardContent> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(user['username'],
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Row(
+                    children: [
+                      ProfileIcon(
+                        imageUrl: user['base_character'],
+                        size: 30,
+                      ),
+                      SizedBox(width: screenWidth * 0.02),
+                      Text(user['username'],
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                   Row(
                     children: [
                       widget.post['is_liked']
@@ -125,7 +135,7 @@ class _PostCardContentState extends State<PostCardContent> {
             if (widget.post['content'] != null &&
                 widget.post['content'].toString().isNotEmpty)
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03),
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.12),
                 child: Text(widget.post['content']),
               ),
           ],

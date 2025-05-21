@@ -321,10 +321,12 @@ class PostListView(ListAPIView):
         followings = user.get_following()
 
         # Get posts from their followings of the last 2 weeks
-        posts = Post.objects.filter(
+        posts = (Post.objects.filter(
             user__in=followings,
             created_at__gte=timezone.now() - timezone.timedelta(weeks=2)
-        ).order_by("-created_at")
+        )
+        .select_related("user__customizations__base_character")
+        .order_by("-created_at"))
 
         return posts
 

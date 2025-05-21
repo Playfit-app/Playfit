@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:playfit/components/profile_icon.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -66,18 +67,24 @@ class _PostCardCommentsState extends State<PostCardComments> {
             (comment) {
               final userId = comment['user']['id'];
               final username = comment['user']['username'];
+              final imageUrl = comment['user']['base_character'];
               final content = comment['content'];
               final createdAt = DateTime.parse(comment['created_at']);
               final timeAgo = timeago.format(createdAt, locale: 'en_short');
       
               return Padding(
                 padding: EdgeInsets.only(
-                    left: screenWidth * 0.03, right: screenWidth * 0.03),
+                    left: screenWidth * 0.03, right: screenWidth * 0.03, top: screenHeight * 0.01),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
+                        ProfileIcon(
+                          imageUrl: imageUrl,
+                          size: 30,
+                        ),
+                        SizedBox(width: screenWidth * 0.02),
                         GestureDetector(
                           onTap: () async {
                             if (userId ==

@@ -9,6 +9,7 @@ import 'package:playfit/components/experience_circle.dart';
 import 'package:playfit/components/success.dart';
 import 'package:playfit/components/historic_chart.dart';
 import 'package:playfit/components/level_progression_dialog.dart';
+import 'package:playfit/components/profile_icon.dart';
 
 class ProfilePage extends StatefulWidget {
   final int? userId;
@@ -155,20 +156,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   child: Align(
                     alignment: const Alignment(0, -0.3),
-                    child: Container(
-                      height: 100,
-                      width: 100,
-                      decoration: const BoxDecoration(
-                        color: Color.fromARGB(255, 204, 255, 178),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Transform(
-                        alignment: Alignment.center,
-                        transform: Matrix4.rotationY(3.14),
-                        child: Image.network(
-                          '${dotenv.env['SERVER_BASE_URL']}${userData['customization']['base_character']}',
-                        ),
-                      ),
+                    child: ProfileIcon(
+                      imageUrl: userData['customization']['base_character'],
+                      size: 100,
                     ),
                   ),
                 ),

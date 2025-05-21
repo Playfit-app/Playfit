@@ -43,8 +43,6 @@ class _PostFeedState extends State<PostFeed> {
 
       setState(() {
         _posts = List<Map<String, dynamic>>.from(data);
-        debugPrint("Posts loaded: ${_posts.length}");
-        debugPrint("Posts: $_posts");
         _loading = false;
       });
     } else {

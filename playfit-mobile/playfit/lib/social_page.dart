@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:playfit/components/social/user_search_bar.dart';
+import 'package:playfit/components/social/social_search_bar.dart';
 import 'package:playfit/components/social/post_feed.dart';
 import 'package:playfit/profile_page.dart';
 
@@ -34,7 +34,7 @@ class _SocialPageState extends State<SocialPage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: UserSearchBar(
+            child: SocialSearchBar(
               onUserSelected: (user) {
                 Navigator.push(
                   context,

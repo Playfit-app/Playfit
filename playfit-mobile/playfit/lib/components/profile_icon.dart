@@ -27,7 +27,10 @@ class ProfileIcon extends StatelessWidget {
                 alignment: Alignment.center,
                 transform: Matrix4.rotationY(3.14),
                 child: Image.network(
-                  "${dotenv.env['SERVER_BASE_URL']}${imageUrl!}",
+                  imageUrl!.startsWith('http')
+                      ? imageUrl!
+                      : "${dotenv.env['SERVER_BASE_URL']}${imageUrl!}",
+
                   fit: BoxFit.cover,
                   alignment: Alignment.topCenter,
                 ),

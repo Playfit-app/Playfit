@@ -1,6 +1,7 @@
-import 'package:playfit/components/social/post_card_comment_input.dart';
-import 'package:playfit/components/social/post_card_comments.dart';
-import 'package:playfit/components/social/post_card_content.dart';
+import 'package:playfit/components/social/post_card/post_card_bottom.dart';
+import 'package:playfit/components/social/post_card/post_card_comment_input.dart';
+import 'package:playfit/components/social/post_card/post_card_comments.dart';
+import 'package:playfit/components/social/post_card/post_card_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -38,9 +39,6 @@ class _PostCardState extends State<PostCard> {
           ),
           if (widget.showAllComments) ...[
             PostCardCommentInput(storage: storage, post: widget.post),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03),
-            ),
           ],
           PostCardComments(
             storage: storage,
@@ -48,6 +46,7 @@ class _PostCardState extends State<PostCard> {
             showAllComments: widget.showAllComments,
             isOwner: widget.isOwner,
           ),
+          PostCardBottom(),
         ],
       ),
     );

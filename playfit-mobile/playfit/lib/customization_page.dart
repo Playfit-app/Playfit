@@ -1,0 +1,204 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:playfit/components/character_carousel.dart';
+import 'package:playfit/components/customization/skin_tone_selection.dart';
+
+class CustomizationPage extends StatefulWidget {
+  final String backgroundImageUrl;
+  const CustomizationPage({
+    super.key,
+    required this.backgroundImageUrl,
+  });
+
+  @override
+  State<CustomizationPage> createState() => _CustomizationPageState();
+}
+
+class _CustomizationPageState extends State<CustomizationPage> {
+  final storage = const FlutterSecureStorage();
+  var _currentStep = 0;
+  final _totalSteps = 3;
+  int _selectedCharacterIndex = 0;
+  int _selectedSkinIndex = 0;
+  int _selectedOutfitIndex = 0;
+
+  Future<Map<String, dynamic>> fetchImages() async {
+    final String url =
+        '${dotenv.env['SERVER_BASE_URL']}/api/social/get-character-images/';
+    final String? token = await storage.read(key: 'token');
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Token $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load user data');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenHeight = screenSize.height;
+    final screenWidth = screenSize.width;
+
+    return FutureBuilder(
+      future: fetchImages(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final data = snapshot.data as Map<String, dynamic>;
+
+        return Scaffold(
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            actions: <Widget>[],
+          ),
+          body: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                top: 0,
+                child: Container(
+                  height: screenHeight / 2,
+                  width: screenWidth,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage(widget.backgroundImageUrl),
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 0,
+                top: screenHeight * 0.3,
+                bottom: 0,
+                child: Container(
+                  width: screenWidth,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(50),
+                      topRight: Radius.circular(50),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: screenHeight * 0.04,
+                      ),
+                      Text(
+                        'Quel look pour ce voyage ?',
+                        style: GoogleFonts.amaranth(
+                          fontSize: 26,
+                        ),
+                      ),
+                      SizedBox(
+                        height: screenHeight * 0.04,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.1,
+                        ),
+                        child: LinearProgressIndicator(
+                          value: (_currentStep + 1) / _totalSteps,
+                          backgroundColor: const Color(0XFF2B2D42),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            Color(0XFFF8871F),
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          minHeight: 8,
+                        ),
+                      ),
+                      SizedBox(
+                        height: screenHeight * 0.08,
+                      ),
+                      SizedBox(
+                          height: screenHeight * 0.3,
+                          child: _buildStepContent(data)),
+                      SizedBox(
+                        height: screenHeight * 0.06,
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            if (_currentStep < _totalSteps - 1) {
+                              _currentStep++;
+                            } else {}
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(255, 248, 135, 31),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100.0),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth * 0.06, vertical: 10),
+                        ),
+                        child: Text(
+                          'Suivant',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStepContent(Map<String, dynamic> data) {
+    final List<String> basicCharacterImages = List<String>.from([
+      "${dotenv.env['SERVER_BASE_URL']}${data['character1'][0]['image']}",
+      "${dotenv.env['SERVER_BASE_URL']}${data['character2'][0]['image']}",
+      "${dotenv.env['SERVER_BASE_URL']}${data['character3'][0]['image']}",
+      "${dotenv.env['SERVER_BASE_URL']}${data['character4'][0]['image']}",
+    ]);
+
+    switch (_currentStep) {
+      case 0:
+        return CharacterCarousel(
+          imageUrls: basicCharacterImages,
+          onImageSelected: (index) {
+            setState(() => _selectedCharacterIndex = index);
+          },
+        );
+      case 1:
+        return SkinToneSelection(
+          imageUrls: basicCharacterImages,
+          onImageSelected: (index) {
+            setState(() => _selectedSkinIndex = index);
+          },
+        );
+      case 2:
+        return CharacterCarousel(
+          imageUrls: basicCharacterImages,
+          onImageSelected: (index) {
+            setState(() => _selectedOutfitIndex = index);
+          },
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+}

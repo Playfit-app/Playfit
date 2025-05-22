@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:playfit/components/profile/edit_character_button.dart';
 import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/experience_circle.dart';
 import 'package:playfit/components/success.dart';
@@ -156,20 +157,33 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   child: Align(
                     alignment: const Alignment(0, -0.3),
-                    child: Container(
-                      height: 100,
-                      width: 100,
-                      decoration: const BoxDecoration(
-                        color: Color.fromARGB(255, 204, 255, 178),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Transform(
-                        alignment: Alignment.center,
-                        transform: Matrix4.rotationY(3.14),
-                        child: Image.network(
-                          '${dotenv.env['SERVER_BASE_URL']}${userData['customization']['base_character']}',
+                    child: Stack(
+                      children: [
+                        Container(
+                          height: 100,
+                          width: 100,
+                          decoration: const BoxDecoration(
+                            color: Color.fromARGB(255, 204, 255, 178),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Transform(
+                            alignment: Alignment.center,
+                            transform: Matrix4.rotationY(3.14),
+                            child: Image.network(
+                              '${dotenv.env['SERVER_BASE_URL']}${userData['customization']['base_character']}',
+                            ),
+                          ),
                         ),
-                      ),
+                        if (widget.userId == null)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: EditCharacterButton(
+                              backgroundImageUrl:
+                                  '${dotenv.env['SERVER_BASE_URL']}${userData['decorations']['mountains'][userData['progress']['level'] - 1]}',
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ),
@@ -261,7 +275,9 @@ class _ProfilePageState extends State<ProfilePage> {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 // "Membre depuis ${userData['user']['date_joined'].substring(0, 7)}",
-                                t.profile.member_since(date: _formatDate(userData['user']['date_joined'])),
+                                t.profile.member_since(
+                                    date: _formatDate(
+                                        userData['user']['date_joined'])),
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Color.fromARGB(255, 120, 119, 111),
@@ -309,7 +325,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    showLevelProgressionPopup(context, userData['decorations']['mountains']);
+                                    showLevelProgressionPopup(context,
+                                        userData['decorations']['mountains']);
                                   },
                                   child: ExperienceCircle(
                                     currentXP: (userData['progress']

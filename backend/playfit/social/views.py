@@ -28,6 +28,7 @@ from .models import (
     City,
     DecorationImage,
     CityDecorationImage,
+    BaseCharacter,
 )
 from .serializers import (
     UserSerializer,
@@ -583,6 +584,47 @@ class CustomizationView(APIView):
         customization = Customization.objects.get(user=user)
         serializer = CustomizationSerializer(customization)
         return Response(serializer.data)
+
+class GetCharacterImagesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user: CustomUser = request.user
+        base_characters = BaseCharacter.objects.all()
+        data = {
+            'character1': [],
+            'character2': [],
+            'character3': [],
+            'character4': [],
+        }
+
+        for character in base_characters:
+            if 'character1' in character.name:
+                data['character1'].append({
+                    'id': character.id,
+                    'name': character.name,
+                    'image': character.image.url,
+                })
+            elif 'character2' in character.name:
+                data['character2'].append({
+                    'id': character.id,
+                    'name': character.name,
+                    'image': character.image.url,
+                })
+            elif 'character3' in character.name:
+                data['character3'].append({
+                    'id': character.id,
+                    'name': character.name,
+                    'image': character.image.url,
+                })
+            elif 'character4' in character.name:
+                data['character4'].append({
+                    'id': character.id,
+                    'name': character.name,
+                    'image': character.image.url,
+                })
+        # print(f"Data: {data}")
+        return Response(data, status=status.HTTP_200_OK)
 
 class GetDecorationImagesView(APIView):
     permission_classes = [IsAuthenticated]

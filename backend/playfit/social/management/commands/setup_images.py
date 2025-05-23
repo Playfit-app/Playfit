@@ -65,9 +65,10 @@ def get_sorted_files(path: str, sort_order: list[str] = []) -> list[str]:
     The sorting is done based on the labels extracted from the file names.
     """
     files = [
-        os.path.join(path, f)
-        for f in os.listdir(path)
-        if is_valid_file(os.path.join(path, f))
+        os.path.join(root, filename)
+        for root, _, filenames in os.walk(path)
+        for filename in filenames
+        if is_valid_file(os.path.join(root, filename))
     ]
     return sorted(files, key=lambda f: sort_order.index(f) if f in sort_order else float("inf"))
 
@@ -243,7 +244,9 @@ class Command(BaseCommand):
             self.stderr.write(self.style.ERROR(f"Base characters path {base_characters_path} does not exist or is not a directory."))
             return
 
+        print(f"Getting sort order from {os.path.join(base_characters_path, 'sort_order.txt')}")
         sort_order = read_sort_order(os.path.join(base_characters_path, "sort_order.txt"))
+        print(f"Sort files")
         sorted_files = get_sorted_files(base_characters_path, sort_order=sort_order)
 
         for image_path in sorted_files:

@@ -4,9 +4,12 @@ import 'package:playfit/customization_page.dart';
 
 class EditCharacterButton extends StatelessWidget {
   final String backgroundImageUrl;
+  final VoidCallback? onClosed; // Add this
+
   const EditCharacterButton({
     super.key,
     required this.backgroundImageUrl,
+    this.onClosed,
   });
 
   @override
@@ -37,6 +40,11 @@ class EditCharacterButton extends StatelessWidget {
       openBuilder: (context, _) => CustomizationPage(
         backgroundImageUrl: backgroundImageUrl,
       ),
+      onClosed: (_) {
+        if (onClosed != null) {
+          onClosed!();
+        }
+      },
     );
   }
 }

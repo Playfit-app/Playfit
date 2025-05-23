@@ -571,10 +571,21 @@ class CustomizationUpdateView(APIView):
     def patch(self, request):
         user: CustomUser = request.user
         customization = Customization.objects.get(user=user)
-        serializer = CustomizationSerializer(customization, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        # serializer = CustomizationSerializer(customization, data=request.data, partial=True)
+        # serializer.is_valid(raise_exception=True)
+        # serializer.save()
+        # return Response(serializer.data)
+
+        if 'base_character' in request.data:
+            base_character = request.data['base_character']
+            try:
+                customization.base_character = get_object_or_404(BaseCharacter, name=base_character)
+                customization.save()
+                return Response({"detail": "Customization updated"}, status=status.HTTP_200_OK)
+            except BaseCharacter.DoesNotExist:
+                return Response({"detail": "Base character not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"detail": "Invalid data"}, status=status.HTTP_400_BAD_REQUEST)
 
 class CustomizationView(APIView):
     permission_classes = [IsAuthenticated]
@@ -589,40 +600,35 @@ class GetCharacterImagesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user: CustomUser = request.user
         base_characters = BaseCharacter.objects.all()
         data = {
-            'character1': [],
-            'character2': [],
-            'character3': [],
-            'character4': [],
+            'character1': {
+                'white': [],
+                'black': [],
+            },
+            'character2': {
+                'white': [],
+                'black': [],
+            },
+            'character3': {
+                'white': [],
+                'black': [],
+            },
+            'character4': {
+                'white': [],
+                'black': [],
+            },
         }
 
         for character in base_characters:
-            if 'character1' in character.name:
-                data['character1'].append({
+            key, color, _ = character.name.split("-")
+            if key in data and color in data[key]:
+                data[key][color].append({
                     'id': character.id,
                     'name': character.name,
                     'image': character.image.url,
                 })
-            elif 'character2' in character.name:
-                data['character2'].append({
-                    'id': character.id,
-                    'name': character.name,
-                    'image': character.image.url,
-                })
-            elif 'character3' in character.name:
-                data['character3'].append({
-                    'id': character.id,
-                    'name': character.name,
-                    'image': character.image.url,
-                })
-            elif 'character4' in character.name:
-                data['character4'].append({
-                    'id': character.id,
-                    'name': character.name,
-                    'image': character.image.url,
-                })
+
         # print(f"Data: {data}")
         return Response(data, status=status.HTTP_200_OK)
 

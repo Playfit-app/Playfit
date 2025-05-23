@@ -28,6 +28,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final FlutterSecureStorage storage = const FlutterSecureStorage();
   bool _isFollowing = false;
   int _followerCount = 0;
+  late Future<Map<String, dynamic>> _futureUserData;
 
   String _formatDate(String rawDate) {
     final DateTime dateTime = DateTime.parse(rawDate);
@@ -108,9 +109,15 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _futureUserData = fetchUserData();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: fetchUserData(),
+      future: _futureUserData,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -126,7 +133,7 @@ class _ProfilePageState extends State<ProfilePage> {
         if (userData['followers'] != null) {
           _followerCount = userData['followers'];
         }
-        debugPrint(userData['decorations']['mountains'].toString());
+
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(
@@ -181,6 +188,11 @@ class _ProfilePageState extends State<ProfilePage> {
                             child: EditCharacterButton(
                               backgroundImageUrl:
                                   '${dotenv.env['SERVER_BASE_URL']}${userData['decorations']['mountains'][userData['progress']['level'] - 1]}',
+                              onClosed: () {
+                                setState(() {
+                                  _futureUserData = fetchUserData();
+                                });
+                              },
                             ),
                           ),
                       ],

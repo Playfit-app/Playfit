@@ -22,6 +22,7 @@ class _CustomizationPageState extends State<CustomizationPage> {
   final storage = const FlutterSecureStorage();
   var _currentStep = 0;
   final _totalSteps = 3;
+  String? _selectedCharacter;
   int _selectedCharacterIndex = 0;
   int _selectedSkinIndex = 0;
   int _selectedOutfitIndex = 0;
@@ -43,6 +44,95 @@ class _CustomizationPageState extends State<CustomizationPage> {
     } else {
       throw Exception('Failed to load user data');
     }
+  }
+
+  List<String> _getCharacterImages(Map<String, dynamic> data) {
+    final characterImages = <String>[];
+
+    for (final entry in data.entries) {
+      final variations = entry.value as Map<String, dynamic>;
+      final whiteList = variations['white'] as List<dynamic>;
+
+      if (whiteList.isNotEmpty) {
+        characterImages
+            .add("${dotenv.env['SERVER_BASE_URL']}${whiteList[0]['image']}");
+      }
+    }
+
+    return characterImages;
+  }
+
+  Future<void> updateCustomization(String image) async {
+    final String url =
+        '${dotenv.env['SERVER_BASE_URL']}/api/social/update-customization/';
+    final String? token = await storage.read(key: 'token');
+    final response = await http.patch(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Token $token',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'base_character': image,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update customization: ${response.statusCode}');
+    }
+  }
+
+  List<String> _getSkinToneImages(Map<String, dynamic> data, String character) {
+    final skinToneImages = <String>[];
+    final characterData = data[character] as Map<String, dynamic>;
+
+    for (final entry in characterData.entries) {
+      skinToneImages.add(
+        "${dotenv.env['SERVER_BASE_URL']}${entry.value[0]['image']}",
+      );
+    }
+
+    return skinToneImages;
+  }
+
+  List<String> _getOutfitImages(
+      Map<String, dynamic> data, String character, int skinTone) {
+    final outfitImages = <String>[];
+    final characterData = data[character] as Map<String, dynamic>;
+    final color = skinTone == 0 ? 'white' : 'black';
+    final outfits = characterData[color] as List<dynamic>;
+
+    for (final outfit in outfits) {
+      outfitImages.add(
+        "${dotenv.env['SERVER_BASE_URL']}${outfit['image']}",
+      );
+    }
+
+    return outfitImages;
+  }
+
+  String _getBasicCharacterFromImageUrl(String imageUrl) {
+    final match = RegExp(r'character(\d+)').firstMatch(imageUrl);
+
+    if (match != null) {
+      return 'character${match.group(1)}';
+    }
+    return '';
+  }
+
+  String _getSelectedCharacter(Map<String, dynamic> data) {
+    final characterImages = _getCharacterImages(data);
+    final character = _getBasicCharacterFromImageUrl(
+        characterImages[_selectedCharacterIndex]);
+    final outfit = _getOutfitImages(
+        data, character, _selectedSkinIndex)[_selectedOutfitIndex];
+
+    final prefix = '${dotenv.env["SERVER_BASE_URL"]}/media/base_characters/';
+    final baseCharacter = outfit
+        .replaceAll(RegExp(RegExp.escape(prefix)), '')
+        .replaceAll(RegExp(r'\.webp$'), '');
+
+    return baseCharacter;
   }
 
   @override
@@ -132,12 +222,16 @@ class _CustomizationPageState extends State<CustomizationPage> {
                         height: screenHeight * 0.06,
                       ),
                       ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            if (_currentStep < _totalSteps - 1) {
+                        onPressed: () async {
+                          if (_currentStep < _totalSteps - 1) {
+                            setState(() {
                               _currentStep++;
-                            } else {}
-                          });
+                            });
+                          } else {
+                            _selectedCharacter = _getSelectedCharacter(data);
+                            await updateCustomization(_selectedCharacter!);
+                            Navigator.pop(context);
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
@@ -149,7 +243,9 @@ class _CustomizationPageState extends State<CustomizationPage> {
                               horizontal: screenWidth * 0.06, vertical: 10),
                         ),
                         child: Text(
-                          'Suivant',
+                          _currentStep == _totalSteps - 1
+                              ? 'Terminer'
+                              : 'Suivant',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.white,
@@ -168,12 +264,7 @@ class _CustomizationPageState extends State<CustomizationPage> {
   }
 
   Widget _buildStepContent(Map<String, dynamic> data) {
-    final List<String> basicCharacterImages = List<String>.from([
-      "${dotenv.env['SERVER_BASE_URL']}${data['character1'][0]['image']}",
-      "${dotenv.env['SERVER_BASE_URL']}${data['character2'][0]['image']}",
-      "${dotenv.env['SERVER_BASE_URL']}${data['character3'][0]['image']}",
-      "${dotenv.env['SERVER_BASE_URL']}${data['character4'][0]['image']}",
-    ]);
+    final List<String> basicCharacterImages = _getCharacterImages(data);
 
     switch (_currentStep) {
       case 0:
@@ -185,14 +276,22 @@ class _CustomizationPageState extends State<CustomizationPage> {
         );
       case 1:
         return SkinToneSelection(
-          imageUrls: basicCharacterImages,
+          imageUrls: _getSkinToneImages(
+            data,
+            _getBasicCharacterFromImageUrl(
+                basicCharacterImages[_selectedCharacterIndex]),
+          ),
           onImageSelected: (index) {
             setState(() => _selectedSkinIndex = index);
           },
         );
       case 2:
         return CharacterCarousel(
-          imageUrls: basicCharacterImages,
+          imageUrls: _getOutfitImages(
+              data,
+              _getBasicCharacterFromImageUrl(
+                  basicCharacterImages[_selectedCharacterIndex]),
+              _selectedSkinIndex),
           onImageSelected: (index) {
             setState(() => _selectedOutfitIndex = index);
           },

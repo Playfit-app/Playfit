@@ -80,7 +80,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _followerCount += 1;
       });
     } else {
-      debugPrint("Failed to follow user: ${response.statusCode}");
+      throw Exception('Failed to follow user: ${response.statusCode}');
     }
   }
 
@@ -104,7 +104,7 @@ class _ProfilePageState extends State<ProfilePage> {
       });
     } else {
       // Handle error
-      debugPrint("Failed to unfollow user: ${response.statusCode}");
+      throw Exception('Failed to unfollow user: ${response.statusCode}');
     }
   }
 

@@ -42,7 +42,7 @@ class _CustomizationPageState extends State<CustomizationPage> {
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
-      throw Exception('Failed to load user data');
+      throw Exception('Failed to load images: ${response.statusCode}');
     }
   }
 

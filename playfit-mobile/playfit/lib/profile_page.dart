@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:playfit/components/profile/edit_character_button.dart';
 import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/experience_circle.dart';
 import 'package:playfit/components/success.dart';
@@ -27,6 +28,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final FlutterSecureStorage storage = const FlutterSecureStorage();
   bool _isFollowing = false;
   int _followerCount = 0;
+  late Future<Map<String, dynamic>> _futureUserData;
 
   String _formatDate(String rawDate) {
     final DateTime dateTime = DateTime.parse(rawDate);
@@ -78,7 +80,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _followerCount += 1;
       });
     } else {
-      debugPrint("Failed to follow user: ${response.statusCode}");
+      throw Exception('Failed to follow user: ${response.statusCode}');
     }
   }
 
@@ -102,14 +104,20 @@ class _ProfilePageState extends State<ProfilePage> {
       });
     } else {
       // Handle error
-      debugPrint("Failed to unfollow user: ${response.statusCode}");
+      throw Exception('Failed to unfollow user: ${response.statusCode}');
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _futureUserData = fetchUserData();
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: fetchUserData(),
+      future: _futureUserData,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -125,7 +133,7 @@ class _ProfilePageState extends State<ProfilePage> {
         if (userData['followers'] != null) {
           _followerCount = userData['followers'];
         }
-        debugPrint(userData['decorations']['mountains'].toString());
+
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(
@@ -156,20 +164,38 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   child: Align(
                     alignment: const Alignment(0, -0.3),
-                    child: Container(
-                      height: 100,
-                      width: 100,
-                      decoration: const BoxDecoration(
-                        color: Color.fromARGB(255, 204, 255, 178),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Transform(
-                        alignment: Alignment.center,
-                        transform: Matrix4.rotationY(3.14),
-                        child: Image.network(
-                          '${dotenv.env['SERVER_BASE_URL']}${userData['customization']['base_character']}',
+                    child: Stack(
+                      children: [
+                        Container(
+                          height: 100,
+                          width: 100,
+                          decoration: const BoxDecoration(
+                            color: Color.fromARGB(255, 204, 255, 178),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Transform(
+                            alignment: Alignment.center,
+                            transform: Matrix4.rotationY(3.14),
+                            child: Image.network(
+                              '${dotenv.env['SERVER_BASE_URL']}${userData['customization']['base_character']}',
+                            ),
+                          ),
                         ),
-                      ),
+                        if (widget.userId == null)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: EditCharacterButton(
+                              backgroundImageUrl:
+                                  '${dotenv.env['SERVER_BASE_URL']}${userData['decorations']['mountains'][userData['progress']['level'] - 1]}',
+                              onClosed: () {
+                                setState(() {
+                                  _futureUserData = fetchUserData();
+                                });
+                              },
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ),
@@ -261,7 +287,9 @@ class _ProfilePageState extends State<ProfilePage> {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 // "Membre depuis ${userData['user']['date_joined'].substring(0, 7)}",
-                                t.profile.member_since(date: _formatDate(userData['user']['date_joined'])),
+                                t.profile.member_since(
+                                    date: _formatDate(
+                                        userData['user']['date_joined'])),
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Color.fromARGB(255, 120, 119, 111),
@@ -309,7 +337,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    showLevelProgressionPopup(context, userData['decorations']['mountains']);
+                                    showLevelProgressionPopup(context,
+                                        userData['decorations']['mountains']);
                                   },
                                   child: ExperienceCircle(
                                     currentXP: (userData['progress']

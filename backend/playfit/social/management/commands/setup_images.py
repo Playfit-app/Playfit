@@ -65,9 +65,10 @@ def get_sorted_files(path: str, sort_order: list[str] = []) -> list[str]:
     The sorting is done based on the labels extracted from the file names.
     """
     files = [
-        os.path.join(path, f)
-        for f in os.listdir(path)
-        if is_valid_file(os.path.join(path, f))
+        os.path.join(root, filename)
+        for root, _, filenames in os.walk(path)
+        for filename in filenames
+        if is_valid_file(os.path.join(root, filename))
     ]
     return sorted(files, key=lambda f: sort_order.index(f) if f in sort_order else float("inf"))
 
@@ -255,7 +256,6 @@ class Command(BaseCommand):
                 created = False
             except BaseCharacter.DoesNotExist:
                 base_character_image = BaseCharacter(name=name)
-                print(f"Creating base character image: {name} at {image_path}")
                 base_character_image.image.save(name_with_extension, File(open(image_path, "rb")))
                 base_character_image.save()
                 created = True

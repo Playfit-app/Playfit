@@ -28,6 +28,7 @@ from .models import (
     City,
     DecorationImage,
     CityDecorationImage,
+    BaseCharacter,
 )
 from .serializers import (
     UserSerializer,
@@ -570,10 +571,21 @@ class CustomizationUpdateView(APIView):
     def patch(self, request):
         user: CustomUser = request.user
         customization = Customization.objects.get(user=user)
-        serializer = CustomizationSerializer(customization, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        # serializer = CustomizationSerializer(customization, data=request.data, partial=True)
+        # serializer.is_valid(raise_exception=True)
+        # serializer.save()
+        # return Response(serializer.data)
+
+        if 'base_character' in request.data:
+            base_character = request.data['base_character']
+            try:
+                customization.base_character = get_object_or_404(BaseCharacter, name=base_character)
+                customization.save()
+                return Response({"detail": "Customization updated"}, status=status.HTTP_200_OK)
+            except BaseCharacter.DoesNotExist:
+                return Response({"detail": "Base character not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"detail": "Invalid data"}, status=status.HTTP_400_BAD_REQUEST)
 
 class CustomizationView(APIView):
     permission_classes = [IsAuthenticated]
@@ -583,6 +595,41 @@ class CustomizationView(APIView):
         customization = Customization.objects.get(user=user)
         serializer = CustomizationSerializer(customization)
         return Response(serializer.data)
+
+class GetCharacterImagesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        base_characters = BaseCharacter.objects.all()
+        data = {
+            'character1': {
+                'white': [],
+                'black': [],
+            },
+            'character2': {
+                'white': [],
+                'black': [],
+            },
+            'character3': {
+                'white': [],
+                'black': [],
+            },
+            'character4': {
+                'white': [],
+                'black': [],
+            },
+        }
+
+        for character in base_characters:
+            key, color, _ = character.name.split("-")
+            if key in data and color in data[key]:
+                data[key][color].append({
+                    'id': character.id,
+                    'name': character.name,
+                    'image': character.image.url,
+                })
+
+        return Response(data, status=status.HTTP_200_OK)
 
 class GetDecorationImagesView(APIView):
     permission_classes = [IsAuthenticated]

@@ -65,7 +65,7 @@ class _PostCardContentState extends State<PostCardContent> {
         widget.post['nb_likes'] -= 1;
       });
     } else {
-      print("Failed to unlike post: ${response.statusCode}");
+      throw Exception("Failed to unlike post: ${response.statusCode}");
     }
   }
 

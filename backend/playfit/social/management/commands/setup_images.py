@@ -244,9 +244,7 @@ class Command(BaseCommand):
             self.stderr.write(self.style.ERROR(f"Base characters path {base_characters_path} does not exist or is not a directory."))
             return
 
-        print(f"Getting sort order from {os.path.join(base_characters_path, 'sort_order.txt')}")
         sort_order = read_sort_order(os.path.join(base_characters_path, "sort_order.txt"))
-        print(f"Sort files")
         sorted_files = get_sorted_files(base_characters_path, sort_order=sort_order)
 
         for image_path in sorted_files:
@@ -258,7 +256,6 @@ class Command(BaseCommand):
                 created = False
             except BaseCharacter.DoesNotExist:
                 base_character_image = BaseCharacter(name=name)
-                print(f"Creating base character image: {name} at {image_path}")
                 base_character_image.image.save(name_with_extension, File(open(image_path, "rb")))
                 base_character_image.save()
                 created = True

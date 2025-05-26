@@ -629,7 +629,6 @@ class GetCharacterImagesView(APIView):
                     'image': character.image.url,
                 })
 
-        # print(f"Data: {data}")
         return Response(data, status=status.HTTP_200_OK)
 
 class GetDecorationImagesView(APIView):

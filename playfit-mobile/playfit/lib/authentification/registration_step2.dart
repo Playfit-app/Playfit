@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/form/checkbox.dart';
 import 'package:playfit/authentification/gdpr_consent_form.dart';
 
@@ -44,7 +45,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             controller: widget.birthDateController,
             readOnly: true,
             decoration: InputDecoration(
-              labelText: 'Date de naissance',
+              labelText: t.register.birthdate,
               filled: true,
               fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.calendar_today),
@@ -78,7 +79,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             },
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Veuillez entrer votre date de naissance';
+                return t.register.empty_birthdate;
               }
 
               final DateTime birthDate = DateFormat('yyyy-MM-dd').parse(value);
@@ -88,7 +89,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
                 age--;
               }
               if (age < 18) {
-                return 'Vous devez avoir au moins 18 ans';
+                return t.register.invalid_birthdate;
               }
               return null;
             },
@@ -101,7 +102,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             controller: widget.heightController,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: 'Taille (cm)',
+              labelText: t.register.height,
               filled: true,
               fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.height),
@@ -121,10 +122,10 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             ],
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Veuillez entrer votre taille';
+                return t.register.empty_height;
               }
               if (int.parse(value) < 100 || int.parse(value) > 250) {
-                return 'Veuillez entrer une taille valide';
+                return t.register.invalid_height;
               }
               return null;
             },
@@ -137,7 +138,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             controller: widget.weightController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
-              labelText: 'Poids (kg)',
+              labelText: t.register.weight,
               filled: true,
               fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.monitor_weight),
@@ -157,10 +158,10 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
             ],
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Veuillez entrer votre poids';
+                return t.register.empty_weight;
               }
               if (double.parse(value) < 30 || double.parse(value) > 250) {
-                return 'Veuillez entrer un poids valide';
+                return t.register.invalid_weight;
               }
               return null;
             },
@@ -180,20 +181,20 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
               },
             );
           },
-          child: const Text('Consentement RGPD'),
+          child: Text(t.register.gdpr_consent_title),
         ),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
           child: CheckboxFormField(
-            title: const Text(
-              'J’accepte le formulaire de consentement RGPD et la Politique de Confidentialité (Obligatoire).',
+            title: Text(
+              t.register.gdpr_consent,
               style: TextStyle(fontSize: 8),
             ),
             onChanged: widget.onConsentChanged,
             initialValue: widget.isConsentGiven,
             validator: (value) {
               if (value == false) {
-                return 'Veuillez accepter le consentement RGPD';
+                return t.register.gdpr_consent_invalid;
               }
               return null;
             },
@@ -202,8 +203,8 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
           child: CheckboxFormField(
-            title: const Text(
-              'J’accepte de recevoir des e-mails marketing concernant des promotions, événements ou rappels liés à l’application (Facultatif).',
+            title: Text(
+              t.register.marketing_consent,
               style: TextStyle(fontSize: 8),
             ),
             onChanged: widget.onMarketingConsentChanged,

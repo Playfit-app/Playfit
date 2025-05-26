@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/level_cinematic/difficulty.dart';
 import 'package:playfit/workout_analyzer.dart';
 import 'package:playfit/image_converter.dart';
@@ -259,7 +260,7 @@ class _CameraViewState extends State<CameraView> {
                     left: 0,
                     right: 0,
                     child: Text(
-                      "Prochaine étape dans $_celebrationCountdown...",
+                      t.camera.next_step_countdown(seconds: _celebrationCountdown),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 20,
@@ -292,8 +293,8 @@ class _CameraViewState extends State<CameraView> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
-                      child: const Text(
-                        'Démarrer',
+                      child: Text(
+                        t.camera.start_workout,
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),

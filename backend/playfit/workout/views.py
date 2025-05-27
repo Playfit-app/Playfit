@@ -43,9 +43,7 @@ class ExerciseView(APIView):
 
         return Response([{
             "name": exercise.name,
-            "description": exercise.description,
-            "video_url": exercise.video_url,
-            "difficulty": exercise.difficulty
+            "image": exercise.image.url if exercise.image else None,
         } for exercise in exercises], status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -54,16 +52,12 @@ class ExerciseView(APIView):
 
         exercise = Exercise.objects.create(
             name=request.data["name"],
-            description=request.data["description"],
-            video_url=request.data.get("video_url"),
-            difficulty=request.data["difficulty"]
+            image=request.data["image"],
         )
 
         return Response({
             "name": exercise.name,
-            "description": exercise.description,
-            "video_url": exercise.video_url,
-            "difficulty": exercise.difficulty
+            "image": exercise.image.url if exercise.image else None,
         }, status=status.HTTP_201_CREATED)
 
 class WorkoutSessionsView(APIView):
@@ -104,7 +98,7 @@ class WorkoutSessionsView(APIView):
                     "difficulty": workout_session_exercise.difficulty,
                 })
             data.append({
-                "date": workout_session.date,
+                "date": workout_session.creation_date,
                 "duration": workout_session.duration,
                 "exercises": exercises
             })

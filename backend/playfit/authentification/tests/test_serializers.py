@@ -31,6 +31,7 @@ class CustomUserSerializerTest(TestCase):
             "terms_and_conditions": True,
             "privacy_policy": True,
             "marketing": False,
+            'character_image': "charcter_image.png",
         }
         serializer = CustomUserSerializer(data=data)
         self.assertTrue(serializer.is_valid())
@@ -54,6 +55,7 @@ class CustomUserSerializerTest(TestCase):
             "terms_and_conditions": True,
             "privacy_policy": True,
             "marketing": False,
+            'character_image': "charcter_image.png",
         }
         serializer = CustomUserSerializer(data=data)
         self.assertFalse(serializer.is_valid())

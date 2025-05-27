@@ -36,7 +36,7 @@ jobs:
                 flutter-version: 3.19.0
             - name: Install dependencies
               run: flutter pub get
-              working-directory: ./frontend
+              working-directory: ./playfit-mobile/playfit
             - name: Run tests
               run: flutter test
-              working-directory: ./frontend/playfit
+              working-directory: ./playfit-mobile/playfit

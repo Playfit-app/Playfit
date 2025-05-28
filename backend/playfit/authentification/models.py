@@ -258,7 +258,7 @@ class UserProgress(models.Model):
     def __str__(self):
         return f"Stats for {self.user.username}"
 
-    def update_after_workout(self, workout_session):
+    def update_after_workout(self):
         today = timezone.now().date()
 
         if self.last_workout_date:

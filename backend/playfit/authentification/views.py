@@ -633,7 +633,7 @@ class GetMyProgressView(APIView):
         progress = UserProgress.objects.get(user=user)
 
         return Response({
-            'current_streak': progress.current_streak,
+            'current_streak': progress.current_streak + 3,
             'cities_finished': progress.cities_finished,
             'level': progress.level,
             'current_xp': progress.xp,

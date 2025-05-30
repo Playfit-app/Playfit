@@ -210,7 +210,7 @@ class WorkoutSessionExerciseView(APIView):
                         workout_session=workout_session,
                         exercise=Exercise.objects.get(name=exercise),
                         sets=1,
-                        repetitions=3 if exercise == 'pushUp' else 10 if exercise == 'squat' else 15,
+                        repetitions=1 if exercise == 'pushUp' else 1 if exercise == 'squat' else 1,
                         weight=0,
                         difficulty="beginner",
                     )

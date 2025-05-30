@@ -154,16 +154,7 @@ class WorkoutSessionsView(APIView):
 
         # Update user progress
         user_progress = UserProgress.objects.get(user=request.user)
-        
-        # temp
-        import datetime
-        from django.utils import timezone
-        today = timezone.now().date()
-        print(f"User progress before update: {user_progress.current_streak}, {user_progress.last_workout_date}, {today - datetime.timedelta(days=1)}, {user_progress.last_workout_date == today - datetime.timedelta(days=1)}")
-
         user_progress.update_after_workout()
-        print(f"User progress after update: {user_progress.current_streak}, {user_progress.last_workout_date}, {today - datetime.timedelta(days=1)}, {user_progress.last_workout_date == today - datetime.timedelta(days=1)}")
-
 
         # Retrieve all user achievements
         user_achievements = UserAchievement.objects.filter(user=request.user)

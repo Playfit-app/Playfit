@@ -583,7 +583,7 @@ class ProfileView(APIView):
             },
             'achievements': UserAchievementSerializer(achievements, many=True).data,
             'progress': {
-                'current_streak': progress.current_streak,  # +3 for testing purposes
+                'current_streak': progress.current_streak,
                 'cities_finished': progress.cities_finished,
                 'level': progress.level,
                 'current_xp': progress.xp,
@@ -633,7 +633,7 @@ class GetMyProgressView(APIView):
         progress = UserProgress.objects.get(user=user)
 
         return Response({
-            'current_streak': progress.current_streak + 3,
+            'current_streak': progress.current_streak,
             'cities_finished': progress.cities_finished,
             'level': progress.level,
             'current_xp': progress.xp,

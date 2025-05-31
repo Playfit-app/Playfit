@@ -11,7 +11,7 @@ from social.models import (
     Customization,
 )
 from authentification.models import CustomUser
-from social.utils import create_test_image
+from utilities.images import create_test_image
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp()
 

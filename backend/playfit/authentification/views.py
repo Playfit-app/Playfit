@@ -80,7 +80,7 @@ class RegisterView(APIView):
                 )
                 Customization.objects.create(
                     user=user,
-                    base_character=BaseCharacter.objects.get(name=f"character{serializer.validated_data['character_image_id']}"),
+                    base_character=BaseCharacter.objects.get(name=serializer.validated_data['character_image']),
                 )
                 UserProgress.objects.create(
                     user=user,

@@ -29,7 +29,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   final TextEditingController _weightController = TextEditingController();
   bool isConsentGiven = false;
   bool isMarketingConsentGiven = false;
-  int selectedCharacter = 0;
+  String? selectedCharacter;
   final AuthService authService = AuthService();
   int _currentStep = 0;
   bool _isStep1Valid = false;
@@ -218,31 +218,33 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                         onChanged: () => _validateStep(_step3FormKey),
                       ),
                     SizedBox(height: screenHeight * 0.02),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_currentStep == 0 && _isStep1Valid) {
-                          _nextStep();
-                        } else if (_currentStep == 1 && _isStep2Valid) {
-                          _nextStep(); // Move to Step 3 instead of creating an account
-                        } else if (_currentStep == 2) {
-                          _createAccount(); // Create account on Step 3 submission
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 248, 135, 31),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100.0),
+                    // Hide the button below if the _currentStep is 2 and selectedCharacter is null
+                    if (_currentStep != 2 || selectedCharacter != null)  
+                      ElevatedButton(
+                        onPressed: () {
+                          if (_currentStep == 0 && _isStep1Valid) {
+                            _nextStep();
+                          } else if (_currentStep == 1 && _isStep2Valid) {
+                            _nextStep(); // Move to Step 3 instead of creating an account
+                          } else if (_currentStep == 2) {
+                            _createAccount(); // Create account on Step 3 submission
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(255, 248, 135, 31),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100.0),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 50, vertical: 15),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 50, vertical: 15),
+                        child: Text(
+                          _currentStep < 2 ? t.register.next : t.register.create_account,
+                          style:
+                              const TextStyle(fontSize: 14, color: Colors.white),
+                        ),
                       ),
-                      child: Text(
-                        _currentStep < 2 ? t.register.next : t.register.create_account,
-                        style:
-                            const TextStyle(fontSize: 14, color: Colors.white),
-                      ),
-                    ),
                     if (_currentStep > 0)
                       TextButton(
                         onPressed: _previousStep,

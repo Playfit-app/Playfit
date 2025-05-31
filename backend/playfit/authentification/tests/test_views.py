@@ -1,9 +1,10 @@
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from rest_framework.authtoken.models import Token
-from authentification.models import CustomUser, GameAchievement, UserAchievement
 from django.utils import timezone as Timezone
-from authentification.serializers import UserTestSerializer
+from authentification.models import CustomUser, GameAchievement, UserAchievement, UserProgress
+from social.models import City, Country, Continent, BaseCharacter, WorldPosition, Customization
+from utilities.images import create_test_image
 
 class RegisterViewTests(APITestCase):
     def setUp(self):
@@ -14,6 +15,13 @@ class RegisterViewTests(APITestCase):
             date_of_birth="1990-01-01",
             height=180,
             weight=80,
+        )
+        self.continent = Continent.objects.create(name="Europe")
+        self.country = Country.objects.create(name="France", continent=self.continent)
+        self.city = City.objects.create(name="Paris", country=self.country, order=1)
+        BaseCharacter.objects.create(
+            name="character_image",
+            image=create_test_image(),
         )
         self.url = "/api/auth/register/"
 
@@ -28,6 +36,7 @@ class RegisterViewTests(APITestCase):
             'terms_and_conditions': True,
             'privacy_policy': True,
             'marketing': False,
+            'character_image': "character_image",
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -44,6 +53,7 @@ class RegisterViewTests(APITestCase):
             'terms_and_conditions': True,
             'privacy_policy': True,
             'marketing': False,
+            'character_image': "character_image",
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -60,6 +70,7 @@ class RegisterViewTests(APITestCase):
             'terms_and_conditions': True,
             'privacy_policy': True,
             'marketing': False,
+            'character_image': "character_image",
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -76,6 +87,7 @@ class RegisterViewTests(APITestCase):
             'terms_and_conditions': True,
             'privacy_policy': True,
             'marketing': False,
+            'character_image': "character_image",
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -92,6 +104,7 @@ class RegisterViewTests(APITestCase):
             'terms_and_conditions': True,
             'privacy_policy': True,
             'marketing': False,
+            'character_image': "character_image",
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -108,6 +121,7 @@ class RegisterViewTests(APITestCase):
             'terms_and_conditions': True,
             'privacy_policy': True,
             'marketing': False,
+            'character_image': "character_image",
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -124,6 +138,7 @@ class RegisterViewTests(APITestCase):
             'terms_and_conditions': True,
             'privacy_policy': True,
             'marketing': False,
+            'character_image': "character_image",
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -138,6 +153,27 @@ class LoginViewTests(APITestCase):
             date_of_birth="1990-01-01",
             height=180,
             weight=80,
+        )
+        self.continent = Continent.objects.create(name="Europe")
+        self.country = Country.objects.create(name="France", continent=self.continent)
+        self.city = City.objects.create(name="Paris", country=self.country, order=1)
+        WorldPosition.objects.create(
+            user=self.user,
+            city=self.city,
+            city_level=1,
+        )
+        self.base_character = BaseCharacter.objects.create(
+            name="character_image",
+            image=create_test_image(),
+        )
+        Customization.objects.create(
+            user=self.user,
+            base_character=self.base_character,
+        )
+        UserProgress.objects.create(
+            user=self.user,
+            longest_streak=0,
+            current_streak=0,
         )
         self.url = "/api/auth/login/"
 
@@ -254,34 +290,16 @@ class UserAchievementTests(APITestCase):
         self.achievement = GameAchievement.objects.create(
             name="Welcome to Playfit",
             description="Welcome to Playfit! Let's get started!",
-            criteria=[
-                {
-                    "current_streak": 1,
-                }
-            ],
+            type="level",
+            target=1,
+            image=None,
             xp_reward=50,
             created_at=Timezone.now(),
         )
         self.user_achievement = UserAchievement.objects.create(
             user=self.user,
             achievement=self.achievement,
-            is_completed=False,
-            progress={
-                "current_streak": 0,
-            },
         )
         self.client = APIClient()
 
-    #Test the validation of the "Welcome to Playfit" achievement by doing a request to the user-acheivements endpoint
-    def test_welcome_to_playfit(self):
-        token = Token.objects.create(user=self.user)
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-        user_data = UserTestSerializer(self.user).data
-        data = {
-            'user': user_data,
-            'progress': {
-                'current_streak': 1,
-            },
-        }
-        self.client.post(self.url, data, format='json')
         

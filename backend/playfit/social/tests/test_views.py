@@ -3,8 +3,8 @@ import shutil
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.test import override_settings
-from social.models import CustomizationItem, Customization
-from social.utils import create_test_image
+from social.models import CustomizationItem, Customization, BaseCharacter
+from utilities.images import create_test_image
 from authentification.models import CustomUser
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp()
@@ -68,11 +68,6 @@ class CustomizationItemByCategoryListViewTests(APITestCase):
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class CustomizationUpdateViewTests(APITestCase):
     def test_update_customization(self):
-        item = CustomizationItem.objects.create(
-            name="Test",
-            category="hat",
-            image=create_test_image(),
-        )
         user = CustomUser.objects.create_user(
             email="test@test.com",
             username="test",
@@ -81,19 +76,19 @@ class CustomizationUpdateViewTests(APITestCase):
             height=180,
             weight=80,
         )
+        base_character = BaseCharacter.objects.create(
+            name="character_image",
+            image=create_test_image(),
+        )
         Customization.objects.create(
             user=user,
-            hat=item,
         )
         data = {
-            'hat': item.id,
+            'base_character': base_character.name,
         }
         self.client.force_authenticate(user=user)
         response = self.client.patch("/api/social/update-customization/", data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["hat"]["name"], "Test")
-        self.assertEqual(response.data["hat"]["category"], "hat")
-        self.assertTrue(response.data["hat"]["image"].endswith(".webp"))
 
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class CustomizationViewTests(APITestCase):
@@ -102,11 +97,6 @@ class CustomizationViewTests(APITestCase):
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def test_get_customization(self):
-        item = CustomizationItem.objects.create(
-            name="Test",
-            category="hat",
-            image=create_test_image(),
-        )
         user = CustomUser.objects.create_user(
             email="test@test.com",
             username="test",
@@ -115,13 +105,14 @@ class CustomizationViewTests(APITestCase):
             height=180,
             weight=80,
         )
+        base_character = BaseCharacter.objects.create(
+            name="character_image",
+            image=create_test_image(),
+        )
         Customization.objects.create(
             user=user,
-            hat=item,
+            base_character=base_character,
         )
         self.client.force_authenticate(user=user)
         response = self.client.get("/api/social/customization/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["hat"]["name"], "Test")
-        self.assertEqual(response.data["hat"]["category"], "hat")
-        self.assertTrue(response.data["hat"]["image"].endswith(".webp"))

@@ -7,16 +7,11 @@ class ExerciseTest(TestCase):
     def setUp(self):
         self.exercise = Exercise.objects.create(
             name="Test Exercise",
-            description="This is a test exercise",
-            video_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-            difficulty="beginner"
+            image=None,
         )
 
     def test_exercise_creation(self):
         self.assertEqual(self.exercise.name, "Test Exercise")
-        self.assertEqual(self.exercise.description, "This is a test exercise")
-        self.assertEqual(self.exercise.video_url, "https://www.youtube.com/watch?v=dQw4w9WgXcQ")
-        self.assertEqual(self.exercise.difficulty, "beginner")
 
 class WorkoutSessionTest(TestCase):
     def setUp(self):
@@ -33,12 +28,12 @@ class WorkoutSessionTest(TestCase):
         )
         self.workout_session = WorkoutSession.objects.create(
             user=self.user,
-            date="2021-01-01",
+            creation_date="2021-01-01",
             duration=timedelta(minutes=30)
         )
 
     def test_workout_session_creation(self):
-        self.assertEqual(self.workout_session.date, "2021-01-01")
+        self.assertEqual(self.workout_session.creation_date, "2021-01-01")
         self.assertEqual(self.workout_session.duration, timedelta(minutes=30))
 
 class WorkoutSessionExerciseTest(TestCase):
@@ -53,13 +48,11 @@ class WorkoutSessionExerciseTest(TestCase):
         )
         self.exercise = Exercise.objects.create(
             name="Test Exercise",
-            description="This is a test exercise",
-            video_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-            difficulty="beginner"
+            image=None,
         )
         self.workout_session = WorkoutSession.objects.create(
             user=self.user,
-            date="2021-01-01",
+            creation_date="2021-01-01",
             duration=timedelta(minutes=30)
         )
         self.workout_session_exercise = WorkoutSessionExercise.objects.create(
@@ -67,7 +60,8 @@ class WorkoutSessionExerciseTest(TestCase):
             exercise=self.exercise,
             sets=3,
             repetitions=10,
-            weight=20
+            weight=20,
+            difficulty='intermediate'
         )
 
     def test_workout_session_exercise_creation(self):
@@ -76,3 +70,4 @@ class WorkoutSessionExerciseTest(TestCase):
         self.assertEqual(self.workout_session_exercise.sets, 3)
         self.assertEqual(self.workout_session_exercise.repetitions, 10)
         self.assertEqual(self.workout_session_exercise.weight, 20)
+        self.assertEqual(self.workout_session_exercise.difficulty, 'intermediate')

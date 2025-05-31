@@ -8,7 +8,7 @@ import 'package:playfit/components/character_carousel.dart';
 import 'package:playfit/components/customization/skin_tone_selection.dart';
 
 class RegistrationStep3 extends StatefulWidget {
-  final Function(String) onPageChanged;
+  final Function(String, List<String>) onPageChanged;
 
   const RegistrationStep3({
     super.key,
@@ -29,7 +29,7 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
 
   Future<Map<String, dynamic>> fetchImages() async {
     final String url =
-        '${dotenv.env['SERVER_BASE_URL']}/api/social/get-character-images/';
+        '${dotenv.env['SERVER_BASE_URL']}/api/social/get-character-images/?registration=true';
     final String? token = await storage.read(key: 'token');
 
     final response = await http.get(
@@ -67,6 +67,7 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
     final characterData = data[character] as Map<String, dynamic>;
 
     for (final entry in characterData.entries) {
+      if (entry.key == 'introduction') continue;
       skinToneImages.add(
         "${dotenv.env['SERVER_BASE_URL']}${entry.value[0]['image']}",
       );
@@ -112,7 +113,24 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
         .replaceAll(RegExp(RegExp.escape(prefix)), '')
         .replaceAll(RegExp(r'\.webp$'), '');
 
-    widget.onPageChanged(baseCharacter);
+    widget.onPageChanged(baseCharacter,
+        _getIntroductionImages(data, character, _selectedSkinIndex));
+  }
+
+  List<String> _getIntroductionImages(
+      Map<String, dynamic> data, String character, int skinTone) {
+    final introductionImages = <String>[];
+    final characterData = data[character] as Map<String, dynamic>;
+    final color = skinTone == 0 ? 'white' : 'black';
+    final introduction = characterData['introduction'][color] as List<dynamic>;
+
+    for (final image in introduction) {
+      introductionImages.add(
+        "${dotenv.env['SERVER_BASE_URL']}${image['image']}",
+      );
+    }
+
+    return introductionImages;
   }
 
   @override
@@ -202,18 +220,25 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
           },
         );
       case 2:
-        return CharacterCarousel(
-          imageUrls: _getOutfitImages(
-              data,
-              _getBasicCharacterFromImageUrl(
-                  basicCharacterImages[_selectedCharacterIndex]),
-              _selectedSkinIndex),
-          onImageSelected: (index) {
-            setState(() {
-              _selectedOutfitIndex = index;
-              _getSelectedCharacter(data);
-            });
-          },
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _getSelectedCharacter(data); 
+          }
+        });
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Image.network(
+              _getOutfitImages(
+                  data,
+                  _getBasicCharacterFromImageUrl(
+                      basicCharacterImages[_selectedCharacterIndex]),
+                  _selectedSkinIndex)[_selectedOutfitIndex],
+              fit: BoxFit.fitHeight,
+            ),
+          ),
         );
       default:
         return const SizedBox.shrink();

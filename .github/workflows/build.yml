@@ -29,6 +29,15 @@ jobs:
                 channel: stable
             - name: Install dependencies
               run: flutter pub get
+              working-directory: ./playfit-mobile/
+            - name: Decode Google Services credentials
+              run: echo "${{ secrets.FLUTTER_GOOGLE_SERVICES }}" | base64 --decode > google-services.json
+              working-directory: ./playfit-mobile/playfit/android/app
+            - name: Set up environment variables
+              run: |
+                echo "SERVER_BASE_URL=http://${{ secrets.FLUTTER_SERVER_IP }}:${{ secrets.FLUTTER_SERVER_PORT }}" >> .env
+                echo "SERVER_BASE_WS_URL=ws://${{ secrets.FLUTTER_SERVER_IP }}:${{ secrets.FLUTTER_SERVER_PORT }}" >> .env
+                echo "GOOGLE_CLIENT_ID=${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}" >> .env
               working-directory: ./playfit-mobile/playfit
             - name: Decode Keystore
               run: |

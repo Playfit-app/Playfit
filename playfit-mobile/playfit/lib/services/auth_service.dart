@@ -68,14 +68,16 @@ class AuthService {
     String? characterImage,
   ) async {
     try {
+      if (characterImage == null || characterImage.isEmpty) {
+        return {'status': 'error', 'message': 'A valid character image is required'};
+      }
       if (email.isEmpty ||
           username.isEmpty ||
           password.isEmpty ||
           dateOfBirth.isEmpty ||
           height <= 0 ||
           weight <= 0 ||
-          !isConsentGiven ||
-          (characterImage == null || characterImage.isEmpty)) {
+          !isConsentGiven) {
         return {'status': 'error', 'message': 'All fields are required'};
       }
       final data = <String, dynamic>{

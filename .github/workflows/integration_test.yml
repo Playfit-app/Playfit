@@ -1,18 +1,21 @@
 name: Integration tests
 
 on:
-  workflow_run:
-    workflows: ["Lint code"]
-    types:
-      - completed
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The git reference to run integration tests on'
+        required: true
+        type: string
 
 jobs:
     django_tests:
         name: Run Django tests
         runs-on: ubuntu-latest
-        if: github.event.workflow_run.conclusion == 'success'
         steps:
             - uses: actions/checkout@v4
+              with:
+                ref: ${{ inputs.ref }}
             - name: Set up Python
               uses: actions/setup-python@v2
               with:
@@ -27,9 +30,10 @@ jobs:
     flutter_tests:
         name: Run Flutter tests
         runs-on: ubuntu-latest
-        if: github.event.workflow_run.conclusion == 'success'
         steps:
             - uses: actions/checkout@v4
+              with:
+                ref: ${{ inputs.ref }}
             - name: Set up Flutter
               uses: subosito/flutter-action@v2
               with:

@@ -1,46 +1,84 @@
 name: Build
 
 on:
-  workflow_run:
-    workflows: ["Integration tests"]
-    types:
-      - completed
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The git reference to build'
+        required: true
+        type: string
 
 jobs:
-    build_flutter_android:
-        name: Build Flutter Android
-        runs-on: ubuntu-latest
-        if: github.event.workflow_run.conclusion == 'success'
+    build:
+        name: Build & Release
+        # runs-on: ubuntu-latest
+        runs-on: macos-latest
         steps:
             - uses: actions/checkout@v4
+              with:
+                ref: ${{ inputs.ref }}
+            - name: Set Up Java
+              uses: actions/setup-java@v4
+              with:
+                java-version: '17'
+                distribution: 'temurin'
             - name: Set up Flutter
               uses: subosito/flutter-action@v2
               with:
-                flutter-version: 3.19.0
-                # optional parameters follow
-                cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
-                cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-                pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
-                pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-            - run: flutter pub get
-            - run: flutter build apk
-            - run: flutter build appbundle
-        
-    # build_flutter_ios:
-    #     name: Build Flutter iOS
-    #     runs-on: macos-latest
-    #     if: github.event.workflow_run.conclusion == 'success'
-    #     steps:
-    #         - uses: actions/checkout@v4
-    #         - name: Set up Flutter
-    #           uses: subosito/flutter-action@v2
-    #           with:
-    #             channel: stable
-    #             cache: true
-    #             # optional parameters follow
-    #             cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
-    #             cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-    #             pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
-    #             pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-    #         - run: flutter pub get
-    #         - run: flutter build ios --release --no-codesign
+                flutter-version: 3.29.0
+                channel: stable
+            - name: Install dependencies
+              run: flutter pub get
+              working-directory: ./playfit-mobile/playfit
+            - name: Decode Keystore
+              run: |
+                echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ./playfit-mobile/playfit/android/app/keystore.jks
+            - name: Create key.properties
+              run: |
+                echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > ./playfit-mobile/playfit/android/key.properties
+                echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> ./playfit-mobile/playfit/android/key.properties
+                echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> ./playfit-mobile/playfit/android/key.properties
+                echo "storeFile=keystore.jks" >> ./playfit-mobile/playfit/android/key.properties
+            - name: Build APK
+              run: flutter build apk --release
+              working-directory: ./playfit-mobile/
+            - name: Build IPA
+              run: flutter build ipa --no-codesign
+              working-directory: ./playfit-mobile/
+            - name: Compress Archives and IPAs
+              run: |
+                cd build
+                tar -czf ios_build.tar.gz ios
+            - name: Upload Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                name: Releases
+                path: |
+                  build/app/outputs/flutter-apk/app-release.apk
+                  build/app/outputs/bundle/release/app-release.aab
+                  build/ios_build.tar.gz
+            - name: Extract version from pubspec.yaml
+              id: extract_version
+              run: |
+                version=$(grep '^version: ' ./playfit-mobile/playfit/pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
+                echo "version=$version" >> $GITHUB_ENV
+            - name: Check if Tag Exists
+              id: check_tag
+              run: |
+                if git rev-parse "v${{ env.VERSION }}" >/dev/null 2>&1; then
+                  echo "TAG_EXISTS=true" >> $GITHUB_ENV
+                else
+                  echo "TAG_EXISTS=false" >> $GITHUB_ENV
+                fi
+            - name: Modify Tag
+              if: env.TAG_EXISTS == 'true'
+              id: modify_tag
+              run: |
+                new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
+                echo "VERSION=$new_version" >> $GITHUB_ENV
+            - name: Create Release
+              uses: ncipollo/release-action@v1
+              with:
+                artifacts: "build/app/outputs/flutter-apk/app-release.apk,build/app/outputs/bundle/release/app-release.aab,build/ios_build.tar.gz"
+                tag: "v${{ env.VERSION }}"
+                token: ${{ secrets.GITHUB_TOKEN }}

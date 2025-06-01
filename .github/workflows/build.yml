@@ -69,22 +69,23 @@ jobs:
                 echo "storeFile=keystore.jks" >> ./playfit-mobile/playfit/android/key.properties
             - name: Build APK
               run: flutter build apk --release
-              working-directory: ./playfit-mobile/
+              working-directory: ./playfit-mobile/playfit
             - name: Build IPA
               run: flutter build ipa --no-codesign
-              working-directory: ./playfit-mobile/
+              working-directory: ./playfit-mobile/playfit
             - name: Compress Archives and IPAs
               run: |
                 cd build
                 tar -czf ios_build.tar.gz ios
+              working-directory: ./playfit-mobile/playfit
             - name: Upload Artifacts
               uses: actions/upload-artifact@v4
               with:
                 name: Releases
                 path: |
-                  build/app/outputs/flutter-apk/app-release.apk
-                  build/app/outputs/bundle/release/app-release.aab
-                  build/ios_build.tar.gz
+                  ./playfit-mobile/playfit/build/app/outputs/flutter-apk/app-release.apk
+                  ./playfit-mobile/playfit/build/app/outputs/bundle/release/app-release.aab
+                  ./playfit-mobile/playfit/build/ios_build.tar.gz
             - name: Extract version from pubspec.yaml
               id: extract_version
               run: |
@@ -107,6 +108,6 @@ jobs:
             - name: Create Release
               uses: ncipollo/release-action@v1
               with:
-                artifacts: "build/app/outputs/flutter-apk/app-release.apk,build/app/outputs/bundle/release/app-release.aab,build/ios_build.tar.gz"
+                artifacts: "./playfit-mobile/playfit/build/app/outputs/flutter-apk/app-release.apk,./playfit-mobile/playfit/build/app/outputs/bundle/release/app-release.aab,./playfit-mobile/playfit/build/ios_build.tar.gz"
                 tag: "v${{ env.VERSION }}"
                 token: ${{ secrets.GITHUB_TOKEN }}

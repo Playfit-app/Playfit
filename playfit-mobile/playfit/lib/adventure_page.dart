@@ -14,11 +14,13 @@ import 'package:playfit/utils/image.dart';
 class AdventurePage extends StatefulWidget {
   final bool moveCharacter;
   final String? completedDifficulty;
+  final int currentStreak;
 
   const AdventurePage({
     super.key,
     this.moveCharacter = false,
     this.completedDifficulty,
+    required this.currentStreak,
   });
 
   @override
@@ -45,6 +47,25 @@ class _AdventurePageState extends State<AdventurePage>
     }
   }
 
+  Future<void> _fetchUserProgress() async {
+    const storage = FlutterSecureStorage();
+    String? token = await storage.read(key: 'token');
+    String url = "${dotenv.env['SERVER_BASE_URL']}/api/auth/get_my_progress/";
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': "Token $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+    } else {
+      throw Exception('Failed to load user progress');
+    }
+  }
+
   void completeWorkoutSession() async {
     final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/workout';
     final String? token = await storage.read(key: 'token');
@@ -60,6 +81,7 @@ class _AdventurePageState extends State<AdventurePage>
     } else {
       print("Can't update workout session");
     }
+    _fetchUserProgress();
   }
 
   void _scrollToCharacter(List<dynamic> worldPositions) {

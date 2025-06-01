@@ -63,10 +63,18 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     currentStreak = 0;
     _userProgressFuture = _fetchUserProgress();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.workoutDone) {
+        refreshStreakAfterWorkout();
+      }
+    });
+
     _pages = [
       AdventurePage(
         moveCharacter: widget.workoutDone,
         completedDifficulty: widget.completedDifficulty,
+        currentStreak: currentStreak,
       ),
       const MissionsPage(),
       const BoutiquePage(),
@@ -81,6 +89,11 @@ class _HomePageState extends State<HomePage> {
         await service.getToken();
       });
     }
+  }
+
+  Future<void> refreshStreakAfterWorkout() async {
+    await Future.delayed(const Duration(seconds: 2));
+    await _fetchUserProgress();
   }
 
   void _onItemTapped(int index) {

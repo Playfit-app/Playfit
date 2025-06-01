@@ -73,13 +73,14 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
     }
     if (widget.startingPoint ==
         widget.workoutSessionExercises[difficulty]!.length - 1) {
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context) => HomePage(
+          builder: (_) => HomePage(
             completedDifficulty: difficulty,
             workoutDone: true,
           ),
         ),
+        (Route<dynamic> route) => false,
       );
       return;
     }
@@ -87,7 +88,7 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
 
     imageUrl = "/media${imageUrl.split('/media').last}";
 
-    Navigator.of(context).pushReplacement(
+    Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => CameraView(
           difficulty: difficulty,

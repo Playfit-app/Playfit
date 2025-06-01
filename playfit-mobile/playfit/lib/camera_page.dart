@@ -185,7 +185,7 @@ class _CameraViewState extends State<CameraView> {
             ? Difficulty.medium
             : Difficulty.hard;
 
-    Navigator.pushReplacement(
+    Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => WorkoutProgressionPage(

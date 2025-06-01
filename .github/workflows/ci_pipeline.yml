@@ -13,13 +13,27 @@ jobs:
     uses: ./.github/workflows/lint.yml
 
   build:
-    needs: integration-tests
+    needs: lint
     uses: ./.github/workflows/build.yml
     with:
       ref: ${{ github.ref }}
+    secrets:
+      FLUTTER_GOOGLE_SERVICES: ${{ secrets.FLUTTER_GOOGLE_SERVICES }}
+      FLUTTER_GOOGLE_CLIENT_ID: ${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
 
   integration-tests:
     needs: lint
     uses: ./.github/workflows/integration_tests.yml
     with:
       ref: ${{ github.ref }}
+    secrets:
+      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      DJANGO_CRYPTOGRAPHY_KEY: ${{ secrets.DJANGO_CRYPTOGRAPHY_KEY }}
+      DJANGO_EMAIL_HOST_USER: ${{ secrets.DJANGO_EMAIL_HOST_USER }}
+      DJANGO_EMAIL_HOST_PASSWORD: ${{ secrets.DJANGO_EMAIL_HOST_PASSWORD }}
+      DJANGO_FCM_API_KEY: ${{ secrets.DJANGO_FCM_API_KEY }}
+      DJANGO_GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.DJANGO_GOOGLE_APPLICATION_CREDENTIALS }}

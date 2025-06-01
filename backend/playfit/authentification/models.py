@@ -214,26 +214,33 @@ class UserAchievement(models.Model):
             self.current_value = self.user.progress.current_streak
         elif self.achievement.type == "pushups":
             try:
-                exercise = workout_session.exercises.get(exercise__name="pushUp")
-                self.current_value += exercise.sets * exercise.repetitions
+                exercise = workout_session.exercises.filter(exercise__name="pushUp").first()
+                if exercise:
+                    self.current_value += exercise.sets * exercise.repetitions
             except Exception:
                 raise ValidationError("Pushup exercise not found in workout session.")
+
         elif self.achievement.type == "squats":
             try:
-                exercise = workout_session.exercises.get(exercise__name="squat")
-                self.current_value += exercise.sets * exercise.repetitions
+                exercise = workout_session.exercises.filter(exercise__name="squat").first()
+                if exercise:
+                    self.current_value += exercise.sets * exercise.repetitions
             except Exception:
                 raise ValidationError("Squat exercise not found in workout session.")
+
         elif self.achievement.type == "pullups":
             try:
-                exercise = workout_session.exercises.get(exercise__name="pullUp")
-                self.current_value += exercise.sets * exercise.repetitions
+                exercise = workout_session.exercises.filter(exercise__name="pullUp").first()
+                if exercise:
+                    self.current_value += exercise.sets * exercise.repetitions
             except Exception:
                 raise ValidationError("Pullup exercise not found in workout session.")
+
         elif self.achievement.type == "jumping_jacks":
             try:
-                exercise = workout_session.exercises.get(exercise__name="jumpingJack")
-                self.current_value += exercise.sets * exercise.repetitions
+                exercise = workout_session.exercises.filter(exercise__name="jumpingJack").first()
+                if exercise:
+                    self.current_value += exercise.sets * exercise.repetitions
             except Exception:
                 raise ValidationError("Jumping Jack exercise not found in workout session.")
 

@@ -26,6 +26,12 @@ on:
       DJANGO_GOOGLE_APPLICATION_CREDENTIALS:
         description: 'Base64 encoded Google application credentials JSON'
         required: true
+      FLUTTER_GOOGLE_SERVICES:
+        description: 'Base64 encoded Google Services credentials JSON for Flutter'
+        required: true
+      FLUTTER_GOOGLE_CLIENT_ID:
+        description: 'Google Client ID for Flutter'
+        required: true
 
 jobs:
     django_tests:
@@ -76,6 +82,15 @@ jobs:
                 channel: stable
             - name: Install dependencies
               run: flutter pub get
+              working-directory: ./playfit-mobile/playfit
+            - name: Decode Google Services credentials
+              run: echo "${{ secrets.FLUTTER_GOOGLE_SERVICES }}" | base64 --decode > android/app/google-services.json
+              working-directory: ./playfit-mobile/playfit
+            - name: Set up environment variables
+              run: |
+                echo "SERVER_BASE_URL=http://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
+                echo "SERVER_BASE_WS_URL=ws://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
+                echo "GOOGLE_CLIENT_ID=${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}" >> .env
               working-directory: ./playfit-mobile/playfit
             - name: Run tests
               run: flutter test

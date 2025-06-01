@@ -54,9 +54,9 @@ jobs:
               working-directory: ./playfit-mobile/playfit/android/app
             - name: Set up environment variables
               run: |
-                echo "SERVER_BASE_URL=http://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> $GITHUB_ENV
-                echo "SERVER_BASE_WS_URL=ws://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> $GITHUB_ENV
-                echo "GOOGLE_CLIENT_ID=${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}" >> $GITHUB_ENV
+                echo "SERVER_BASE_URL=http://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
+                echo "SERVER_BASE_WS_URL=ws://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
+                echo "GOOGLE_CLIENT_ID=${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}" >> .env
               working-directory: ./playfit-mobile/playfit
             - name: Decode Keystore
               run: |

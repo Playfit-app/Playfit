@@ -26,6 +26,9 @@ on:
       KEY_ALIAS:
         description: 'Alias for the key in the keystore'
         required: true
+      GH_PAT:
+        description: 'GitHub Personal Access Token for creating releases'
+        required: true
 
 jobs:
     build:
@@ -110,4 +113,4 @@ jobs:
               with:
                 artifacts: "./playfit-mobile/playfit/build/app/outputs/flutter-apk/app-release.apk,./playfit-mobile/playfit/build/app/outputs/bundle/release/app-release.aab,./playfit-mobile/playfit/build/ios_build.tar.gz"
                 tag: "v${{ env.VERSION }}"
-                token: ${{ secrets.GITHUB_TOKEN }}
+                token: ${{ secrets.GH_PAT }}

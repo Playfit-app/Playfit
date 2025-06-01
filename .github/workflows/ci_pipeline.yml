@@ -24,6 +24,7 @@ jobs:
       KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
       KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      GH_PAT: ${{ secrets.GH_PAT }}
 
   integration-tests:
     needs: build

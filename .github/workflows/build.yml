@@ -48,7 +48,7 @@ jobs:
                 channel: stable
             - name: Install dependencies
               run: flutter pub get
-              working-directory: ./playfit-mobile/
+              working-directory: ./playfit-mobile/playfit
             - name: Decode Google Services credentials
               run: echo "${{ secrets.FLUTTER_GOOGLE_SERVICES }}" | base64 --decode > google-services.json
               working-directory: ./playfit-mobile/playfit/android/app

@@ -14,13 +14,11 @@ import 'package:playfit/utils/image.dart';
 class AdventurePage extends StatefulWidget {
   final bool moveCharacter;
   final String? completedDifficulty;
-  final int currentStreak;
 
   const AdventurePage({
     super.key,
     this.moveCharacter = false,
     this.completedDifficulty,
-    required this.currentStreak,
   });
 
   @override

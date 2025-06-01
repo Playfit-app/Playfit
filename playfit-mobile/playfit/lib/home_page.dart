@@ -74,7 +74,6 @@ class _HomePageState extends State<HomePage> {
       AdventurePage(
         moveCharacter: widget.workoutDone,
         completedDifficulty: widget.completedDifficulty,
-        currentStreak: currentStreak,
       ),
       const MissionsPage(),
       const BoutiquePage(),

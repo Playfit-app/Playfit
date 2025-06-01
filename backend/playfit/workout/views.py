@@ -159,9 +159,6 @@ class WorkoutSessionsView(APIView):
         # Retrieve all user achievements
         user_achievements = UserAchievement.objects.filter(user=request.user)
 
-        #temp
-        print(workout_session)
-
         # Check if the user has any achievements
         if user_achievements.exists():
             # If the user has achievements, update them
@@ -210,7 +207,7 @@ class WorkoutSessionExerciseView(APIView):
                         workout_session=workout_session,
                         exercise=Exercise.objects.get(name__iexact=exercise),
                         sets=1,
-                        repetitions=1 if exercise == 'pushUp' else 1 if exercise == 'squat' else 1,
+                        repetitions=3 if exercise == 'pushUp' else 10 if exercise == 'squat' else 15,
                         weight=0,
                         difficulty="beginner",
                     )

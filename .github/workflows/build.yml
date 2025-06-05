@@ -136,26 +136,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./artifacts
-      - name: Extract version from pubspec.yaml
-        id: extract_version
+      - name: Generate Tag
+        id: tag
         run: |
-          VERSION=$(grep '^version: ' ./playfit-mobile/playfit/pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-      - name: Check if Tag Exists
-        id: check_tag
-        run: |
-          if git rev-parse "v${{ env.VERSION }}" >/dev/null 2>&1; then
-            echo "TAG_EXISTS=true" >> $GITHUB_ENV
-          else
-            echo "TAG_EXISTS=false" >> $GITHUB_ENV
-          fi
-      - name: Modify Tag if Needed
-        if: env.TAG_EXISTS == 'true'
-        run: echo "VERSION=${{ env.VERSION }}-build-${{ github.run_number }}" >> $GITHUB_ENV
+          echo "::set-output name=release_tag::$(date +"%Y.%m.%d_%H.%M")"
+          echo "::set-output name=release_name::Release_$(date +"%Y.%m.%d_%H.%M")"
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
-          tag: "v${{ env.VERSION }}"
+          tag: ${{ steps.tag.outputs.release_tag }}
+          name: ${{ steps.tag.outputs.release_name }}
           token: ${{ secrets.GH_PAT }}
           artifacts: |
             ./artifacts/android-build/**/*.apk,

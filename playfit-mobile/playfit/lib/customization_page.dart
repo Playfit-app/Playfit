@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/character_carousel.dart';
 import 'package:playfit/components/customization/skin_tone_selection.dart';
 
@@ -190,7 +191,7 @@ class _CustomizationPageState extends State<CustomizationPage> {
                         height: screenHeight * 0.04,
                       ),
                       Text(
-                        'Quel look pour ce voyage ?',
+                        t.customization.title,
                         style: GoogleFonts.amaranth(
                           fontSize: 26,
                         ),
@@ -244,8 +245,8 @@ class _CustomizationPageState extends State<CustomizationPage> {
                         ),
                         child: Text(
                           _currentStep == _totalSteps - 1
-                              ? 'Terminer'
-                              : 'Suivant',
+                              ? t.customization.confirm_button
+                              : t.customization.next_button,
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.white,

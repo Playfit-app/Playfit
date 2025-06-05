@@ -11,6 +11,7 @@ from social.models import (
     CityDecorationImage,
     MountainDecorationImage,
     BaseCharacter,
+    IntroductionCharacter,
     # CustomizationItem,
 )
 from workout.models import Exercise
@@ -100,6 +101,7 @@ class Command(BaseCommand):
         self.create_cities()
         self.stdout.write(self.style.NOTICE("Setting up images..."))
         self.create_base_characters(path)
+        self.create_introduction_characters(path)
         self.create_mountain_decorations(path)
         self.create_exercises(path)
         self.create_city_decorations(path)
@@ -265,6 +267,46 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING(f"Base character image already exists: {base_character_image.name}"))
         self.stdout.write(self.style.SUCCESS("All base character images created."))
+
+    def create_introduction_characters(self, base_path: str) -> None:
+        """
+        Create introduction character images in the database.
+        """
+        self.stdout.write(self.style.NOTICE("Creating introduction character images..."))
+        introduction_characters_path = os.path.join(base_path, "introduction_characters")
+
+        if not is_valid_directory(introduction_characters_path):
+            self.stderr.write(self.style.ERROR(f"Introduction characters path {introduction_characters_path} does not exist or is not a directory."))
+            return
+
+        sort_order = read_sort_order(os.path.join(introduction_characters_path, "sort_order.txt"))
+        sorted_files = get_sorted_files(introduction_characters_path, sort_order=sort_order)
+
+        for image_path in sorted_files:
+            name = get_label_from_path(image_path)
+            name_with_extension = get_label_from_path(image_path, extension=True)
+
+            # Get BaseCharacter by name. Create an IntroductionCharacter if it does not exist.
+            try:
+                name_for_base_character = name if "-sit" not in name else name.replace("-sit", "")
+                base_character = BaseCharacter.objects.get(name=name_for_base_character)
+                introduction_character = IntroductionCharacter.objects.get(base_character=base_character, name=name)
+                created = False
+            except BaseCharacter.DoesNotExist:
+                # Print an error if the base character does not exist and skip the image.
+                self.stderr.write(self.style.ERROR(f"Base character {name} does not exist. Skipping introduction character image."))
+                continue
+            except IntroductionCharacter.DoesNotExist:
+                introduction_character = IntroductionCharacter(base_character=base_character, name=name)
+                introduction_character.image.save(name_with_extension, File(open(image_path, "rb")))
+                introduction_character.save()
+                created = True
+
+            if created:
+                self.stdout.write(self.style.SUCCESS(f"Created introduction character image: {introduction_character.name}"))
+            else:
+                self.stdout.write(self.style.WARNING(f"Introduction character image already exists: {introduction_character.name}"))
+        self.stdout.write(self.style.SUCCESS("All introduction character images created."))
 
     def create_exercises(self, base_path: str) -> None:
         """

@@ -4,7 +4,7 @@ import 'package:playfit/services/auth_service.dart';
 import 'package:playfit/authentification/registration_step1.dart';
 import 'package:playfit/authentification/registration_step2.dart';
 import 'package:playfit/authentification/registration_step3.dart';
-import 'package:playfit/home_page.dart';
+import 'package:playfit/authentification/introduction_page.dart';
 import 'package:playfit/authentification/login_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -30,6 +30,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   bool isConsentGiven = false;
   bool isMarketingConsentGiven = false;
   String? selectedCharacter;
+  List<String>? introductionCharacters;
   final AuthService authService = AuthService();
   int _currentStep = 0;
   bool _isStep1Valid = false;
@@ -83,7 +84,9 @@ class CreateAccountPageState extends State<CreateAccountPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => HomePage(firstLogin: true)),
+            builder: (context) => IntroductionPage(
+              images: introductionCharacters ?? [],
+            )),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -209,9 +212,10 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                       Form(
                         key: _step3FormKey,
                         child: RegistrationStep3(
-                          onPageChanged: (value) {
+                          onPageChanged: (character, introductionCharacters) {
                             setState(() {
-                              selectedCharacter = value;
+                              selectedCharacter = character;
+                              this.introductionCharacters = introductionCharacters;
                             });
                           },
                         ),

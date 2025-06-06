@@ -140,17 +140,9 @@ class _AdventurePageState extends State<AdventurePage>
   List<Road> _createRoads(Map<String, dynamic> decorationImages, Size screenSize) {
     List<Road> roads = [];
     combinedPath = Path();
-
-    debugPrint('Screen size: ${screenSize.width} x ${screenSize.height}');
-    double referenceScreenHeight = 798;
-    double referenceScreenWidth = 411;
     double height = screenSize.height * nbCities +
         (screenSize.height * 0.5 * (nbCities - 1));
     double startY = height;
-    Offset scale = Offset(
-      screenSize.width / referenceScreenWidth,
-      screenSize.height / referenceScreenHeight,
-    );
     int cityIndex = 0;
 
     for (int i = 0; i < nbCities + (nbCities - 1); i++) {
@@ -160,7 +152,6 @@ class _AdventurePageState extends State<AdventurePage>
         road = CityRoad(
           startY: startY,
           screenSize: screenSize,
-          scale: scale,
           decorationImages: decorationImages,
           cityIndex: cityIndex,
         );
@@ -169,7 +160,6 @@ class _AdventurePageState extends State<AdventurePage>
         road = TransitionRoad(
           startY: startY,
           screenSize: screenSize,
-          scale: scale,
           decorationImages: decorationImages,
           cityIndex: i,
         );
@@ -230,13 +220,10 @@ class _AdventurePageState extends State<AdventurePage>
         final worldPositions = snapshot.data![1] as List<dynamic>;
 
         nbCities = images['country'].length;
-        // double referenceScreenHeight = 798;
         double height = screenSize.height * nbCities +
             (screenSize.height * 0.5 * (nbCities - 1));
 
         final roads = _createRoads(images, screenSize);
-
-        debugPrint(MediaQuery.of(context).size.toString());
 
         checkpoints = roads
             .map((road) => road.getCheckpoints().map((c) => c.position))
@@ -246,22 +233,6 @@ class _AdventurePageState extends State<AdventurePage>
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _scrollToCharacter(worldPositions);
         });
-
-        // return SingleChildScrollView(
-        //   controller: _scrollController,
-        //   reverse: true,
-        //   child: Stack(
-        //     children: [
-        //       SizedBox(
-        //         height: height,
-        //         child: CustomPaint(
-        //           size: Size(screenSize.width, height),
-        //           painter: _RoadPainter(roads),
-        //         ),
-        //       )
-        //     ],
-        //   ),
-        // );
 
         return Scaffold(
           body: SingleChildScrollView(

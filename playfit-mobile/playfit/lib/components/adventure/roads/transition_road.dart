@@ -11,7 +11,6 @@ class TransitionRoad extends Road {
   TransitionRoad({
     required super.startY,
     required super.screenSize,
-    required super.scale,
     required super.decorationImages,
     required super.cityIndex,
   }) {
@@ -25,52 +24,56 @@ class TransitionRoad extends Road {
   @override
   void setDecorations() {
     final ui.Image treeImage = decorationImages['tree'];
-    const Size treeSize = Size(79, 118);
+    Size scale = Size(
+      screenSize.width / 411,
+      screenSize.height / 798,
+    );
+    Size treeSize = Size(79 * scale.width, 118 * scale.height);
 
     decorations = [
       dec.Decoration(
         image: treeImage,
-        position: Offset(100 * scale.dx, startY + 225 * scale.dy),
+        position: Offset(100 * scale.width, startY + 225 * scale.height),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(70 * scale.dx, startY + 225 * scale.dy),
+        position: Offset(70 * scale.width, startY + 225 * scale.height),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(80 * scale.dx, startY + 240 * scale.dy),
+        position: Offset(80 * scale.width, startY + 240 * scale.height),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(80 * scale.dx, startY - 20 * scale.dy),
+        position: Offset(80 * scale.width, startY - 20 * scale.height),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(50 * scale.dx, startY - 20 * scale.dy),
+        position: Offset(50 * scale.width, startY - 20 * scale.height),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(60 * scale.dx, startY - 20 * scale.dy),
+        position: Offset(60 * scale.width, startY - 20 * scale.height),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(300 * scale.dx, startY + 100 * scale.dy),
+        position: Offset(300 * scale.width, startY + 100 * scale.height),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(240 * scale.dx, startY + 100 * scale.dy),
+        position: Offset(240 * scale.width, startY + 100 * scale.height),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(270 * scale.dx, startY + 120 * scale.dy),
+        position: Offset(270 * scale.width, startY + 120 * scale.height),
         size: treeSize,
       ),
     ];
@@ -79,27 +82,25 @@ class TransitionRoad extends Road {
   void buildBrownPath() {
     final brownPath = Path();
 
-    // OffsetX based on 22 / 411 ≈ 0.0535
     double offsetX = screenSize.width * 0.0535;
     double endY =
-        (startY - (screenSize.height * 0.5) * scale.dy).roundToDouble();
+        (startY - (screenSize.height * 0.5)).roundToDouble();
 
     // Helpers for relative positioning
     double px(double originalX) =>
         screenSize.width *
-        ((originalX / 411) + (offsetX / screenSize.width)) *
-        scale.dx;
+        ((originalX / 411) + (offsetX / screenSize.width));
     double py(double originalY) =>
-        screenSize.height * (originalY / 798) * scale.dy + endY;
+        screenSize.height * (originalY / 798) + endY;
 
     brownPath.moveTo(
       px(171.077),
-      startY + (1 * scale.dy),
+      startY + (1),
     );
 
     brownPath.lineTo(
       px(171.077),
-      startY - (20 * scale.dy),
+      startY - (20),
     );
 
     brownPath.cubicTo(
@@ -131,7 +132,7 @@ class TransitionRoad extends Road {
 
     brownPath.lineTo(
       px(259.577),
-      endY - (4 * scale.dy),
+      endY - (4),
     );
 
     paths.add(brownPath);
@@ -140,27 +141,25 @@ class TransitionRoad extends Road {
   void buildWhitePath() {
     final whitePath = Path();
 
-    // 22 * 2 = 44 → 44 / 411 ≈ 0.1071
     double offsetX = screenSize.width * 0.1071;
     double endY =
-        (startY - (screenSize.height * 0.5) * scale.dy).roundToDouble();
+        (startY - (screenSize.height * 0.5)).roundToDouble();
 
     // Helper functions
     double px(double originalX) =>
         screenSize.width *
-        ((originalX / 411) + (offsetX / screenSize.width)) *
-        scale.dx;
+        ((originalX / 411) + (offsetX / screenSize.width));
     double py(double originalY) =>
-        screenSize.height * (originalY / 798) * scale.dy + endY;
+        screenSize.height * (originalY / 798) + endY;
 
     whitePath.moveTo(
       px(147.077),
-      startY + (1 * scale.dy),
+      startY + (1),
     );
 
     whitePath.lineTo(
       px(147.077),
-      startY - (20 * scale.dy),
+      startY - (20),
     );
 
     whitePath.cubicTo(
@@ -201,9 +200,9 @@ class TransitionRoad extends Road {
       double distance = 0.0;
       while (distance < pathMetric.length) {
         Path dashPath =
-            pathMetric.extractPath(distance, distance + 10 * scale.dx);
+            pathMetric.extractPath(distance, distance + 10);
         canvas.drawPath(dashPath, paint);
-        distance += 20 * scale.dx;
+        distance += 20;
       }
     }
   }
@@ -211,7 +210,7 @@ class TransitionRoad extends Road {
   void drawBrownPath(Canvas canvas) {
     final brownPaint = Paint()
       ..color = const Color(0XFFDCB78D)
-      ..strokeWidth = 50 * scale.dx
+      ..strokeWidth = 50
       ..style = PaintingStyle.stroke;
 
     canvas.drawPath(paths[0], brownPaint);
@@ -220,7 +219,7 @@ class TransitionRoad extends Road {
   void drawWhitePath(Canvas canvas) {
     final whitePaint = Paint()
       ..color = Colors.white
-      ..strokeWidth = 3 * scale.dx
+      ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 
     drawDashedPath(canvas, paths[1], whitePaint);
@@ -237,9 +236,9 @@ class TransitionRoad extends Road {
 
     // 404 / 798 ≈ 0.5063 → 50.63% of screen height
     final double left = 0;
-    final double top = oldStartY - (screenSize.height * 0.5063 * scale.dy);
+    final double top = oldStartY - (screenSize.height * 0.5063);
     final double right =
-        screenSize.width * scale.dx; // full width (411 / 411 = 1)
+        screenSize.width; // full width (411 / 411 = 1)
     final double bottom = oldStartY;
 
     canvas.drawRect(
@@ -266,7 +265,6 @@ class TransitionRoad extends Road {
     for (Checkpoint checkpoint in checkpoints) {
       checkpoint.render(
         canvas,
-        scale,
         dropShadowPaint,
         checkpointPaint,
         innerShadowPaint,

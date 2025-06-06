@@ -137,20 +137,15 @@ class _AdventurePageState extends State<AdventurePage>
     }
   }
 
-  List<Road> _createRoads(Map<String, dynamic> decorationImages) {
+  List<Road> _createRoads(Map<String, dynamic> decorationImages, Size screenSize) {
     List<Road> roads = [];
     combinedPath = Path();
 
-    Size screenSize = MediaQueryData.fromView(
-            WidgetsBinding.instance.platformDispatcher.views.first)
-        .size;
     debugPrint('Screen size: ${screenSize.width} x ${screenSize.height}');
     double referenceScreenHeight = 798;
     double referenceScreenWidth = 411;
-
     double height = screenSize.height * nbCities +
-        (screenSize.height * 0.5 * (nbCities - 1)) +
-        screenSize.height * 0.3;
+        (screenSize.height * 0.5 * (nbCities - 1));
     double startY = height;
     Offset scale = Offset(
       screenSize.width / referenceScreenWidth,
@@ -223,14 +218,13 @@ class _AdventurePageState extends State<AdventurePage>
 
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
-
     return FutureBuilder(
       future: _loadPositionsAndImages(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
+        Size screenSize = MediaQuery.of(context).size;
         final String serverBaseUrl = dotenv.env['SERVER_BASE_URL']!;
         final images = snapshot.data![0] as Map<String, dynamic>;
         final worldPositions = snapshot.data![1] as List<dynamic>;
@@ -238,10 +232,11 @@ class _AdventurePageState extends State<AdventurePage>
         nbCities = images['country'].length;
         // double referenceScreenHeight = 798;
         double height = screenSize.height * nbCities +
-            (screenSize.height * 0.5 * (nbCities - 1)) +
-            screenSize.height * 0.3;
+            (screenSize.height * 0.5 * (nbCities - 1));
 
-        final roads = _createRoads(images);
+        final roads = _createRoads(images, screenSize);
+
+        debugPrint(MediaQuery.of(context).size.toString());
 
         checkpoints = roads
             .map((road) => road.getCheckpoints().map((c) => c.position))
@@ -251,6 +246,22 @@ class _AdventurePageState extends State<AdventurePage>
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _scrollToCharacter(worldPositions);
         });
+
+        // return SingleChildScrollView(
+        //   controller: _scrollController,
+        //   reverse: true,
+        //   child: Stack(
+        //     children: [
+        //       SizedBox(
+        //         height: height,
+        //         child: CustomPaint(
+        //           size: Size(screenSize.width, height),
+        //           painter: _RoadPainter(roads),
+        //         ),
+        //       )
+        //     ],
+        //   ),
+        // );
 
         return Scaffold(
           body: SingleChildScrollView(

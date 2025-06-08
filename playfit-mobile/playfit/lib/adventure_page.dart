@@ -13,12 +13,12 @@ import 'package:playfit/utils/image.dart';
 
 class AdventurePage extends StatefulWidget {
   final bool moveCharacter;
-  final String? completedDifficulty;
+  // final String? completedDifficulty;
 
   const AdventurePage({
     super.key,
     this.moveCharacter = false,
-    this.completedDifficulty,
+    // this.completedDifficulty,
   });
 
   @override
@@ -40,47 +40,27 @@ class _AdventurePageState extends State<AdventurePage>
   @override
   void initState() {
     super.initState();
-    if (widget.moveCharacter) {
-      completeWorkoutSession();
-    }
+    // if (widget.moveCharacter) {
+    //   completeWorkoutSession();
+    // }
   }
 
-  Future<void> _fetchUserProgress() async {
-    const storage = FlutterSecureStorage();
-    String? token = await storage.read(key: 'token');
-    String url = "${dotenv.env['SERVER_BASE_URL']}/api/auth/get_my_progress/";
+  // void completeWorkoutSession() async {
+  //   final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/workout';
+  //   final String? token = await storage.read(key: 'token');
 
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': "Token $token",
-      },
-    );
+  //   final response = await http
+  //       .patch(Uri.parse('$baseUrl/update_workout_session/'), headers: {
+  //     'Authorization': 'Token $token',
+  //   }, body: {
+  //     'difficulty': widget.completedDifficulty!,
+  //   });
 
-    if (response.statusCode == 200) {
-    } else {
-      throw Exception('Failed to load user progress');
-    }
-  }
-
-  void completeWorkoutSession() async {
-    final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/workout';
-    final String? token = await storage.read(key: 'token');
-
-    final response = await http
-        .patch(Uri.parse('$baseUrl/update_workout_session/'), headers: {
-      'Authorization': 'Token $token',
-    }, body: {
-      'difficulty': widget.completedDifficulty!,
-    });
-
-    if (response.statusCode == 200) {
-    } else {
-      print("Can't update workout session");
-    }
-    _fetchUserProgress();
-  }
+  //   if (response.statusCode == 200) {
+  //   } else {
+  //     print("Can't update workout session");
+  //   }
+  // }
 
   void _scrollToCharacter(List<dynamic> worldPositions) {
     if (checkpoints.isNotEmpty && worldPositions.isNotEmpty) {

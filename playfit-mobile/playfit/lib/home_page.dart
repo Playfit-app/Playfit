@@ -13,14 +13,14 @@ import 'components/top_bar.dart';
 
 class HomePage extends StatefulWidget {
   final bool firstLogin;
-  final bool workoutDone;
-  final String? completedDifficulty;
+  // final bool workoutDone;
+  // final String? completedDifficulty;
 
   HomePage({
     super.key,
     this.firstLogin = false,
-    this.workoutDone = false,
-    this.completedDifficulty,
+    // this.workoutDone = false,
+    // this.completedDifficulty,
   });
 
   @override
@@ -64,16 +64,16 @@ class _HomePageState extends State<HomePage> {
     currentStreak = 0;
     _userProgressFuture = _fetchUserProgress();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.workoutDone) {
-        refreshStreakAfterWorkout();
-      }
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   if (widget.workoutDone) {
+    //     refreshStreakAfterWorkout();
+    //   }
+    // });
 
     _pages = [
       AdventurePage(
-        moveCharacter: widget.workoutDone,
-        completedDifficulty: widget.completedDifficulty,
+        // moveCharacter: widget.workoutDone,
+        // completedDifficulty: widget.completedDifficulty,
       ),
       const MissionsPage(),
       const BoutiquePage(),
@@ -90,10 +90,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> refreshStreakAfterWorkout() async {
-    await Future.delayed(const Duration(seconds: 2));
-    await _fetchUserProgress();
-  }
+  // Future<void> refreshStreakAfterWorkout() async {
+  //   await Future.delayed(const Duration(seconds: 2));
+  //   await _fetchUserProgress();
+  // }
 
   void _onItemTapped(int index) {
     setState(() {

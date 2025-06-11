@@ -79,6 +79,8 @@ class TransitionRoad extends Road {
     ];
   }
 
+  /// Builds and adds a brown path to the `paths` list using relative positioning
+  /// based on the provided `screenSize` and `startY`.
   void buildBrownPath() {
     final brownPath = Path();
 
@@ -138,6 +140,8 @@ class TransitionRoad extends Road {
     paths.add(brownPath);
   }
 
+  /// Builds a white path using a series of cubic Bézier curves and lines,
+  /// scaled and positioned relative to the current screen size and a starting Y coordinate.
   void buildWhitePath() {
     final whitePath = Path();
 
@@ -194,6 +198,7 @@ class TransitionRoad extends Road {
     paths.add(whitePath);
   }
 
+  /// Draws a dashed path on the given [canvas] using the specified [path] and [paint].
   void drawDashedPath(Canvas canvas, Path path, Paint paint) {
     ui.PathMetrics pathMetrics = path.computeMetrics();
     for (ui.PathMetric pathMetric in pathMetrics) {

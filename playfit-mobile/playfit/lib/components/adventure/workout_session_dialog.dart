@@ -22,6 +22,18 @@ class WorkoutSessionDialog extends StatefulWidget {
   State<WorkoutSessionDialog> createState() => _WorkoutSessionDialogState();
 }
 
+/// State class for the [WorkoutSessionDialog] widget.
+///
+/// This state manages the UI and logic for displaying a workout session dialog,
+/// allowing users to select a workout difficulty and start a session.
+///
+/// Features:
+/// - Displays a dialog with a close button, a centered title, a custom tab menu for difficulty selection,
+///   and a start button.
+/// - The selected difficulty is managed by the [difficulty] state variable and updated via the [CustomTabBar].
+/// - On pressing the start button, navigates to the [CameraView] screen, passing the selected difficulty
+///   and other relevant session data.
+
 class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
   String difficulty = 'beginner';
 

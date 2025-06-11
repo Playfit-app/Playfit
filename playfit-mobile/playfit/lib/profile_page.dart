@@ -32,11 +32,11 @@ class _ProfilePageState extends State<ProfilePage> {
   late Future<Map<String, dynamic>> _futureUserData;
 
   /// Formats the date from the API to a more readable format.
-  /// 
+  ///
   /// For example, "2023-10-01T00:00:00Z" becomes "October 2023".
-  /// 
+  ///
   /// `rawDate` The date string from the API.
-  /// 
+  ///
   /// Return a formatted date string.
   String _formatDate(String rawDate) {
     final DateTime dateTime = DateTime.parse(rawDate);
@@ -45,10 +45,10 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   /// Fetches user data from the API.
-  /// 
+  ///
   /// If `widget.userId` is provided, it fetches data for that user.
   /// If not, it fetches data for the current user ('me').
-  /// 
+  ///
   /// Return a Future that resolves to a Map containing user data.
   Future<Map<String, dynamic>> fetchUserData() async {
     final String userId =
@@ -73,7 +73,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   /// Follows the user with the given `widget.userId`.
-  /// 
+  ///
   /// Updates the state to reflect that the user is now followed,
   /// and increments the follower count.
   void _follow() async {
@@ -146,7 +146,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     /// Builds the profile page UI using a FutureBuilder to fetch user data.
-    /// 
+    ///
     /// Displays a loading indicator while fetching data,
     /// and once data is available, it constructs the profile layout.
     return FutureBuilder(

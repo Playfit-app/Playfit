@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
   /// Fetches the user's progress from the server.
   /// This method retrieves the current streak of the user
   /// and updates the state accordingly.
-  /// 
+  ///
   /// Returns a [Future] that completes when the data is fetched.
   Future<void> _fetchUserProgress() async {
     const storage = FlutterSecureStorage();
@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> {
   /// Handles the tap event on the bottom navigation bar items.
   /// This method updates the current index of the selected page
   /// and triggers a rebuild of the widget to display the selected page.
-  /// 
+  ///
   /// `index` is the index of the tapped item in the bottom navigation bar.
   void _onItemTapped(int index) {
     setState(() {
@@ -196,10 +196,10 @@ class _HomePageState extends State<HomePage> {
   /// Builds a BottomNavigationBarItem with the specified icon and index.
   /// This method checks if the item is selected based on the current index
   /// and applies a background color if it is selected.
-  /// 
+  ///
   /// `icon` is the icon to be displayed in the navigation bar item.
   /// `index` is the index of the item in the navigation bar.
-  /// 
+  ///
   /// Returns a [BottomNavigationBarItem] that can be used in the BottomNavigationBar.
   BottomNavigationBarItem _buildNavBarItem(IconData icon, int index) {
     bool isSelected = _currentIndex == index;

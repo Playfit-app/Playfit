@@ -25,9 +25,9 @@ class _SearchUsersPageState extends State<SearchUsersPage> {
   /// It sends a GET request to the server with the search query and updates the state with the results.
   /// If the response is successful, it updates the results list.
   /// If the response fails, it clears the results list and stops the loading indicator.
-  /// 
+  ///
   /// `query` is the search term entered by the user.
-  /// 
+  ///
   /// Returns a [Future] that completes when the search is done.
   Future<void> _searchUsers(String query) async {
     setState(() => _loading = true);

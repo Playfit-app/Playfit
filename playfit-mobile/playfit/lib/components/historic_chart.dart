@@ -26,11 +26,11 @@ class HistoricChartState extends State<HistoricChart> {
   final rightColor = const Color(0XFFFF0000);
 
   /// Normalizes the right axis values to the left axis values.
-  /// 
+  ///
   /// This method takes a value from the right axis and scales it to fit within the range of the left axis.
-  /// 
+  ///
   /// `y` is the value from the right axis to be normalized.
-  /// 
+  ///
   /// Returns a [double] representing the normalized value on the left axis.
   double normalizeRightAxis(double y) {
     return ((y - minYRight) / (maxYRight - minYRight)) * (maxYLeft - minYLeft) +
@@ -38,11 +38,11 @@ class HistoricChartState extends State<HistoricChart> {
   }
 
   /// Denormalizes the right axis values to the original right axis values.
-  /// 
+  ///
   /// This method takes a normalized value from the left axis and scales it back to the original range of the right axis.
-  /// 
+  ///
   /// `y` is the normalized value on the left axis to be denormalized.
-  /// 
+  ///
   /// Returns a [double] representing the denormalized value on the right axis.
   double denormalizeRightAxis(double y) {
     return ((y - minYLeft) / (maxYLeft - minYLeft)) * (maxYRight - minYRight) +

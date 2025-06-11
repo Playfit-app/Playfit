@@ -31,7 +31,7 @@ class _CustomizationPageState extends State<CustomizationPage> {
   /// Fetches the character images from the server.
   /// This method retrieves the images of characters and their variations
   /// and returns them as a map.
-  /// 
+  ///
   /// Returns a [Future] that completes with a map of character images.
   Future<Map<String, dynamic>> fetchImages() async {
     final String url =
@@ -56,9 +56,9 @@ class _CustomizationPageState extends State<CustomizationPage> {
   /// This method iterates through the data map,
   /// retrieves the white list of images for each character,
   /// and constructs a list of image URLs.
-  /// 
+  ///
   /// `data` is a map containing character information.
-  /// 
+  ///
   /// Returns a list of image URLs for the characters.
   List<String> _getCharacterImages(Map<String, dynamic> data) {
     final characterImages = <String>[];
@@ -79,9 +79,9 @@ class _CustomizationPageState extends State<CustomizationPage> {
   /// Updates the customization by sending a PATCH request to the server.
   /// This method updates the base character image
   /// with the provided image URL.
-  /// 
+  ///
   /// `image` is the URL of the base character image to be updated.
-  /// 
+  ///
   /// Returns a [Future] that completes when the update is done.
   Future<void> updateCustomization(String image) async {
     final String url =
@@ -106,10 +106,10 @@ class _CustomizationPageState extends State<CustomizationPage> {
   /// Retrieves skin tone images for a specific character.
   /// This method extracts the skin tone images from the provided data
   /// for the specified character.
-  /// 
+  ///
   /// `data` is a map containing character information.
   /// `character` is the key for the character whose skin tone images are to be retrieved.
-  /// 
+  ///
   /// Returns a list of skin tone image URLs for the specified character.
   List<String> _getSkinToneImages(Map<String, dynamic> data, String character) {
     final skinToneImages = <String>[];
@@ -127,11 +127,11 @@ class _CustomizationPageState extends State<CustomizationPage> {
   /// Retrieves outfit images for a specific character and skin tone.
   /// This method extracts the outfit images from the provided data
   /// for the specified character and skin tone.
-  /// 
+  ///
   /// `data` is a map containing character information.
   /// `character` is the key for the character whose outfit images are to be retrieved.
   /// `skinTone` is the index of the skin tone to be used for filtering outfits.
-  /// 
+  ///
   /// Returns a list of outfit image URLs for the specified character and skin tone.
   List<String> _getOutfitImages(
       Map<String, dynamic> data, String character, int skinTone) {
@@ -152,9 +152,9 @@ class _CustomizationPageState extends State<CustomizationPage> {
   /// Extracts the basic character identifier from an image URL.
   /// This method uses a regular expression to find the character identifier
   /// in the image URL.
-  /// 
+  ///
   /// `imageUrl` is the URL of the image from which to extract the character identifier.
-  /// 
+  ///
   /// Returns the basic character identifier as a string.
   String _getBasicCharacterFromImageUrl(String imageUrl) {
     final match = RegExp(r'character(\d+)').firstMatch(imageUrl);
@@ -168,9 +168,9 @@ class _CustomizationPageState extends State<CustomizationPage> {
   /// Retrieves the selected character based on the current selections.
   /// This method combines the selected character, skin tone, and outfit
   /// to construct the final character identifier.
-  /// 
+  ///
   /// `data` is a map containing character information.
-  /// 
+  ///
   /// Returns the selected character identifier as a string.
   String _getSelectedCharacter(Map<String, dynamic> data) {
     final characterImages = _getCharacterImages(data);
@@ -321,9 +321,9 @@ class _CustomizationPageState extends State<CustomizationPage> {
   /// Builds the content for the current step in the customization process.
   /// This method returns a widget that displays the appropriate content
   /// based on the current step of the customization.
-  /// 
+  ///
   /// `data` is a map containing character information.
-  /// 
+  ///
   /// Returns a [Widget] that represents the content for the current step.
   Widget _buildStepContent(Map<String, dynamic> data) {
     final List<String> basicCharacterImages = _getCharacterImages(data);

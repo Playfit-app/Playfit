@@ -58,9 +58,9 @@ class _CameraViewState extends State<CameraView> {
   /// Converts a workout name to a [WorkoutType].
   /// This method maps the name of the workout to its corresponding enum value.
   /// Throws an exception if the name is not recognized.
-  /// 
+  ///
   /// `name` is the name of the workout as a string.
-  /// 
+  ///
   /// Returns a [WorkoutType] corresponding to the name.
   WorkoutType workoutTypeFromName(String name) {
     switch (name.toLowerCase().replaceAll('-', '')) {
@@ -109,10 +109,10 @@ class _CameraViewState extends State<CameraView> {
 
   /// Configures the Text-to-Speech (TTS) settings.
   /// This method sets the language, pitch, and speech rate for the TTS engine.
-  /// 
+  ///
   /// It reads the selected locale from secure storage and applies it.
   /// If no locale is found, it defaults to French (fr-FR).
-  /// 
+  ///
   /// Returns a [Future] that completes when the configuration is done.
   Future<void> _configureTts() async {
     final storage = const FlutterSecureStorage();
@@ -130,7 +130,7 @@ class _CameraViewState extends State<CameraView> {
   /// Announces the current count or target count using Text-to-Speech (TTS).
   /// This method stops any ongoing speech and speaks the current count.
   /// If the count matches the target count, it announces a congratulatory message.
-  /// 
+  ///
   /// Returns a [Future] that completes when the speech is done.
   Future<void> _announceCount() async {
     await flutterTts.stop();
@@ -144,7 +144,7 @@ class _CameraViewState extends State<CameraView> {
   /// Starts a timer that updates the elapsed time every second.
   /// This method also checks if the target count has been reached
   /// and sets a flag to show the celebration overlay.
-  /// 
+  ///
   /// Returns a [void] that completes when the timer is started.
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -161,10 +161,10 @@ class _CameraViewState extends State<CameraView> {
   /// Initializes the camera and sets up the camera controller.
   /// This method retrieves the available cameras, selects the front camera,
   /// and initializes the camera controller with a high resolution preset.
-  /// 
+  ///
   /// It also sets up a listener for workout counts to update the count
   /// and trigger the celebration overlay when the target count is reached.
-  /// 
+  ///
   /// Returns a [Future] that completes when the camera is initialized.
   Future<void> initCamera() async {
     final cameras = await availableCameras();
@@ -202,7 +202,7 @@ class _CameraViewState extends State<CameraView> {
   /// Starts the workout detection process.
   /// This method checks if the camera controller is initialized and not already streaming images.
   /// If the conditions are met, it starts the image stream and begins detecting workouts.
-  /// 
+  ///
   /// Returns a [void] that completes when the detection starts.
   void _startDetecting() async {
     if (_controller != null) {
@@ -236,7 +236,7 @@ class _CameraViewState extends State<CameraView> {
   /// If so, it cancels the timer, stops the image stream,
   /// and sets a flag to show the celebration overlay.
   /// It also starts a countdown timer that updates the UI every second.
-  /// 
+  ///
   /// Returns a [void] that completes when the detection is stopped.
   void _stopDetecting() async {
     if (_controller != null && _controller!.value.isStreamingImages) {
@@ -260,7 +260,7 @@ class _CameraViewState extends State<CameraView> {
   /// Navigates to the WorkoutProgressionPage with the current exercise index and difficulty.
   /// This method creates a new route and passes the necessary parameters,
   /// including the difficulty level, images, starting point, and character images.
-  /// 
+  ///
   /// Returns a [void] that completes when the navigation is done.
   void _goToProgressionPage() {
     final Difficulty difficulty = widget.difficulty == "beginner"

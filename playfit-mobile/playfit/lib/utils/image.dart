@@ -10,9 +10,9 @@ class UIImageCacheManager {
 
   /// Loads an image from the assets or network and caches it.
   /// If the image is already cached, it returns the cached image.
-  /// 
+  ///
   /// `imagePath` is the path to the image in assets or a URL for network images.
-  /// 
+  ///
   /// Returns a [Future] that completes with the loaded [ui.Image].
   Future<ui.Image> loadImageFromAssets(String imagePath) async {
     if (_imageCache.containsKey(imagePath)) return _imageCache[imagePath]!;
@@ -29,9 +29,9 @@ class UIImageCacheManager {
 
   /// Loads an image from the network and caches it.
   /// If the image is already cached, it returns the cached image.
-  /// 
+  ///
   /// `imageUrl` is the URL of the image to be loaded.
-  /// 
+  ///
   /// Returns a [Future] that completes with the loaded [ui.Image].
   Future<ui.Image> loadImageFromNetwork(String imageUrl) async {
     if (_imageCache.containsKey(imageUrl)) return _imageCache[imageUrl]!;
@@ -50,7 +50,7 @@ class UIImageCacheManager {
   /// Loads an image from either assets or network based on the provided path.
   ///
   /// `image` is the path to the image in assets or a URL for network images.
-  /// 
+  ///
   /// Returns a [Future] that completes with the loaded [ui.Image].
   Future<ui.Image> loadImage(String image) async {
     if (image.startsWith('http')) {

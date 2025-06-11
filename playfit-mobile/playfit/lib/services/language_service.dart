@@ -7,18 +7,18 @@ class LanguageService {
 
   /// Saves the selected locale to secure storage.
   /// This method stores the language tag of the provided [AppLocale].
-  /// 
+  ///
   /// `locale` is the [AppLocale] to be saved.
-  /// 
+  ///
   /// Returns a [Future] that completes when the locale is saved.
   static Future<void> saveLocale(AppLocale locale) async {
     await _storage.write(key: _key, value: locale.languageTag);
   }
 
   /// Loads the saved locale from secure storage.
-  /// 
+  ///
   /// This method retrieves the language tag from storage and parses it into an [AppLocale].
-  /// 
+  ///
   /// Returns a [Future] that completes with the [AppLocale] if found, or null if not.
   static Future<AppLocale?> loadLocale() async {
     final tag = await _storage.read(key: _key);

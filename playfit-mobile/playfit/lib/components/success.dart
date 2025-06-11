@@ -21,7 +21,7 @@ class Success extends StatelessWidget {
   });
 
   /// Formats the awarded date from the ISO 8601 string to a more readable format.
-  /// 
+  ///
   /// This method checks if the `awardedAt` string is not null,
   /// parses it into a DateTime object, and then formats it as "day/month/year".
   String get _formattedDate {
@@ -33,10 +33,10 @@ class Success extends StatelessWidget {
   }
 
   /// Displays a success popup dialog with the details of the achievement.
-  /// 
+  ///
   /// This method shows a dialog containing the achievement's image, title, description,
   /// current progress, target, and awarded date if available.
-  /// 
+  ///
   /// `context` is the BuildContext used to show the dialog.
   void _showSuccessPopup(BuildContext context) {
     showGeneralDialog(

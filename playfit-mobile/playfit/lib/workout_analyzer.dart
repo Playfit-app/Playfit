@@ -34,10 +34,10 @@ class WorkoutAnalyzer {
   Map<PoseLandmarkType, PoseLandmark> _lastLandmarks = {};
 
   /// Detects the workout type based on the input image and updates the workout counts
-  /// 
+  ///
   /// `inputImage` is the image to be processed for pose detection.
   /// `workout` is the type of workout to be detected.
-  /// 
+  ///
   /// Returns a [Future] that completes when the detection is done.
   /// If the pose detection fails or no poses are detected, it will return without updating the counts.
   /// If a workout is detected, it will update the counts and reset the status for that workout type.
@@ -72,9 +72,9 @@ class WorkoutAnalyzer {
   }
 
   /// Detects the squat workout based on the pose landmarks
-  /// 
+  ///
   /// `pose` is the detected pose containing landmarks of the body.
-  /// 
+  ///
   /// Returns nothing.
   void detectSquat(Pose pose) {
     final leftHip = pose.landmarks[PoseLandmarkType.leftHip];
@@ -115,9 +115,9 @@ class WorkoutAnalyzer {
   }
 
   /// Detects the jumping jack workout based on the pose landmarks
-  /// 
+  ///
   /// `pose` is the detected pose containing landmarks of the body.
-  /// 
+  ///
   /// Returns nothing.
   void detectJumpingJack(Pose pose) {
     final leftShoulder = pose.landmarks[PoseLandmarkType.leftShoulder];
@@ -162,9 +162,9 @@ class WorkoutAnalyzer {
   }
 
   /// Detects the push-up workout based on the pose landmarks
-  /// 
+  ///
   /// `pose` is the detected pose containing landmarks of the body.
-  /// 
+  ///
   /// Returns nothing.
   void detectPushUp(Pose pose) {
     final leftWrist = pose.landmarks[PoseLandmarkType.leftWrist];
@@ -209,9 +209,9 @@ class WorkoutAnalyzer {
   }
 
   /// Detects the pull-up workout based on the pose landmarks
-  /// 
+  ///
   /// `pose` is the detected pose containing landmarks of the body.
-  /// 
+  ///
   /// Returns nothing.
   void detectPullUp(Pose pose) {
     final leftWrist = pose.landmarks[PoseLandmarkType.leftWrist];
@@ -264,9 +264,9 @@ class WorkoutAnalyzer {
   }
 
   /// Calculates the angle between three points (landmarks)
-  /// 
+  ///
   /// `a`, `b`, and `c` are the three points representing the landmarks.
-  /// 
+  ///
   /// Returns the angle in degrees between the vectors formed by these points.
   double calculateAngle(PoseLandmark a, PoseLandmark b, PoseLandmark c) {
     final aPoint = Offset(a.x, a.y);
@@ -289,9 +289,9 @@ class WorkoutAnalyzer {
   }
 
   /// Increments the count for the specified workout type
-  /// 
+  ///
   /// `workoutType` is the type of workout for which the count should be incremented.
-  /// 
+  ///
   /// Returns nothing.
   void incrementWorkoutCount(WorkoutType workoutType) {
     workoutCounts.value = {
@@ -302,7 +302,7 @@ class WorkoutAnalyzer {
   }
 
   /// Closes the pose detector to release resources
-  /// 
+  ///
   /// Returns nothing.
   void dispose() {
     _poseDetector.close();

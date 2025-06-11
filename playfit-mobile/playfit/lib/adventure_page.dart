@@ -65,10 +65,10 @@ class _AdventurePageState extends State<AdventurePage>
   /// Scrolls to the character's position based on the current checkpoint.
   /// This method retrieves the world positions and animates the scroll
   /// to the character's position on the screen.
-  /// 
+  ///
   /// `worldPositions` is a list of positions that contains the current checkpoint
   /// for the character.
-  /// 
+  ///
   /// Throws an exception if there are no checkpoints or world positions available.
   void _scrollToCharacter(List<dynamic> worldPositions) {
     if (checkpoints.isNotEmpty && worldPositions.isNotEmpty) {
@@ -89,7 +89,7 @@ class _AdventurePageState extends State<AdventurePage>
   /// Fetches the world positions from the server.
   /// This method retrieves the current positions of characters in the world
   /// and calculates their current checkpoints based on their status and level.
-  /// 
+  ///
   /// Returns a [Future] that resolves to a list of world positions.
   Future<List<dynamic>> _getWorldPositions() async {
     final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/social';
@@ -134,9 +134,9 @@ class _AdventurePageState extends State<AdventurePage>
   /// Fetches decoration images for the specified country.
   /// This method retrieves images used for decorating the roads and cities
   /// based on the country specified in the world positions.
-  /// 
+  ///
   /// `country` is the country for which to fetch decoration images.
-  /// 
+  ///
   /// Returns a [Future] that resolves to a map of decoration images.
   Future<Map<String, dynamic>> _getDecorationImages(String country) async {
     final String url =
@@ -162,10 +162,10 @@ class _AdventurePageState extends State<AdventurePage>
   /// Creates a list of roads based on the number of cities and decoration images.
   /// This method generates a list of roads, each represented by a `Road` object,
   /// and combines their paths into a single `Path` object.
-  /// 
+  ///
   /// `decorationImages` is a map containing images used for decorating the roads.
   /// `screenSize` is the size of the screen, used to calculate the height of the roads.
-  /// 
+  ///
   /// Returns a list of `Road` objects representing the roads in the adventure.
   List<Road> _createRoads(Map<String, dynamic> decorationImages, Size screenSize) {
     List<Road> roads = [];
@@ -216,7 +216,7 @@ class _AdventurePageState extends State<AdventurePage>
   /// Loads the world positions and decoration images asynchronously.
   /// This method fetches the world positions from the server and retrieves
   /// the decoration images based on the country of the first position.
-  /// 
+  ///
   /// Returns a [Future] that resolves to a list containing the decoration images
   /// and the world positions.
   Future<List<dynamic>> _loadPositionsAndImages() async {
@@ -360,10 +360,10 @@ class _RoadPainter extends CustomPainter {
   _RoadPainter(this.roads);
 
   /// Draws a white gradient at the top of the canvas.
-  /// 
+  ///
   /// This method creates a gradient that fades from white to transparent,
   /// giving the effect of a white top gradient on the canvas.
-  /// 
+  ///
   /// `canvas` is the canvas on which to draw the gradient.
   /// `size` is the size of the canvas, used to determine the dimensions of the gradient.
   void drawWhiteTopGradient(Canvas canvas, Size size) {

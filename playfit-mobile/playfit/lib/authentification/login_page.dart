@@ -22,6 +22,9 @@ class _LoginPageState extends State<LoginPage> {
   bool _isGoogleSignInLoading = false;
   bool _isKeyboardVisible = false;
 
+  /// Initializes the state of the widget and sets up a post-frame callback to determine
+  /// if the keyboard is visible by checking the bottom inset of the current MediaQuery.
+  /// This is useful for adjusting the UI based on keyboard visibility.
   @override
   void initState() {
     super.initState();
@@ -30,6 +33,8 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
+  /// Hides the on-screen keyboard by removing focus from the current input field,
+  /// and updates the state to indicate that the keyboard is no longer visible.
   void _hideKeyboard() {
     FocusScope.of(context).unfocus();
 
@@ -38,6 +43,7 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
+  /// Handles the login process for the user.
   void _login() async {
     setState(() {
       _isGoogleSignInLoading = true;
@@ -91,6 +97,15 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  /// Builds the login page UI with a mascot image, background, and an animated login form.
+  ///
+  /// The layout consists of:
+  /// - A background image with a mascot aligned near the top.
+  /// - An animated form container that shifts position based on keyboard visibility.
+  /// - The form includes fields for username and password, with validation and clear buttons.
+  /// - Displays error messages if login fails.
+  /// - Provides a login button, a navigation button to the account creation page,
+  ///   and a Google sign-in option (Android only).
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;

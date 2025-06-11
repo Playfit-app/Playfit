@@ -20,7 +20,7 @@ class _CharacterCarouselState extends State<CharacterCarousel> {
 
   /// Navigates to a specific page in the carousel.
   /// This method updates the current page index and animates the transition to the specified page.
-  /// 
+  ///
   /// `index` is the page index to navigate to.
   void _goToPage(int index) {
     if (index >= 0 && index < widget.imageUrls.length) {

@@ -16,7 +16,7 @@ class NotificationProvider extends ChangeNotifier {
   /// Connects to the WebSocket server for notifications.
   /// This method initializes the WebSocket connection
   /// and listens for incoming messages.
-  /// 
+  ///
   /// `token` is the authentication token used for the WebSocket connection.
   void connect(String token) {
     if (_channel != null) return;
@@ -54,7 +54,7 @@ class NotificationProvider extends ChangeNotifier {
   }
 
   /// Marks a specific notification as read.
-  /// 
+  ///
   /// `notificationId` is the ID of the notification to be marked as read.
   void markAllAsRead() async {
     _unreadCount = 0;

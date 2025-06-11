@@ -40,7 +40,7 @@ class WorkoutProgressionPainter extends CustomPainter {
   /// Draws a white gradient at the top of the canvas.
   /// This gradient fades from white to transparent,
   /// creating a smooth transition effect at the top of the screen.
-  /// 
+  ///
   /// `canvas` is the canvas on which to draw the gradient.
   /// `size` is the size of the canvas, used to determine the dimensions of the gradient.
   void _drawWhiteTopGradient(Canvas canvas, Size size) {
@@ -60,7 +60,7 @@ class WorkoutProgressionPainter extends CustomPainter {
   /// Draws a background rectangle with a light blue color.
   /// This rectangle covers the entire canvas area,
   /// providing a base background for the painting.
-  /// 
+  ///
   /// `canvas` is the canvas on which to draw the background.
   /// `size` is the size of the canvas, used to determine the dimensions of the rectangle.
   void _drawBackground(Canvas canvas, Size size) {

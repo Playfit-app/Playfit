@@ -63,9 +63,9 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
   }
 
   /// Completes the workout session by sending a PATCH request to the server with the difficulty level.
-  /// 
+  ///
   /// `difficulty` is a string representing the difficulty level of the workout session.
-  /// 
+  ///
   /// Returns a [Future] that completes when the request is done.
   Future<void> completeWorkoutSession(String difficulty) async {
     final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/workout';
@@ -86,7 +86,7 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
 
   /// Handles the completion of the animation by checking if the user has reached the last exercise.
   /// If so, it completes the workout session and navigates to the home page.
-  /// 
+  ///
   /// If the user has not reached the last exercise, it navigates to the CameraView page
   /// with the appropriate parameters.
   void _onAnimationComplete() async {

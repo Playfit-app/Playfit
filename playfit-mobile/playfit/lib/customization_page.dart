@@ -28,6 +28,11 @@ class _CustomizationPageState extends State<CustomizationPage> {
   int _selectedSkinIndex = 0;
   int _selectedOutfitIndex = 0;
 
+  /// Fetches the character images from the server.
+  /// This method retrieves the images of characters and their variations
+  /// and returns them as a map.
+  /// 
+  /// Returns a [Future] that completes with a map of character images.
   Future<Map<String, dynamic>> fetchImages() async {
     final String url =
         '${dotenv.env['SERVER_BASE_URL']}/api/social/get-character-images/';
@@ -47,6 +52,14 @@ class _CustomizationPageState extends State<CustomizationPage> {
     }
   }
 
+  /// Extracts character images from the provided data.
+  /// This method iterates through the data map,
+  /// retrieves the white list of images for each character,
+  /// and constructs a list of image URLs.
+  /// 
+  /// `data` is a map containing character information.
+  /// 
+  /// Returns a list of image URLs for the characters.
   List<String> _getCharacterImages(Map<String, dynamic> data) {
     final characterImages = <String>[];
 
@@ -63,6 +76,13 @@ class _CustomizationPageState extends State<CustomizationPage> {
     return characterImages;
   }
 
+  /// Updates the customization by sending a PATCH request to the server.
+  /// This method updates the base character image
+  /// with the provided image URL.
+  /// 
+  /// `image` is the URL of the base character image to be updated.
+  /// 
+  /// Returns a [Future] that completes when the update is done.
   Future<void> updateCustomization(String image) async {
     final String url =
         '${dotenv.env['SERVER_BASE_URL']}/api/social/update-customization/';
@@ -83,6 +103,14 @@ class _CustomizationPageState extends State<CustomizationPage> {
     }
   }
 
+  /// Retrieves skin tone images for a specific character.
+  /// This method extracts the skin tone images from the provided data
+  /// for the specified character.
+  /// 
+  /// `data` is a map containing character information.
+  /// `character` is the key for the character whose skin tone images are to be retrieved.
+  /// 
+  /// Returns a list of skin tone image URLs for the specified character.
   List<String> _getSkinToneImages(Map<String, dynamic> data, String character) {
     final skinToneImages = <String>[];
     final characterData = data[character] as Map<String, dynamic>;
@@ -96,6 +124,15 @@ class _CustomizationPageState extends State<CustomizationPage> {
     return skinToneImages;
   }
 
+  /// Retrieves outfit images for a specific character and skin tone.
+  /// This method extracts the outfit images from the provided data
+  /// for the specified character and skin tone.
+  /// 
+  /// `data` is a map containing character information.
+  /// `character` is the key for the character whose outfit images are to be retrieved.
+  /// `skinTone` is the index of the skin tone to be used for filtering outfits.
+  /// 
+  /// Returns a list of outfit image URLs for the specified character and skin tone.
   List<String> _getOutfitImages(
       Map<String, dynamic> data, String character, int skinTone) {
     final outfitImages = <String>[];
@@ -112,6 +149,13 @@ class _CustomizationPageState extends State<CustomizationPage> {
     return outfitImages;
   }
 
+  /// Extracts the basic character identifier from an image URL.
+  /// This method uses a regular expression to find the character identifier
+  /// in the image URL.
+  /// 
+  /// `imageUrl` is the URL of the image from which to extract the character identifier.
+  /// 
+  /// Returns the basic character identifier as a string.
   String _getBasicCharacterFromImageUrl(String imageUrl) {
     final match = RegExp(r'character(\d+)').firstMatch(imageUrl);
 
@@ -121,6 +165,13 @@ class _CustomizationPageState extends State<CustomizationPage> {
     return '';
   }
 
+  /// Retrieves the selected character based on the current selections.
+  /// This method combines the selected character, skin tone, and outfit
+  /// to construct the final character identifier.
+  /// 
+  /// `data` is a map containing character information.
+  /// 
+  /// Returns the selected character identifier as a string.
   String _getSelectedCharacter(Map<String, dynamic> data) {
     final characterImages = _getCharacterImages(data);
     final character = _getBasicCharacterFromImageUrl(
@@ -142,6 +193,7 @@ class _CustomizationPageState extends State<CustomizationPage> {
     final screenHeight = screenSize.height;
     final screenWidth = screenSize.width;
 
+    // Ensure that the images are loaded before proceeding
     return FutureBuilder(
       future: fetchImages(),
       builder: (context, snapshot) {
@@ -216,12 +268,14 @@ class _CustomizationPageState extends State<CustomizationPage> {
                       SizedBox(
                         height: screenHeight * 0.08,
                       ),
+                      // Display the current step content
                       SizedBox(
                           height: screenHeight * 0.3,
                           child: _buildStepContent(data)),
                       SizedBox(
                         height: screenHeight * 0.06,
                       ),
+                      // Button to proceed to the next step or confirm customization
                       ElevatedButton(
                         onPressed: () async {
                           if (_currentStep < _totalSteps - 1) {
@@ -264,11 +318,19 @@ class _CustomizationPageState extends State<CustomizationPage> {
     );
   }
 
+  /// Builds the content for the current step in the customization process.
+  /// This method returns a widget that displays the appropriate content
+  /// based on the current step of the customization.
+  /// 
+  /// `data` is a map containing character information.
+  /// 
+  /// Returns a [Widget] that represents the content for the current step.
   Widget _buildStepContent(Map<String, dynamic> data) {
     final List<String> basicCharacterImages = _getCharacterImages(data);
 
     switch (_currentStep) {
       case 0:
+        // Display the character selection carousel
         return CharacterCarousel(
           imageUrls: basicCharacterImages,
           onImageSelected: (index) {
@@ -276,6 +338,7 @@ class _CustomizationPageState extends State<CustomizationPage> {
           },
         );
       case 1:
+        // Display the skin tone selection based on the selected character
         return SkinToneSelection(
           imageUrls: _getSkinToneImages(
             data,
@@ -287,6 +350,7 @@ class _CustomizationPageState extends State<CustomizationPage> {
           },
         );
       case 2:
+        // Display the outfit selection based on the selected character and skin tone
         return CharacterCarousel(
           imageUrls: _getOutfitImages(
               data,

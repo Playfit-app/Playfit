@@ -4,6 +4,13 @@ import 'package:camera/camera.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 
 class ImageUtils {
+  /// Converts a [CameraImage] to an [InputImage] for use with ML Kit pose detection.
+  /// This method handles the conversion of the camera image format and applies the necessary metadata.
+  /// 
+  /// `image` is the camera image to be converted.
+  /// `controller` is the camera controller used to determine the sensor orientation.
+  /// 
+  /// Returns an [InputImage] that can be used for pose detection.
   static InputImage getInputImage(
       CameraImage image, CameraController? controller) {
     final WriteBuffer allBytes = WriteBuffer();

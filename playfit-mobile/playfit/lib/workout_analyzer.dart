@@ -15,12 +15,16 @@ class WorkoutAnalyzer {
       mode: PoseDetectionMode.stream,
     ),
   );
+  // A ValueNotifier to hold the counts of each workout type
+  // This allows the UI to reactively update when the counts change
   ValueNotifier<Map<WorkoutType, int>> workoutCounts = ValueNotifier({
     WorkoutType.squat: 0,
     WorkoutType.jumpingJack: 0,
     WorkoutType.pushUp: 0,
     WorkoutType.pullUp: 0,
   });
+  // A map to keep track of the status of each workout type
+  // This is used to determine if the user has completed a workout
   final Map<WorkoutType, bool> _workoutStatus = {
     WorkoutType.squat: false,
     WorkoutType.jumpingJack: false,
@@ -29,6 +33,14 @@ class WorkoutAnalyzer {
   };
   Map<PoseLandmarkType, PoseLandmark> _lastLandmarks = {};
 
+  /// Detects the workout type based on the input image and updates the workout counts
+  /// 
+  /// `inputImage` is the image to be processed for pose detection.
+  /// `workout` is the type of workout to be detected.
+  /// 
+  /// Returns a [Future] that completes when the detection is done.
+  /// If the pose detection fails or no poses are detected, it will return without updating the counts.
+  /// If a workout is detected, it will update the counts and reset the status for that workout type.
   Future<void> detectWorkout(InputImage inputImage, WorkoutType workout) async {
     try {
       final poses = await _poseDetector.processImage(inputImage);
@@ -59,6 +71,11 @@ class WorkoutAnalyzer {
     }
   }
 
+  /// Detects the squat workout based on the pose landmarks
+  /// 
+  /// `pose` is the detected pose containing landmarks of the body.
+  /// 
+  /// Returns nothing.
   void detectSquat(Pose pose) {
     final leftHip = pose.landmarks[PoseLandmarkType.leftHip];
     final rightHip = pose.landmarks[PoseLandmarkType.rightHip];
@@ -82,6 +99,9 @@ class WorkoutAnalyzer {
     const double downThreshold = 90;
     const double upThreshold = 160;
 
+    // Check if both knees are bent below the downThreshold
+    // and if both knees are straight above the upThreshold
+    // If both conditions are met, it indicates a squat
     if (leftKneeAngle <= downThreshold && rightKneeAngle <= downThreshold) {
       if (!_workoutStatus[WorkoutType.squat]!) {
         _workoutStatus[WorkoutType.squat] = true;
@@ -94,6 +114,11 @@ class WorkoutAnalyzer {
     }
   }
 
+  /// Detects the jumping jack workout based on the pose landmarks
+  /// 
+  /// `pose` is the detected pose containing landmarks of the body.
+  /// 
+  /// Returns nothing.
   void detectJumpingJack(Pose pose) {
     final leftShoulder = pose.landmarks[PoseLandmarkType.leftShoulder];
     final rightShoulder = pose.landmarks[PoseLandmarkType.rightShoulder];
@@ -121,6 +146,9 @@ class WorkoutAnalyzer {
     bool armsUp = leftShoulder.y < leftHip.y && rightShoulder.y < rightHip.y;
     bool legsApart = ankleDistance > hipDistance * legsApartMultiplier;
 
+    // Check if arms are up and legs are apart
+    // If both conditions are met, it indicates a jumping jack
+    // If arms are down or legs are together, it indicates the end of a jumping jack
     if (armsUp && legsApart) {
       if (!_workoutStatus[WorkoutType.jumpingJack]!) {
         _workoutStatus[WorkoutType.jumpingJack] = true;
@@ -133,6 +161,11 @@ class WorkoutAnalyzer {
     }
   }
 
+  /// Detects the push-up workout based on the pose landmarks
+  /// 
+  /// `pose` is the detected pose containing landmarks of the body.
+  /// 
+  /// Returns nothing.
   void detectPushUp(Pose pose) {
     final leftWrist = pose.landmarks[PoseLandmarkType.leftWrist];
     final rightWrist = pose.landmarks[PoseLandmarkType.rightWrist];
@@ -157,6 +190,11 @@ class WorkoutAnalyzer {
     const double downThreshold = 90;
     const double upThreshold = 160;
 
+    // Check if both elbows are bent below the downThreshold
+    // and if both elbows are straight above the upThreshold
+    // If both conditions are met, it indicates a push-up
+    // If elbows are bent, it indicates the start of a push-up
+    // If elbows are straight, it indicates the end of a push-up
     if (leftElbowAngle <= downThreshold && rightElbowAngle <= downThreshold) {
       if (!_workoutStatus[WorkoutType.pushUp]!) {
         _workoutStatus[WorkoutType.pushUp] = true;
@@ -170,6 +208,11 @@ class WorkoutAnalyzer {
     }
   }
 
+  /// Detects the pull-up workout based on the pose landmarks
+  /// 
+  /// `pose` is the detected pose containing landmarks of the body.
+  /// 
+  /// Returns nothing.
   void detectPullUp(Pose pose) {
     final leftWrist = pose.landmarks[PoseLandmarkType.leftWrist];
     final rightWrist = pose.landmarks[PoseLandmarkType.rightWrist];
@@ -195,6 +238,10 @@ class WorkoutAnalyzer {
     const double downThreshold = 160.0;
     const double shoulderYMovementThreshold = 100;
 
+    // Check if both elbows are bent below the upThreshold
+    // and if both shoulders have moved up significantly
+    // If both conditions are met, it indicates a pull-up
+    // If elbows are straight, it indicates the end of a pull-up
     if (leftElbowAngle <= upThreshold &&
         rightElbowAngle <= upThreshold &&
         (leftShoulder.y - _lastLandmarks[PoseLandmarkType.leftShoulder]!.y)
@@ -216,6 +263,11 @@ class WorkoutAnalyzer {
     }
   }
 
+  /// Calculates the angle between three points (landmarks)
+  /// 
+  /// `a`, `b`, and `c` are the three points representing the landmarks.
+  /// 
+  /// Returns the angle in degrees between the vectors formed by these points.
   double calculateAngle(PoseLandmark a, PoseLandmark b, PoseLandmark c) {
     final aPoint = Offset(a.x, a.y);
     final bPoint = Offset(b.x, b.y);
@@ -236,6 +288,11 @@ class WorkoutAnalyzer {
     return angle;
   }
 
+  /// Increments the count for the specified workout type
+  /// 
+  /// `workoutType` is the type of workout for which the count should be incremented.
+  /// 
+  /// Returns nothing.
   void incrementWorkoutCount(WorkoutType workoutType) {
     workoutCounts.value = {
       ...workoutCounts.value,
@@ -244,6 +301,9 @@ class WorkoutAnalyzer {
     // notifyListeners();
   }
 
+  /// Closes the pose detector to release resources
+  /// 
+  /// Returns nothing.
   void dispose() {
     _poseDetector.close();
   }

@@ -20,6 +20,10 @@ class Success extends StatelessWidget {
     this.awardedAt,
   });
 
+  /// Formats the awarded date from the ISO 8601 string to a more readable format.
+  /// 
+  /// This method checks if the `awardedAt` string is not null,
+  /// parses it into a DateTime object, and then formats it as "day/month/year".
   String get _formattedDate {
     if (awardedAt != null) {
       final dateTime = DateTime.parse(awardedAt!);
@@ -28,6 +32,12 @@ class Success extends StatelessWidget {
     return "";
   }
 
+  /// Displays a success popup dialog with the details of the achievement.
+  /// 
+  /// This method shows a dialog containing the achievement's image, title, description,
+  /// current progress, target, and awarded date if available.
+  /// 
+  /// `context` is the BuildContext used to show the dialog.
   void _showSuccessPopup(BuildContext context) {
     showGeneralDialog(
       context: context,
@@ -57,6 +67,7 @@ class Success extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
+                  // Display the achievement image inside a circle
                   CircleAvatar(
                     radius: 60,
                     backgroundImage: NetworkImage(image),
@@ -79,6 +90,7 @@ class Success extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  // Display the progress bar and current/target values
                   LinearProgressIndicator(
                     value: current / target,
                     backgroundColor: Colors.grey[300],
@@ -94,6 +106,7 @@ class Success extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  // Display the awarded date if available
                   awardedAt != null
                       ? Text(
                           "Awarded at: $_formattedDate",
@@ -114,6 +127,10 @@ class Success extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Wrap the entire widget in a GestureDetector to handle taps
+    // The opacity is set based on whether the achievement is completed or not.
+    // If completed, the opacity is 1.0, otherwise it's 0.4.
+    // Tapping on the widget will trigger the success popup.
     return GestureDetector(
       onTap: () => _showSuccessPopup(context),
       child: Opacity(

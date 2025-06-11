@@ -13,6 +13,11 @@ class NotificationProvider extends ChangeNotifier {
   List<Map<String, dynamic>> get notifications => _notifications;
   int get unreadCount => _unreadCount;
 
+  /// Connects to the WebSocket server for notifications.
+  /// This method initializes the WebSocket connection
+  /// and listens for incoming messages.
+  /// 
+  /// `token` is the authentication token used for the WebSocket connection.
   void connect(String token) {
     if (_channel != null) return;
 
@@ -40,11 +45,17 @@ class NotificationProvider extends ChangeNotifier {
     });
   }
 
+  /// Disconnects from the WebSocket server.
+  /// This method closes the WebSocket connection
+  /// and sets the channel to null.
   void disconnect() {
     _channel?.sink.close();
     _channel = null;
   }
 
+  /// Marks a specific notification as read.
+  /// 
+  /// `notificationId` is the ID of the notification to be marked as read.
   void markAllAsRead() async {
     _unreadCount = 0;
     final url =

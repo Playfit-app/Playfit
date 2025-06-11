@@ -15,9 +15,17 @@ from .models import (
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
+    base_character = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "username"]
+        fields = ["id", "username", "base_character"]
+
+    def get_base_character(self, obj):
+        customization = getattr(obj, 'customizations', None)
+        if customization and customization.base_character:
+            return customization.base_character.image.url
+        return None
 
 class BaseCharacterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -83,7 +91,7 @@ class PostListSerializer(serializers.ModelSerializer):
         return False
 
 class PostSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    user = UserSerializer()
     nb_likes = serializers.SerializerMethodField()
     nb_comments = serializers.SerializerMethodField()
     comments = serializers.SerializerMethodField()

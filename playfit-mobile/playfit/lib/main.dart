@@ -1,11 +1,15 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:provider/provider.dart';
 import 'package:playfit/firebase_options.dart';
 import 'package:playfit/providers/notification_provider.dart';
 import 'package:playfit/services/push_notification_service.dart';
+import 'package:playfit/services/language_service.dart';
 import 'package:playfit/authentification/login_page.dart';
 import 'package:playfit/authentification/registration_page.dart';
 import 'package:playfit/home_page.dart';
@@ -16,20 +20,32 @@ import 'package:playfit/notification_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   NotificationService().initFirebaseMessaging();
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  final locale = await LanguageService.loadLocale();
+
+  if (locale != null) {
+    await LocaleSettings.setLocale(locale);
+  } else {
+    final deviceLocale = PlatformDispatcher.instance.locale;
+
+    if (!AppLocaleUtils.instance.supportedLocales
+        .any((supportedLocale) => supportedLocale.languageCode == deviceLocale.languageCode)) {
+      await LocaleSettings.setLocale(AppLocale.en);
+    } else {
+      await LocaleSettings.setLocale(AppLocaleUtils.parse(deviceLocale.languageCode));
+    }
+  }
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => NotificationProvider()),
       ],
-      child: const MyApp(),
+      child: TranslationProvider(child: const MyApp()),
     ),
   );
 }
@@ -54,6 +70,9 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => const ProfilePage(), // Route to profile page
         '/notifications': (context) => const NotificationPage(),
       },
+      locale: TranslationProvider.of(context).flutterLocale,
+      supportedLocales: AppLocaleUtils.instance.supportedLocales,
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
     );
   }
 }

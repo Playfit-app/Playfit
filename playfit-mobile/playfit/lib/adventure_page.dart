@@ -137,24 +137,12 @@ class _AdventurePageState extends State<AdventurePage>
     }
   }
 
-  List<Road> _createRoads(Map<String, dynamic> decorationImages) {
+  List<Road> _createRoads(Map<String, dynamic> decorationImages, Size screenSize) {
     List<Road> roads = [];
     combinedPath = Path();
-
-    Size screenSize = MediaQueryData.fromView(
-            WidgetsBinding.instance.platformDispatcher.views.first)
-        .size;
-    double referenceScreenHeight = 798;
-    double referenceScreenWidth = 411;
-
     double height = screenSize.height * nbCities +
-        (screenSize.height * 0.5 * (nbCities - 1)) +
-        screenSize.height * 0.3;
+        (screenSize.height * 0.5 * (nbCities - 1));
     double startY = height;
-    Offset scale = Offset(
-      screenSize.width / referenceScreenWidth,
-      screenSize.height / referenceScreenHeight,
-    );
     int cityIndex = 0;
 
     for (int i = 0; i < nbCities + (nbCities - 1); i++) {
@@ -164,7 +152,6 @@ class _AdventurePageState extends State<AdventurePage>
         road = CityRoad(
           startY: startY,
           screenSize: screenSize,
-          scale: scale,
           decorationImages: decorationImages,
           cityIndex: cityIndex,
         );
@@ -173,7 +160,6 @@ class _AdventurePageState extends State<AdventurePage>
         road = TransitionRoad(
           startY: startY,
           screenSize: screenSize,
-          scale: scale,
           decorationImages: decorationImages,
           cityIndex: i,
         );
@@ -222,25 +208,22 @@ class _AdventurePageState extends State<AdventurePage>
 
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
-
     return FutureBuilder(
       future: _loadPositionsAndImages(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
+        Size screenSize = MediaQuery.of(context).size;
         final String serverBaseUrl = dotenv.env['SERVER_BASE_URL']!;
         final images = snapshot.data![0] as Map<String, dynamic>;
         final worldPositions = snapshot.data![1] as List<dynamic>;
 
         nbCities = images['country'].length;
-        // double referenceScreenHeight = 798;
         double height = screenSize.height * nbCities +
-            (screenSize.height * 0.5 * (nbCities - 1)) +
-            screenSize.height * 0.3;
+            (screenSize.height * 0.5 * (nbCities - 1));
 
-        final roads = _createRoads(images);
+        final roads = _createRoads(images, screenSize);
 
         checkpoints = roads
             .map((road) => road.getCheckpoints().map((c) => c.position))

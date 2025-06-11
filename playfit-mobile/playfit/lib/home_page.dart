@@ -104,39 +104,53 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _userProgressFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text(t.home.error_loading));
-        }
+    // Heights and insets
+    final double navBaseHeight  = kBottomNavigationBarHeight;
+    final double curvedClipExtra = 40;
+    final double paddingExtra    = 10;
+    final double bottomInset     = MediaQuery.of(context).padding.bottom;
+    final double clipHeight      = navBaseHeight + curvedClipExtra;
 
-        final double navBaseHeight = kBottomNavigationBarHeight;
-        final double curvedClipExtra = 40;
-        final double paddingExtra = 10;
-
-        final double navBarHeight =
-            navBaseHeight + curvedClipExtra + paddingExtra;
-
-        return Scaffold(
-          extendBodyBehindAppBar: true,
-          extendBody: true,
-          appBar: _currentIndex == 4 || _currentIndex == 3
-              ? null
-              : AppBar(
-                  backgroundColor: Colors.transparent,
-                  title: TopBar(currentStreak: currentStreak),
-                  automaticallyImplyLeading: false,
-                ),
-          body: _pages[_currentIndex],
-          bottomNavigationBar: SizedBox(
-            height: navBarHeight,
-            child: ClipPath(
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      extendBody: true,
+      appBar: _currentIndex == 4 || _currentIndex == 3
+          ? null
+          : AppBar(
+              backgroundColor: Colors.transparent,
+              title: TopBar(currentStreak: currentStreak),
+              automaticallyImplyLeading: false,
+            ),
+      body: FutureBuilder(
+        future: _userProgressFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text(t.home.error_loading));
+          }
+          return _pages[_currentIndex];
+        },
+      ),
+      bottomNavigationBar: SizedBox(
+        height: clipHeight,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            ClipPath(
               clipper: NavBarClipper(),
+              child: Container(
+                height: clipHeight + bottomInset,
+                color: Colors.white,
+              ),
+            ),
+            Positioned(
+              bottom: -bottomInset,
+              left: 0,
+              right: 0,
               child: BottomNavigationBar(
-                backgroundColor: Colors.white,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
                 type: BottomNavigationBarType.fixed,
                 selectedItemColor: const Color.fromARGB(255, 74, 68, 89),
                 unselectedItemColor: const Color.fromARGB(255, 74, 68, 89),
@@ -153,9 +167,9 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 

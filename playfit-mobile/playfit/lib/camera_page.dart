@@ -181,7 +181,6 @@ class _CameraViewState extends State<CameraView> {
           final inputImage = ImageUtils.getInputImage(image, _controller);
           await _workoutAnalyzer.detectWorkout(inputImage, _workoutType);
         } catch (e) {
-          debugPrint('Error processing image: $e');
         } finally {
           _isDetecting = false;
         }
@@ -215,7 +214,7 @@ class _CameraViewState extends State<CameraView> {
             ? Difficulty.medium
             : Difficulty.hard;
 
-    Navigator.pushReplacement(
+    Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => WorkoutProgressionPage(

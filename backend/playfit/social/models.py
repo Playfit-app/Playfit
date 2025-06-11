@@ -62,6 +62,11 @@ class BaseCharacter(models.Model):
                 raise ValidationError("The image must be a PNG or WebP file")
         super().save(*args, **kwargs)
 
+class IntroductionCharacter(models.Model):
+    base_character = models.ForeignKey(BaseCharacter, related_name='introduction_characters', on_delete=models.CASCADE)
+    name = models.CharField(max_length=50, unique=True)
+    image = models.ImageField(upload_to='introduction_characters/')
+
 class Customization(models.Model):
     user = models.OneToOneField(User, related_name='customizations', on_delete=models.CASCADE)
     base_character = models.ForeignKey(BaseCharacter, related_name='character', on_delete=models.SET_NULL, null=True, blank=True)

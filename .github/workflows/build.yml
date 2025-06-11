@@ -1,46 +1,153 @@
 name: Build
 
 on:
-  workflow_run:
-    workflows: ["Integration tests"]
-    types:
-      - completed
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The git reference to build'
+        required: true
+        type: string
+    secrets:
+      FLUTTER_GOOGLE_SERVICES:
+        description: 'Base64 encoded Google Services credentials JSON'
+        required: true
+      FLUTTER_GOOGLE_CLIENT_ID:
+        description: 'Google Client ID for Flutter'
+        required: true
+      KEYSTORE_BASE64:
+        description: 'Base64 encoded keystore file'
+        required: true
+      KEYSTORE_PASSWORD:
+        description: 'Password for the keystore'
+        required: true
+      KEY_PASSWORD:
+        description: 'Password for the key in the keystore'
+        required: true
+      KEY_ALIAS:
+        description: 'Alias for the key in the keystore'
+        required: true
+      GH_PAT:
+        description: 'GitHub Personal Access Token for creating releases'
+        required: true
 
 jobs:
-    build_flutter_android:
-        name: Build Flutter Android
-        runs-on: ubuntu-latest
-        if: github.event.workflow_run.conclusion == 'success'
-        steps:
-            - uses: actions/checkout@v4
-            - name: Set up Flutter
-              uses: subosito/flutter-action@v2
-              with:
-                flutter-version: 3.19.0
-                # optional parameters follow
-                cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
-                cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-                pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
-                pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-            - run: flutter pub get
-            - run: flutter build apk
-            - run: flutter build appbundle
-        
-    # build_flutter_ios:
-    #     name: Build Flutter iOS
-    #     runs-on: macos-latest
-    #     if: github.event.workflow_run.conclusion == 'success'
-    #     steps:
-    #         - uses: actions/checkout@v4
-    #         - name: Set up Flutter
-    #           uses: subosito/flutter-action@v2
-    #           with:
-    #             channel: stable
-    #             cache: true
-    #             # optional parameters follow
-    #             cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
-    #             cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-    #             pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
-    #             pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-    #         - run: flutter pub get
-    #         - run: flutter build ios --release --no-codesign
+  android:
+    name: Android Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Set Up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.29.0
+          channel: stable
+      - name: Install dependencies
+        run: flutter pub get
+        working-directory: ./playfit-mobile/playfit
+      - name: Decode Google Services credentials
+        run: echo "${{ secrets.FLUTTER_GOOGLE_SERVICES }}" | base64 --decode > android/app/google-services.json
+        working-directory: ./playfit-mobile/playfit
+      - name: Set up environment variables
+        run: |
+          echo "SERVER_BASE_URL=http://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
+          echo "SERVER_BASE_WS_URL=ws://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
+          echo "GOOGLE_CLIENT_ID=${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}" >> .env
+        working-directory: ./playfit-mobile/playfit
+      - name: Decode Keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+        working-directory: ./playfit-mobile/playfit
+      - name: Create key.properties
+        run: |
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=keystore.jks" >> android/key.properties
+        working-directory: ./playfit-mobile/playfit
+      - name: Build APK & AAB
+        run: |
+            flutter build apk --release
+            flutter build appbundle --release
+        working-directory: ./playfit-mobile/playfit
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build
+          path: |
+            ./playfit-mobile/playfit/build/app/outputs/flutter-apk/app-release.apk
+            ./playfit-mobile/playfit/build/app/outputs/bundle/release/app-release.aab
+
+  # ios:
+  #   name: iOS Build
+  #   runs-on: macos-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         ref: ${{ inputs.ref }}
+  #     - name: Set Up Java
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         java-version: '17'
+  #         distribution: 'temurin'
+  #     - name: Set up Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: 3.29.0
+  #         channel: stable
+  #     - name: Install dependencies
+  #       run: flutter pub get
+  #       working-directory: ./playfit-mobile/playfit
+  #     - name: Decode Google Services credentials
+  #       run: echo "${{ secrets.FLUTTER_GOOGLE_SERVICES }}" | base64 --decode > android/app/google-services.json
+  #       working-directory: ./playfit-mobile/playfit
+  #     - name: Set up environment variables
+  #       run: |
+  #         echo "SERVER_BASE_URL=http://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
+  #         echo "SERVER_BASE_WS_URL=ws://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
+  #         echo "GOOGLE_CLIENT_ID=${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}" >> .env
+  #       working-directory: ./playfit-mobile/playfit
+  #     - name: Build IPA (no codesign)
+  #       run: flutter build ipa --no-codesign
+  #       working-directory: ./playfit-mobile/playfit
+  #     - name: Compress and Upload iOS Build
+  #       run: |
+  #         cd build
+  #         tar -czf ios_build.tar.gz ios
+  #       working-directory: ./playfit-mobile/playfit
+  #     - name: Upload iOS Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: ios-build
+  #         path: ./playfit-mobile/playfit/build/ios_build.tar.gz
+
+  release:
+    name: Create GitHub Release
+    # needs: [android, ios]
+    needs: android
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+      - name: Generate Tag
+        id: tag
+        run: |
+          echo "::set-output name=release_tag::$(date +"%Y.%m.%d_%H.%M")"
+          echo "::set-output name=release_name::Release_$(date +"%Y.%m.%d_%H.%M")"
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag.outputs.release_tag }}
+          name: ${{ steps.tag.outputs.release_name }}
+          token: ${{ secrets.GH_PAT }}
+          artifacts: |
+            ./artifacts/android-build/**/*.apk,
+            ./artifacts/android-build/**/*.aab
+          # ./artifacts/ios-build/ios_build.tar.gz

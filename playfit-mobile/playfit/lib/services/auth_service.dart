@@ -47,7 +47,7 @@ class AuthService {
           return {'status': 'success', 'message': 'Login successful'};
         }
       } else {
-        return {'status': 'error', 'message': body["error"]};
+        return {'status': 'error', 'message': body.toString()};
       }
     } catch (error) {
       return {'status': 'error', 'message': error.toString()};
@@ -65,9 +65,21 @@ class AuthService {
     double weight,
     bool isConsentGiven,
     bool isMarketingConsentGiven,
-    int index,
+    String? characterImage,
   ) async {
     try {
+      if (characterImage == null || characterImage.isEmpty) {
+        return {'status': 'error', 'message': 'A valid character image is required'};
+      }
+      if (email.isEmpty ||
+          username.isEmpty ||
+          password.isEmpty ||
+          dateOfBirth.isEmpty ||
+          height <= 0 ||
+          weight <= 0 ||
+          !isConsentGiven) {
+        return {'status': 'error', 'message': 'All fields are required'};
+      }
       final data = <String, dynamic>{
         'email': email,
         'username': username,
@@ -78,7 +90,7 @@ class AuthService {
         'terms_and_conditions': isConsentGiven,
         'privacy_policy': isConsentGiven,
         'marketing': isMarketingConsentGiven,
-        'character_image_id': index + 1,
+        'character_image': characterImage,
       };
       final response = await http.post(
         Uri.parse('${baseUrl}register/'),
@@ -99,7 +111,7 @@ class AuthService {
           return {'status': 'success', 'message': 'Register successful'};
         }
       } else {
-        return {'status': 'error', 'message': body};
+        return {'status': 'error', 'message': body.toString()};
       }
     } catch (error) {
       return {'status': 'error', 'message': error.toString()};

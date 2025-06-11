@@ -54,7 +54,6 @@ class _UserSearchBarState extends State<UserSearchBar> {
   }
 
   void _onChanged(String value) {
-    debugPrint("Search value: $value");
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
       if (value.isNotEmpty) {

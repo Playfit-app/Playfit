@@ -29,6 +29,11 @@ class _PostCardState extends State<PostCard> {
   bool _isSubmitting = false;
 
   Future<void> _like() async {
+    setState(() {
+        widget.post['is_liked'] = true;
+        widget.post['nb_likes'] += 1;
+    });
+    
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/posts/${widget.post['id']}/like/");
     final token = await storage.read(key: "token");
@@ -43,16 +48,21 @@ class _PostCardState extends State<PostCard> {
     );
 
     if (response.statusCode == 201) {
-      setState(() {
-        widget.post['is_liked'] = true;
-        widget.post['nb_likes'] += 1;
-      });
+      
     } else {
-      print("Failed to like post: ${response.statusCode}");
+      setState(() {
+        widget.post['is_liked'] = false;
+        widget.post['nb_likes'] -= 1;
+      });
     }
   }
 
   Future<void> _unlike() async {
+    setState(() {
+        widget.post['is_liked'] = false;
+        widget.post['nb_likes'] -= 1;
+      });
+
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/posts/${widget.post['id']}/unlike/");
     final token = await storage.read(key: "token");
@@ -67,12 +77,11 @@ class _PostCardState extends State<PostCard> {
     );
 
     if (response.statusCode == 204) {
-      setState(() {
-        widget.post['is_liked'] = false;
-        widget.post['nb_likes'] -= 1;
-      });
     } else {
-      print("Failed to unlike post: ${response.statusCode}");
+      setState(() {
+        widget.post['is_liked'] = true;
+        widget.post['nb_likes'] += 1;
+      });
     }
   }
 
@@ -81,6 +90,22 @@ class _PostCardState extends State<PostCard> {
 
     if (content.isEmpty) return;
     setState(() => _isSubmitting = true);
+
+    final newComment = {
+      "id": -1,
+      "content": content,
+      "user": {
+        "id": 0,
+        "username": "Me",
+      },
+      "created_at": DateTime.now().toIso8601String(),
+    };
+  
+    setState(() {
+      widget.post['comments'].insert(0, newComment);
+      _commentController.clear();
+    });
+
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/posts/${widget.post['id']}/comment/");
     final token = await storage.read(key: "token");
@@ -97,7 +122,6 @@ class _PostCardState extends State<PostCard> {
 
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
-      debugPrint("Comment added: $data");
       final newComment = {
         "id": data['id'],
         "content": content,
@@ -109,17 +133,30 @@ class _PostCardState extends State<PostCard> {
       };
 
       setState(() {
+        widget.post['comments'].removeWhere((comment) => comment['id'] == -1);
         widget.post['comments'].insert(0, newComment);
         _commentController.clear();
         _isSubmitting = false;
       });
     } else {
-      print("Failed to comment: ${response.statusCode}");
-      setState(() => _isSubmitting = false);
+      setState(() {
+        widget.post['comments'].remove(newComment);
+        _commentController.clear();
+        _isSubmitting = false;
+      });
     }
   }
 
   Future<void> _deleteComment(int commentId) async {
+    final commentToDelete = widget.post['comments']
+        .firstWhere((comment) => comment['id'] == commentId);
+    if (commentToDelete == null) return;
+    final index = widget.post['comments'].indexOf(commentToDelete);
+    if (index == -1) return;
+    setState(() {
+      widget.post['comments'].remove(commentToDelete);
+    });
+
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/comments/$commentId/delete/");
     final token = await storage.read(key: "token");
@@ -134,12 +171,10 @@ class _PostCardState extends State<PostCard> {
     );
 
     if (response.statusCode == 204) {
-      setState(() {
-        widget.post['comments']
-            .removeWhere((comment) => comment['id'] == commentId);
-      });
     } else {
-      print("Failed to delete comment: ${response.statusCode}");
+      setState(() {
+        widget.post['comments'].insert(index, commentToDelete);
+      });
     }
   }
 

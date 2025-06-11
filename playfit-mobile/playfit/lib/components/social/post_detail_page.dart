@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:playfit/components/social/post_card.dart';
+import 'package:playfit/components/social/post_card/post_card.dart';
 
 class PostDetailPage extends StatefulWidget {
   final int postId;
@@ -50,7 +50,6 @@ class _PostDetailPageState extends State<PostDetailPage> {
         _loading = false;
       });
     } else {
-      debugPrint("Failed to load post");
       setState(() => _loading = false);
     }
   }

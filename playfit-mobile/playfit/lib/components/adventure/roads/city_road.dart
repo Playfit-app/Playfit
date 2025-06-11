@@ -103,7 +103,6 @@ class CityRoad extends Road {
     final greyPath = Path();
     double offsetX = screenSize.width * 0.0535;
     double endY = (startY - screenSize.height).roundToDouble();
-
     // Shortcut functions for percentage-based coordinates
     double px(double originalX) =>
         screenSize.width *

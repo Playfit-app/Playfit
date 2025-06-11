@@ -28,6 +28,8 @@ from .models import (
     City,
     DecorationImage,
     CityDecorationImage,
+    BaseCharacter,
+    IntroductionCharacter,
 )
 from .serializers import (
     UserSerializer,
@@ -321,10 +323,12 @@ class PostListView(ListAPIView):
         followings = user.get_following()
 
         # Get posts from their followings of the last 2 weeks
-        posts = Post.objects.filter(
+        posts = (Post.objects.filter(
             user__in=followings,
             created_at__gte=timezone.now() - timezone.timedelta(weeks=2)
-        ).order_by("-created_at")
+        )
+        .select_related("user__customizations__base_character")
+        .order_by("-created_at"))
 
         return posts
 
@@ -570,10 +574,21 @@ class CustomizationUpdateView(APIView):
     def patch(self, request):
         user: CustomUser = request.user
         customization = Customization.objects.get(user=user)
-        serializer = CustomizationSerializer(customization, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        # serializer = CustomizationSerializer(customization, data=request.data, partial=True)
+        # serializer.is_valid(raise_exception=True)
+        # serializer.save()
+        # return Response(serializer.data)
+
+        if 'base_character' in request.data:
+            base_character = request.data['base_character']
+            try:
+                customization.base_character = get_object_or_404(BaseCharacter, name=base_character)
+                customization.save()
+                return Response({"detail": "Customization updated"}, status=status.HTTP_200_OK)
+            except BaseCharacter.DoesNotExist:
+                return Response({"detail": "Base character not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"detail": "Invalid data"}, status=status.HTTP_400_BAD_REQUEST)
 
 class CustomizationView(APIView):
     permission_classes = [IsAuthenticated]
@@ -583,6 +598,119 @@ class CustomizationView(APIView):
         customization = Customization.objects.get(user=user)
         serializer = CustomizationSerializer(customization)
         return Response(serializer.data)
+
+class GetCharacterImagesView(APIView):
+    permission_classes = []
+
+    def get_registration_images(self) -> dict:
+        """Retrieve images for character registration.
+        Returns:
+            dict: A dictionary containing character images categorized by character and color.
+        """
+        base_characters = BaseCharacter.objects.filter(name__icontains='outfit1')
+        data = {
+            'character1': {
+                'white': [],
+                'black': [],
+                'introduction': {
+                    'white': [],
+                    'black': [],
+                },
+            },
+            'character2': {
+                'white': [],
+                'black': [],
+                'introduction': {
+                    'white': [],
+                    'black': [],
+                },
+            },
+            'character3': {
+                'white': [],
+                'black': [],
+                'introduction': {
+                    'white': [],
+                    'black': [],
+                },
+            },
+            'character4': {
+                'white': [],
+                'black': [],
+                'introduction': {
+                    'white': [],
+                    'black': [],
+                },
+            },
+        }
+
+        for character in base_characters:
+            key, color, _ = character.name.split("-")
+            if key in data and color in data[key]:
+                data[key][color].append({
+                    'id': character.id,
+                    'name': character.name,
+                    'image': character.image.url,
+                })
+                # Get introduction images
+                introduction_images = IntroductionCharacter.objects.filter(base_character=character)
+                for intro_image in introduction_images:
+                    data[key]['introduction'][color].append({
+                        'id': intro_image.id,
+                        'name': intro_image.name,
+                        'image': intro_image.image.url,
+                    })
+        return data
+
+    def get_customization_images(self) -> dict:
+        """Retrieve images for character customization.
+        Returns:
+            dict: A dictionary containing character images categorized by character and color.
+        """
+        base_characters = BaseCharacter.objects.all()
+        data = {
+            'character1': {
+                'white': [],
+                'black': [],
+            },
+            'character2': {
+                'white': [],
+                'black': [],
+            },
+            'character3': {
+                'white': [],
+                'black': [],
+            },
+            'character4': {
+                'white': [],
+                'black': [],
+            },
+        }
+
+        for character in base_characters:
+            key, color, _ = character.name.split("-")
+            if key in data and color in data[key]:
+                data[key][color].append({
+                    'id': character.id,
+                    'name': character.name,
+                    'image': character.image.url,
+                })
+        return data
+
+    def get(self, request):
+        registration = request.query_params.get('registration', 'false').lower() == 'true'
+
+        if registration:
+            data = self.get_registration_images()
+        else:
+            # For customization images, the user has to be authenticated
+            if not request.user.is_authenticated:
+                return Response(
+                    {"detail": "Authentication required for customization images"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            data = self.get_customization_images()
+
+        return Response(data, status=status.HTTP_200_OK)
 
 class GetDecorationImagesView(APIView):
     permission_classes = [IsAuthenticated]

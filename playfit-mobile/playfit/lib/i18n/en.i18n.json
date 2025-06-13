@@ -99,5 +99,22 @@
     "workout_session_dialog": {
         "session_title": "Session n°$session_number",
         "start_button": "Start"
+    },
+    "settings": {
+        "title": "Settings",
+        "language": "Language",
+        "notifications": "Notifications",
+        "disable_notifications_info": "Notifications have been disabled. You can re-enable them later in your device settings if needed.",
+        "account": "Account",
+        "username": "Username",
+        "email": "Email",
+        "change_password": "Change password",
+        "delete_account": "Delete account",
+        "delete_account_confirmation": "Are you sure you want to delete your account? This action cannot be undone.",
+        "logout": "Logout",
+        "languages": {
+            "fr": "French",
+            "en": "English"
+        }
     }
 }

@@ -99,5 +99,22 @@
     "workout_session_dialog": {
         "session_title": "Session n°$session_number",
         "start_button": "Démarrer"
+    },
+    "settings": {
+        "title": "Paramètres",
+        "language": "Langue",
+        "notifications": "Notifications",
+        "disable_notifications_info": "Les notifications ont été désactivées. Vous pouvez les réactiver plus tard dans les paramètres de votre appareil si nécessaire.",
+        "account": "Compte",
+        "username":"Nom d'utilisateur",
+        "email": "E-mail",
+        "change_password": "Changer le mot de passe",
+        "delete_account": "Supprimer le compte",
+        "delete_account_confirmation": "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
+        "logout": "Se déconnecter",
+        "languages": {
+            "fr": "Français",
+            "en": "Anglais"
+        }
     }
 }

@@ -137,7 +137,7 @@ class _AdventurePageState extends State<AdventurePage>
     }
   }
 
-  List<Road> _createRoads(Map<String, dynamic> decorationImages, Size screenSize) {
+  List<Road> _createRoads(Map<String, dynamic> decorationImages, Size screenSize, String countryColor) {
     List<Road> roads = [];
     combinedPath = Path();
     double height = screenSize.height * nbCities +
@@ -154,6 +154,7 @@ class _AdventurePageState extends State<AdventurePage>
           screenSize: screenSize,
           decorationImages: decorationImages,
           cityIndex: cityIndex,
+          cityColor: _hexToColor(countryColor),
         );
         cityIndex++;
       } else {
@@ -170,6 +171,14 @@ class _AdventurePageState extends State<AdventurePage>
     }
 
     return roads;
+  }
+
+  Color _hexToColor(String hex) {
+    hex = hex.replaceAll("#", "");
+    if (hex.length == 6) {
+      hex = "FF$hex";
+    }
+    return Color(int.parse(hex, radix: 16));
   }
 
   @override
@@ -218,12 +227,13 @@ class _AdventurePageState extends State<AdventurePage>
         final String serverBaseUrl = dotenv.env['SERVER_BASE_URL']!;
         final images = snapshot.data![0] as Map<String, dynamic>;
         final worldPositions = snapshot.data![1] as List<dynamic>;
+        final String countryColor = worldPositions[0]['country_color'];
 
         nbCities = images['country'].length;
         double height = screenSize.height * nbCities +
             (screenSize.height * 0.5 * (nbCities - 1));
 
-        final roads = _createRoads(images, screenSize);
+        final roads = _createRoads(images, screenSize, countryColor);
 
         checkpoints = roads
             .map((road) => road.getCheckpoints().map((c) => c.position))

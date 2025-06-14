@@ -137,13 +137,18 @@ class Command(BaseCommand):
         Create countries in the database.
         """
         countries = [
-            ("France", "Europe"),
+            ("France", "Europe", "#C5DEFA"),
+            ("Italy", "Europe", "#FFE9CA"),
         ]
 
         self.stdout.write(self.style.NOTICE("Creating countries..."))
-        for country_name, continent_name in countries:
+        for country_name, continent_name, country_color in countries:
             continent = Continent.objects.get(name=continent_name)
-            country_obj, created = Country.objects.get_or_create(name=country_name, continent=continent)
+            country_obj, created = Country.objects.get_or_create(
+                name=country_name,
+                color=country_color,
+                continent=continent
+            )
             if created:
                 self.stdout.write(self.style.SUCCESS(f"Created country: {country_obj.name}"))
             else:
@@ -155,14 +160,16 @@ class Command(BaseCommand):
         Create cities in the database.
         """
         cities = [
-            ("Paris", "France", 1),
-            ("Lyon", "France", 2),
+            ("Paris", "France", 1, 6),
+            ("Lyon", "France", 2, 6),
+            ("Milan", "Italy", 1, 5),
+            ("Rome", "Italy", 2, 5),
         ]
 
         self.stdout.write(self.style.NOTICE("Creating cities..."))
-        for city_name, country_name, order in cities:
+        for city_name, country_name, order, max_level in cities:
             country = Country.objects.get(name=country_name)
-            city_obj, created = City.objects.get_or_create(name=city_name, country=country, order=order)
+            city_obj, created = City.objects.get_or_create(name=city_name, country=country, order=order, max_level=max_level)
             if created:
                 self.stdout.write(self.style.SUCCESS(f"Created city: {city_obj.name}"))
             else:

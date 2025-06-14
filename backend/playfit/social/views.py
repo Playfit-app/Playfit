@@ -542,6 +542,7 @@ class WorldPositionsListView(ListAPIView):
             'user': user,
             'customization': customization,
             'position': world_position,
+            'country_color': world_position.country.color,
         })
         for following in followings:
             customization = get_object_or_404(Customization, user=following)
@@ -550,6 +551,7 @@ class WorldPositionsListView(ListAPIView):
                 'user': following,
                 'customization': customization,
                 'position': world_position,
+                'country_color': world_position.country.color,
             })
         serializer = WorldPositionResponseSerializer(world_positions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -722,6 +724,7 @@ class GetDecorationImagesView(APIView):
             'tree': DecorationImage.objects.get(label='tree').image.url,
             'building': DecorationImage.objects.get(label='building').image.url,
             'flag': DecorationImage.objects.get(label='flag').image.url,
+            # 'path':
             'country': [],
         }
 

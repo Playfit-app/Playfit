@@ -718,13 +718,13 @@ class GetDecorationImagesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, country: str):
-        c = get_object_or_404(Country, name=country)
+        c: Country = get_object_or_404(Country, name=country)
         cities = City.objects.filter(country=c)
         decoration_images = {
-            'tree': DecorationImage.objects.get(label='tree').image.url,
-            'building': DecorationImage.objects.get(label='building').image.url,
+            'tree': DecorationImage.objects.get(label__iexact=f'tree_{c.name}').image.url,
+            'building': DecorationImage.objects.get(label__iexact=f'building_{c.name}').image.url,
             'flag': DecorationImage.objects.get(label='flag').image.url,
-            # 'path':
+            'path': DecorationImage.objects.get(label__iexact=f'path_{c.name}').image.url,
             'country': [],
         }
 

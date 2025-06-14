@@ -198,6 +198,8 @@ class _AdventurePageState extends State<AdventurePage>
           '${dotenv.env['SERVER_BASE_URL']}${_decorationImages['flag']}'),
       'building': await UIImageCacheManager().loadImageFromNetwork(
           '${dotenv.env['SERVER_BASE_URL']}${_decorationImages['building']}'),
+      'path': await UIImageCacheManager().loadImageFromNetwork(
+          '${dotenv.env['SERVER_BASE_URL']}${_decorationImages['path']}'),
       'country': [],
     };
 
@@ -298,6 +300,12 @@ class _AdventurePageState extends State<AdventurePage>
                                     'in_city')
                                 ? '${_decorationImages['country'][worldPositions[0]['city'] - 1][worldPositions[0]['level'] - 1]}'
                                 : "/media/decorations/flag.webp",
+                            'tree':
+                                '${_decorationImages['tree']}',
+                            'building':
+                                '${_decorationImages['building']}',
+                            'path':
+                                '${_decorationImages['path']}',
                           },
                           sessionLevel: worldPositions[0]['level'],
                         ),

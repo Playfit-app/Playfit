@@ -207,6 +207,33 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.SUCCESS(f"Created decoration image: {decoration_image.label}"))
                 else:
                     self.stdout.write(self.style.WARNING(f"Decoration image already exists: {decoration_image.label}"))
+
+            elif os.path.isdir(full_path) and "countries" in full_path:
+                for country_name in os.listdir(full_path):
+                    country_path = os.path.join(full_path, country_name)
+                    if not is_valid_directory(country_path):
+                        continue
+
+                    for image_file in os.listdir(country_path):
+                        image_path = os.path.join(country_path, image_file)
+                        if is_valid_file(image_path):
+                            label = get_label_from_path(image_file)
+                            label_with_extension = get_label_from_path(image_file, extension=True)
+
+                            try:
+                                decoration_image = DecorationImage.objects.get(label=label)
+                                created = False
+                            except DecorationImage.DoesNotExist:
+                                decoration_image = DecorationImage(label=label)
+                                decoration_image.image.save(label_with_extension, File(open(image_path, "rb")))
+                                decoration_image.save()
+                                created = True
+
+                            if created:
+                                self.stdout.write(self.style.SUCCESS(f"Created decoration image: {decoration_image.label}"))
+                            else:
+                                self.stdout.write(self.style.WARNING(f"Decoration image already exists: {decoration_image.label}"))
+
         self.stdout.write(self.style.SUCCESS("All decoration images created."))
 
     def create_mountain_decorations(self, base_path: str) -> None:

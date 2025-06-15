@@ -210,15 +210,26 @@ class _TranslationsSettingsFr extends TranslationsSettingsEn {
 	@override String get disable_notifications_info => 'Les notifications ont été désactivées. Vous pouvez les réactiver plus tard dans les paramètres de votre appareil si nécessaire.';
 	@override String get account => 'Compte';
 	@override String get username => 'Nom d\'utilisateur';
+	@override String get edit_username_title => 'Modifier le nom d\'utilisateur';
+	@override String get edit_username_confirmation => 'Voulez-vous vraiment modifier votre pseudo ?';
 	@override String get email => 'E-mail';
+	@override String get edit_email_title => 'Modifier l\'e-mail';
+	@override String get edit_email_confirmation => 'Voulez-vous vraiment modifier votre adresse e-mail ?';
 	@override String get change_password => 'Changer le mot de passe';
 	@override String get delete_account => 'Supprimer le compte';
+	@override String get others => 'Autres';
 	@override String get delete_account_confirmation => 'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.';
 	@override String get logout => 'Se déconnecter';
 	@override Map<String, String> get languages => {
 		'fr': 'Français',
 		'en': 'Anglais',
 	};
+	@override String get cancel => 'Annuler';
+	@override String get confirm => 'Confirmer';
+	@override String get delete_confirm_title => 'Confirmer la suppression';
+	@override String get privacy_policy => 'Avis sur la confidentialité';
+	@override String get privacy_policy_description => 'Nous nous engageons à protéger votre vie privée. Toutes vos données sont confidentielles et ne seront jamais partagées sans votre consentement.';
+	@override String get save => 'Sauvegarder';
 }
 
 // Path: gdpr_consent_form.data_collection
@@ -356,13 +367,24 @@ extension on TranslationsFr {
 			case 'settings.disable_notifications_info': return 'Les notifications ont été désactivées. Vous pouvez les réactiver plus tard dans les paramètres de votre appareil si nécessaire.';
 			case 'settings.account': return 'Compte';
 			case 'settings.username': return 'Nom d\'utilisateur';
+			case 'settings.edit_username_title': return 'Modifier le nom d\'utilisateur';
+			case 'settings.edit_username_confirmation': return 'Voulez-vous vraiment modifier votre pseudo ?';
 			case 'settings.email': return 'E-mail';
+			case 'settings.edit_email_title': return 'Modifier l\'e-mail';
+			case 'settings.edit_email_confirmation': return 'Voulez-vous vraiment modifier votre adresse e-mail ?';
 			case 'settings.change_password': return 'Changer le mot de passe';
 			case 'settings.delete_account': return 'Supprimer le compte';
+			case 'settings.others': return 'Autres';
 			case 'settings.delete_account_confirmation': return 'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.';
 			case 'settings.logout': return 'Se déconnecter';
 			case 'settings.languages.fr': return 'Français';
 			case 'settings.languages.en': return 'Anglais';
+			case 'settings.cancel': return 'Annuler';
+			case 'settings.confirm': return 'Confirmer';
+			case 'settings.delete_confirm_title': return 'Confirmer la suppression';
+			case 'settings.privacy_policy': return 'Avis sur la confidentialité';
+			case 'settings.privacy_policy_description': return 'Nous nous engageons à protéger votre vie privée. Toutes vos données sont confidentielles et ne seront jamais partagées sans votre consentement.';
+			case 'settings.save': return 'Sauvegarder';
 			default: return null;
 		}
 	}

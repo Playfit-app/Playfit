@@ -107,14 +107,25 @@
         "disable_notifications_info": "Les notifications ont été désactivées. Vous pouvez les réactiver plus tard dans les paramètres de votre appareil si nécessaire.",
         "account": "Compte",
         "username":"Nom d'utilisateur",
+        "edit_username_title": "Modifier le nom d'utilisateur",
+        "edit_username_confirmation": "Voulez-vous vraiment modifier votre pseudo ?",
         "email": "E-mail",
+        "edit_email_title": "Modifier l'e-mail",
+        "edit_email_confirmation": "Voulez-vous vraiment modifier votre adresse e-mail ?",
         "change_password": "Changer le mot de passe",
         "delete_account": "Supprimer le compte",
+        "others": "Autres",
         "delete_account_confirmation": "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
         "logout": "Se déconnecter",
         "languages": {
             "fr": "Français",
             "en": "Anglais"
-        }
+        },
+        "cancel": "Annuler",
+        "confirm": "Confirmer",
+        "delete_confirm_title": "Confirmer la suppression",
+        "privacy_policy": "Avis sur la confidentialité",
+        "privacy_policy_description": "Nous nous engageons à protéger votre vie privée. Toutes vos données sont confidentielles et ne seront jamais partagées sans votre consentement.",
+        "save": "Sauvegarder"
     }
 }

@@ -211,15 +211,26 @@ class TranslationsSettingsEn {
 	String get disable_notifications_info => 'Notifications have been disabled. You can re-enable them later in your device settings if needed.';
 	String get account => 'Account';
 	String get username => 'Username';
+	String get edit_username_title => 'Edit username';
+	String get edit_username_confirmation => 'Do you really want to change your username?';
 	String get email => 'Email';
+	String get edit_email_title => 'Edit email';
+	String get edit_email_confirmation => 'Do you really want to change your email address?';
 	String get change_password => 'Change password';
 	String get delete_account => 'Delete account';
+	String get others => 'Others';
 	String get delete_account_confirmation => 'Are you sure you want to delete your account? This action cannot be undone.';
 	String get logout => 'Logout';
 	Map<String, String> get languages => {
 		'fr': 'French',
 		'en': 'English',
 	};
+	String get cancel => 'Cancel';
+	String get confirm => 'Confirm';
+	String get delete_confirm_title => 'Confirm Deletion';
+	String get privacy_policy => 'Privacy Policy';
+	String get privacy_policy_description => 'We are committed to protecting your privacy. All your data is confidential and will never be shared without your consent.';
+	String get save => 'Save';
 }
 
 // Path: gdpr_consent_form.data_collection
@@ -357,13 +368,24 @@ extension on Translations {
 			case 'settings.disable_notifications_info': return 'Notifications have been disabled. You can re-enable them later in your device settings if needed.';
 			case 'settings.account': return 'Account';
 			case 'settings.username': return 'Username';
+			case 'settings.edit_username_title': return 'Edit username';
+			case 'settings.edit_username_confirmation': return 'Do you really want to change your username?';
 			case 'settings.email': return 'Email';
+			case 'settings.edit_email_title': return 'Edit email';
+			case 'settings.edit_email_confirmation': return 'Do you really want to change your email address?';
 			case 'settings.change_password': return 'Change password';
 			case 'settings.delete_account': return 'Delete account';
+			case 'settings.others': return 'Others';
 			case 'settings.delete_account_confirmation': return 'Are you sure you want to delete your account? This action cannot be undone.';
 			case 'settings.logout': return 'Logout';
 			case 'settings.languages.fr': return 'French';
 			case 'settings.languages.en': return 'English';
+			case 'settings.cancel': return 'Cancel';
+			case 'settings.confirm': return 'Confirm';
+			case 'settings.delete_confirm_title': return 'Confirm Deletion';
+			case 'settings.privacy_policy': return 'Privacy Policy';
+			case 'settings.privacy_policy_description': return 'We are committed to protecting your privacy. All your data is confidential and will never be shared without your consent.';
+			case 'settings.save': return 'Save';
 			default: return null;
 		}
 	}

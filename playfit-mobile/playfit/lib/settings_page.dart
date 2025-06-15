@@ -58,14 +58,14 @@ class _SettingsPageState extends State<SettingsPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Annuler'),
+              child: Text(t.settings.cancel),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 onConfirm();
               },
-              child: const Text('Confirmer'),
+              child: Text(t.settings.confirm),
             ),
           ],
         );
@@ -75,8 +75,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _showDeleteConfirmationDialog() {
     _showConfirmationDialog(
-      'Confirmer la suppression',
-      'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.',
+      t.settings.delete_confirm_title,
+      t.settings.delete_account_confirmation,
       () {
         // Logique de suppression ici
       },
@@ -200,26 +200,26 @@ class _SettingsPageState extends State<SettingsPage> {
                           ListTile(
                             leading:
                                 Icon(Icons.person, color: Colors.brown[200]),
-                            title: _buildText('Compte'),
+                            title: _buildText(t.settings.account),
                             onTap: () => setState(() =>
                                 _showAccountOptions = !_showAccountOptions),
                           ),
                           if (_showAccountOptions) ...[
                             const SizedBox(height: 8),
-                            _buildEditableField('Pseudo', _usernameController,
+                            _buildEditableField(t.settings.username, _usernameController,
                                 () {
                               _showConfirmationDialog(
-                                'Modifier le pseudo',
-                                'Voulez-vous vraiment modifier votre pseudo ?',
-                                () => _showFieldSavedSnackBar('Pseudo'),
+                                t.settings.edit_username_title,
+                                t.settings.edit_username_confirmation,
+                                () => _showFieldSavedSnackBar(t.settings.username),
                               );
                             }),
                             const SizedBox(height: 8),
-                            _buildEditableField('Email', _emailController, () {
+                            _buildEditableField(t.settings.email, _emailController, () {
                               _showConfirmationDialog(
-                                'Modifier l\'email',
-                                'Voulez-vous vraiment modifier votre email ?',
-                                () => _showFieldSavedSnackBar('Email'),
+                                t.settings.edit_email_title,
+                                t.settings.edit_email_confirmation,
+                                () => _showFieldSavedSnackBar(t.settings.email),
                               );
                             }),
                             const SizedBox(height: 8),
@@ -236,13 +236,13 @@ class _SettingsPageState extends State<SettingsPage> {
                               style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.red),
                               onPressed: _showDeleteConfirmationDialog,
-                              child: const Text('Supprimer le compte',
+                              child: Text(t.settings.delete_account,
                                   style: TextStyle(color: Colors.white)),
                             ),
                           ],
                           Divider(color: orange, thickness: 1),
                           const SizedBox(height: 24),
-                          _buildSectionTitle('Autres'),
+                          _buildSectionTitle(t.settings.others),
                           Divider(color: orange, thickness: 1),
                           ListTile(
                             leading: Icon(Icons.logout, color: orange),
@@ -252,7 +252,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           Divider(color: orange, thickness: 1),
                           ExpansionTile(
                             leading: Icon(Icons.privacy_tip, color: orange),
-                            title: _buildText('Avis sur la confidentialité'),
+                            title: _buildText(t.settings.privacy_policy),
                             initiallyExpanded: _showPrivacyPolicy,
                             onExpansionChanged: (expanded) =>
                                 setState(() => _showPrivacyPolicy = expanded),
@@ -261,7 +261,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 padding: const EdgeInsets.only(
                                     top: 10, left: 8, right: 8, bottom: 16),
                                 child: _buildText(
-                                  'Nous nous engageons à protéger votre vie privée. Toutes vos données sont confidentielles et ne seront jamais partagées sans votre consentement.',
+                                  t.settings.privacy_policy_description,
                                   size: 14,
                                 ),
                               ),
@@ -360,7 +360,7 @@ class _SettingsPageState extends State<SettingsPage> {
               backgroundColor: orange,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
-            child: const Text('Sauvegarder',
+            child: Text(t.settings.save,
                 style: TextStyle(color: Colors.white)),
           ),
         ),

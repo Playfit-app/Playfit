@@ -50,6 +50,8 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	late final TranslationsWorkoutSessionDialogFr workout_session_dialog = TranslationsWorkoutSessionDialogFr.internal(_root);
 	late final TranslationsCustomizationFr customization = TranslationsCustomizationFr.internal(_root);
 	late final TranslationsIntroductionFr introduction = TranslationsIntroductionFr.internal(_root);
+	late final TranslationsMissionFr mission = TranslationsMissionFr.internal(_root);
+	late final TranslationsShopFr shop = TranslationsShopFr.internal(_root);
 }
 
 // Path: login
@@ -170,6 +172,9 @@ class TranslationsSocialFr {
 
 	// Translations
 	String get title => 'Social';
+	String get no_posts_available => 'Aucun post disponible.';
+	String get post_delete => 'Supprimer';
+	String get post_report => 'Signaler';
 }
 
 // Path: gdpr_consent_form
@@ -227,6 +232,26 @@ class TranslationsIntroductionFr {
 	String get text_7 => 'Oh, tu fais cette tête-là. Je sais, ça surprend. Mais bon, faut dire que t\'as sacrément marché ! T\'as un bon pas, je te le reconnais.';
 	String get text_8 => 'Écoute, t\'as de la chance de m\'être tombé dessus. Je suis un grand explorateur, moi ! L\'Europe ? Je la connais comme mes poches. Bon, j\'ai pas de poches, mais tu vois l\'idée.';
 	String get text_9 => 'Si tu veux, je peux te ramener à Rome. Et tant qu\'à faire, on en profitera pour te cultiver un peu. T\'aimes les anecdotes historiques, non ?';
+}
+
+// Path: mission
+class TranslationsMissionFr {
+	TranslationsMissionFr.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Mission';
+}
+
+// Path: shop
+class TranslationsShopFr {
+	TranslationsShopFr.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Boutique';
 }
 
 // Path: gdpr_consent_form.data_collection
@@ -340,6 +365,9 @@ extension on Translations {
 			case 'profile.bpm_title': return 'BPM (Battements par minute)';
 			case 'profile.achievements': return 'Succès';
 			case 'social.title': return 'Social';
+			case 'social.no_posts_available': return 'Aucun post disponible.';
+			case 'social.post_delete': return 'Supprimer';
+			case 'social.post_report': return 'Signaler';
 			case 'gdpr_consent_form.title': return 'Consentement RGPD';
 			case 'gdpr_consent_form.description': return 'Conformément au Règlement Général sur la Protection des Données (RGPD), nous sommes tenus de vous informer sur la collecte, l\'utilisation et le stockage de vos données personnelles.';
 			case 'gdpr_consent_form.data_collection.title': return '1. Données Collectées\n';
@@ -370,6 +398,8 @@ extension on Translations {
 			case 'introduction.text_7': return 'Oh, tu fais cette tête-là. Je sais, ça surprend. Mais bon, faut dire que t\'as sacrément marché ! T\'as un bon pas, je te le reconnais.';
 			case 'introduction.text_8': return 'Écoute, t\'as de la chance de m\'être tombé dessus. Je suis un grand explorateur, moi ! L\'Europe ? Je la connais comme mes poches. Bon, j\'ai pas de poches, mais tu vois l\'idée.';
 			case 'introduction.text_9': return 'Si tu veux, je peux te ramener à Rome. Et tant qu\'à faire, on en profitera pour te cultiver un peu. T\'aimes les anecdotes historiques, non ?';
+			case 'mission.title': return 'Mission';
+			case 'shop.title': return 'Boutique';
 			default: return null;
 		}
 	}

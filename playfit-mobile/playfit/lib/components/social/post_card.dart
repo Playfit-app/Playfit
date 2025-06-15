@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:playfit/profile_page.dart';
+import 'package:playfit/i18n/strings.g.dart';
 
 class PostCard extends StatefulWidget {
   final Map<String, dynamic> post;
@@ -30,10 +31,10 @@ class _PostCardState extends State<PostCard> {
 
   Future<void> _like() async {
     setState(() {
-        widget.post['is_liked'] = true;
-        widget.post['nb_likes'] += 1;
+      widget.post['is_liked'] = true;
+      widget.post['nb_likes'] += 1;
     });
-    
+
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/posts/${widget.post['id']}/like/");
     final token = await storage.read(key: "token");
@@ -48,7 +49,6 @@ class _PostCardState extends State<PostCard> {
     );
 
     if (response.statusCode == 201) {
-      
     } else {
       setState(() {
         widget.post['is_liked'] = false;
@@ -59,9 +59,9 @@ class _PostCardState extends State<PostCard> {
 
   Future<void> _unlike() async {
     setState(() {
-        widget.post['is_liked'] = false;
-        widget.post['nb_likes'] -= 1;
-      });
+      widget.post['is_liked'] = false;
+      widget.post['nb_likes'] -= 1;
+    });
 
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/posts/${widget.post['id']}/unlike/");
@@ -100,7 +100,7 @@ class _PostCardState extends State<PostCard> {
       },
       "created_at": DateTime.now().toIso8601String(),
     };
-  
+
     setState(() {
       widget.post['comments'].insert(0, newComment);
       _commentController.clear();
@@ -335,14 +335,14 @@ class _PostCardState extends State<PostCard> {
                           },
                           itemBuilder: (context) => [
                             if (widget.isOwner)
-                              const PopupMenuItem<String>(
+                              PopupMenuItem<String>(
                                 value: 'delete',
-                                child: Text('Delete'),
+                                child: Text(t.social.post_delete),
                               )
                             else
-                              const PopupMenuItem<String>(
+                              PopupMenuItem<String>(
                                 value: 'report',
-                                child: Text('Report'),
+                                child: Text(t.social.post_report),
                               ),
                           ],
                         )

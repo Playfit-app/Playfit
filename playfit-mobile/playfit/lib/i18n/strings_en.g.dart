@@ -49,6 +49,8 @@ class TranslationsEn extends Translations {
 	@override late final _TranslationsWorkoutSessionDialogEn workout_session_dialog = _TranslationsWorkoutSessionDialogEn._(_root);
 	@override late final _TranslationsCustomizationEn customization = _TranslationsCustomizationEn._(_root);
 	@override late final _TranslationsIntroductionEn introduction = _TranslationsIntroductionEn._(_root);
+	@override late final _TranslationsMissionEn mission = _TranslationsMissionEn._(_root);
+	@override late final _TranslationsShopEn shop = _TranslationsShopEn._(_root);
 }
 
 // Path: login
@@ -169,6 +171,9 @@ class _TranslationsSocialEn extends TranslationsSocialFr {
 
 	// Translations
 	@override String get title => 'Social';
+	@override String get no_posts_available => 'No posts available.';
+	@override String get post_delete => 'Delete';
+	@override String get post_report => 'Report';
 }
 
 // Path: gdpr_consent_form
@@ -226,6 +231,26 @@ class _TranslationsIntroductionEn extends TranslationsIntroductionFr {
 	@override String get text_7 => 'Oh, that face you\'re making. I know, it\'s surprising. But hey, you’ve walked a lot! Gotta say, you’ve got a good stride.';
 	@override String get text_8 => 'Listen, you\'re lucky you ran into me. I\'m a great explorer! Europe? I know it like the back of my paw. Well, I don’t have paws—pockets, I mean—but you get the idea.';
 	@override String get text_9 => 'If you want, I can take you back to Rome. And while we\'re at it, we might as well teach you a few things. You like historical fun facts, right?';
+}
+
+// Path: mission
+class _TranslationsMissionEn extends TranslationsMissionFr {
+	_TranslationsMissionEn._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Mission';
+}
+
+// Path: shop
+class _TranslationsShopEn extends TranslationsShopFr {
+	_TranslationsShopEn._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Shop';
 }
 
 // Path: gdpr_consent_form.data_collection
@@ -339,6 +364,9 @@ extension on TranslationsEn {
 			case 'profile.bpm_title': return 'BPM (Beats per minute)';
 			case 'profile.achievements': return 'Achievements';
 			case 'social.title': return 'Social';
+			case 'social.no_posts_available': return 'No posts available.';
+			case 'social.post_delete': return 'Delete';
+			case 'social.post_report': return 'Report';
 			case 'gdpr_consent_form.title': return 'GDPR Consent';
 			case 'gdpr_consent_form.description': return 'In accordance with the General Data Protection Regulation (GDPR), we are required to inform you about the collection, use, and storage of your personal data.';
 			case 'gdpr_consent_form.data_collection.title': return '1. Data Collected\n';
@@ -369,6 +397,8 @@ extension on TranslationsEn {
 			case 'introduction.text_7': return 'Oh, that face you\'re making. I know, it\'s surprising. But hey, you’ve walked a lot! Gotta say, you’ve got a good stride.';
 			case 'introduction.text_8': return 'Listen, you\'re lucky you ran into me. I\'m a great explorer! Europe? I know it like the back of my paw. Well, I don’t have paws—pockets, I mean—but you get the idea.';
 			case 'introduction.text_9': return 'If you want, I can take you back to Rome. And while we\'re at it, we might as well teach you a few things. You like historical fun facts, right?';
+			case 'mission.title': return 'Mission';
+			case 'shop.title': return 'Shop';
 			default: return null;
 		}
 	}

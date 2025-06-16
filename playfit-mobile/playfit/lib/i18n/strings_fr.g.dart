@@ -230,6 +230,9 @@ class _TranslationsSettingsFr extends TranslationsSettingsEn {
 	@override String get privacy_policy => 'Avis sur la confidentialité';
 	@override String get privacy_policy_description => 'Nous nous engageons à protéger votre vie privée. Toutes vos données sont confidentielles et ne seront jamais partagées sans votre consentement.';
 	@override String get save => 'Sauvegarder';
+	@override String get overlay_title => 'Position du compteur';
+	@override String get left => 'Gauche';
+	@override String get bottom => 'Bas';
 }
 
 // Path: gdpr_consent_form.data_collection
@@ -385,6 +388,9 @@ extension on TranslationsFr {
 			case 'settings.privacy_policy': return 'Avis sur la confidentialité';
 			case 'settings.privacy_policy_description': return 'Nous nous engageons à protéger votre vie privée. Toutes vos données sont confidentielles et ne seront jamais partagées sans votre consentement.';
 			case 'settings.save': return 'Sauvegarder';
+			case 'settings.overlay_title': return 'Position du compteur';
+			case 'settings.left': return 'Gauche';
+			case 'settings.bottom': return 'Bas';
 			default: return null;
 		}
 	}

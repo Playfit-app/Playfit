@@ -126,6 +126,9 @@
         "delete_confirm_title": "Confirmer la suppression",
         "privacy_policy": "Avis sur la confidentialité",
         "privacy_policy_description": "Nous nous engageons à protéger votre vie privée. Toutes vos données sont confidentielles et ne seront jamais partagées sans votre consentement.",
-        "save": "Sauvegarder"
+        "save": "Sauvegarder",
+        "overlay_title": "Position du compteur",
+        "left": "Gauche",
+        "bottom": "Bas"
     }
 }

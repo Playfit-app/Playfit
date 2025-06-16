@@ -5,6 +5,19 @@ import 'package:playfit/components/settings/dropdown_parameter.dart';
 import 'package:playfit/services/language_service.dart';
 import 'package:playfit/services/push_notification_service.dart';
 
+enum UserBoxType { left, bottom }
+
+extension UserBoxTypeExtension on UserBoxType {
+  String get label {
+    switch (this) {
+      case UserBoxType.left:
+        return t.settings.left;
+      case UserBoxType.bottom:
+        return t.settings.bottom;
+    }
+  }
+}
+
 class _Settings {
   final AppLocale locale;
   final bool notificationsEnabled;
@@ -30,7 +43,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final _notificationService = NotificationService();
   late AppLocale _selectedLanguage;
   late bool _notificationsEnabled;
-  // late String _overlayPosition;
+  late UserBoxType _selectedBoxType;
   bool _showAccountOptions = false;
   bool _showPrivacyPolicy = false;
 
@@ -39,11 +52,14 @@ class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   Future<_Settings> _loadSettings() async {
+    String? boxTypeStr = await storage.read(key: 'boxType');
+    _selectedBoxType =
+        boxTypeStr == 'bottom' ? UserBoxType.bottom : UserBoxType.left;
     return _Settings(
       locale:
           await LanguageService.loadLocale() ?? LocaleSettings.currentLocale,
-      notificationsEnabled: await _notificationService.loadNotificationSettings(),
-      // overlayPosition: 'Droite',
+      notificationsEnabled:
+          await _notificationService.loadNotificationSettings(),
     );
   }
 
@@ -191,11 +207,22 @@ class _SettingsPageState extends State<SettingsPage> {
                             },
                           ),
                           Divider(color: orange, thickness: 1),
-                          // DropDownParameter(title: 'Overlay', currentValue: _overlayPosition, items: ['Droite', 'Gauche', 'Bas'], onChanged: (value) {
-                          //   setState(() {
-                          //     _overlayPosition = value!;
-                          //   });
-                          // }),
+                          DropdownParameter(
+                            title: t.settings.overlay_title,
+                            currentValue: _selectedBoxType,
+                            items: UserBoxType.values,
+                            onChanged: (value) async {
+                              if (value != null) {
+                                setState(() {
+                                  _selectedBoxType = value;
+                                });
+                                await storage.write(
+                                    key: 'boxType',
+                                    value: value == UserBoxType.left ? 'left' : 'bottom');
+                              }
+                            },
+                            itemLabelBuilder: (type) => (type).label,
+                          ),
                           Divider(color: orange, thickness: 1),
                           ListTile(
                             leading:
@@ -206,16 +233,18 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                           if (_showAccountOptions) ...[
                             const SizedBox(height: 8),
-                            _buildEditableField(t.settings.username, _usernameController,
-                                () {
+                            _buildEditableField(
+                                t.settings.username, _usernameController, () {
                               _showConfirmationDialog(
                                 t.settings.edit_username_title,
                                 t.settings.edit_username_confirmation,
-                                () => _showFieldSavedSnackBar(t.settings.username),
+                                () => _showFieldSavedSnackBar(
+                                    t.settings.username),
                               );
                             }),
                             const SizedBox(height: 8),
-                            _buildEditableField(t.settings.email, _emailController, () {
+                            _buildEditableField(
+                                t.settings.email, _emailController, () {
                               _showConfirmationDialog(
                                 t.settings.edit_email_title,
                                 t.settings.edit_email_confirmation,
@@ -360,8 +389,7 @@ class _SettingsPageState extends State<SettingsPage> {
               backgroundColor: orange,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
-            child: Text(t.settings.save,
-                style: TextStyle(color: Colors.white)),
+            child: Text(t.settings.save, style: TextStyle(color: Colors.white)),
           ),
         ),
       ],

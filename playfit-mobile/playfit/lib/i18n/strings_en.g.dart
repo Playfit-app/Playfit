@@ -231,6 +231,9 @@ class TranslationsSettingsEn {
 	String get privacy_policy => 'Privacy Policy';
 	String get privacy_policy_description => 'We are committed to protecting your privacy. All your data is confidential and will never be shared without your consent.';
 	String get save => 'Save';
+	String get overlay_title => 'Overlay Position';
+	String get left => 'Left';
+	String get bottom => 'Bottom';
 }
 
 // Path: gdpr_consent_form.data_collection
@@ -386,6 +389,9 @@ extension on Translations {
 			case 'settings.privacy_policy': return 'Privacy Policy';
 			case 'settings.privacy_policy_description': return 'We are committed to protecting your privacy. All your data is confidential and will never be shared without your consent.';
 			case 'settings.save': return 'Save';
+			case 'settings.overlay_title': return 'Overlay Position';
+			case 'settings.left': return 'Left';
+			case 'settings.bottom': return 'Bottom';
 			default: return null;
 		}
 	}

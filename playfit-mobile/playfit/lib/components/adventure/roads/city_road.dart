@@ -11,7 +11,6 @@ class CityRoad extends Road {
   CityRoad({
     required super.startY,
     required super.screenSize,
-    required super.scale,
     required super.decorationImages,
     required super.cityIndex,
   }) {
@@ -32,65 +31,69 @@ class CityRoad extends Road {
       return;
     }
 
-    const Size treeSize = Size(79, 118);
-    const Size buildingSize = Size(75, 131);
+    Size scale = Size(
+      screenSize.width / 411,
+      screenSize.height / 798,
+    );
+    Size treeSize = Size(79 * scale.width, 118 * scale.height);
+    Size buildingSize = Size(75 * scale.width, 131 * scale.height);
     Size landmarkSize =
-        Size(landmarkImage.width.toDouble(), landmarkImage.height.toDouble());
+        Size(landmarkImage.width.toDouble() * scale.width, landmarkImage.height.toDouble() * scale.height);
 
     decorations = [
       // Trees
       dec.Decoration(
         image: treeImage,
-        position: Offset(100 * scale.dx, startY + 60 * scale.dy),
+        position: Offset(100 * scale.width, startY + 60 * scale.height),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(200 * scale.dx, startY + 225 * scale.dy),
+        position: Offset(200 * scale.width, startY + 225 * scale.height),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(220 * scale.dx, startY + 205 * scale.dy),
+        position: Offset(220 * scale.width, startY + 205 * scale.height),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(260 * scale.dx, startY + 250 * scale.dy),
+        position: Offset(260 * scale.width, startY + 250 * scale.height),
         size: treeSize,
       ),
       dec.Decoration(
         image: treeImage,
-        position: Offset(200 * scale.dx, oldStartY - 300 * scale.dy),
+        position: Offset(200 * scale.width, oldStartY - 300 * scale.height),
         size: treeSize,
       ),
 
       // Buildings
       dec.Decoration(
         image: buildingImage,
-        position: Offset(50 * scale.dx, startY + 50 * scale.dy),
+        position: Offset(50 * scale.width, startY + 50 * scale.height),
         size: buildingSize,
       ),
       dec.Decoration(
         image: buildingImage,
-        position: Offset(30 * scale.dx, startY + 380 * scale.dy),
+        position: Offset(30 * scale.width, startY + 380 * scale.height),
         size: buildingSize,
       ),
       dec.Decoration(
         image: buildingImage,
-        position: Offset(95 * scale.dx, startY + 380 * scale.dy),
+        position: Offset(95 * scale.width, startY + 380 * scale.height),
         size: buildingSize,
       ),
       dec.Decoration(
         image: buildingImage,
-        position: Offset(280 * scale.dx, oldStartY - 280 * scale.dy),
+        position: Offset(280 * scale.width, oldStartY - 280 * scale.height),
         size: buildingSize,
       ),
 
       // Landmarks
       dec.Decoration(
         image: landmarkImage,
-        position: Offset(300 * scale.dx, startY + 170 * scale.dy),
+        position: Offset(300 * scale.width, startY + 170 * scale.height),
         size: landmarkSize,
       ),
     ];
@@ -98,22 +101,16 @@ class CityRoad extends Road {
 
   void buildGreyPath() {
     final greyPath = Path();
-
-    // OffsetX based on 22px from 411px width → 22 / 411 ≈ 0.0535
     double offsetX = screenSize.width * 0.0535;
-    double endY = (startY - screenSize.height * scale.dy).roundToDouble();
-
-    debugPrint("endY: $endY");
-
+    double endY = (startY - screenSize.height).roundToDouble();
     // Shortcut functions for percentage-based coordinates
     double px(double originalX) =>
         screenSize.width *
-        ((originalX / 411) + (offsetX / screenSize.width)) *
-        scale.dx;
+        ((originalX / 411) + (offsetX / screenSize.width));
     double py(double originalY) =>
-        screenSize.height * (originalY / 798) * scale.dy + endY;
+        screenSize.height * (originalY / 798) + endY;
 
-    greyPath.moveTo(px(259.577), endY + screenSize.height * scale.dy);
+    greyPath.moveTo(px(259.577), endY + screenSize.height);
 
     greyPath.cubicTo(
       px(251.577),
@@ -166,19 +163,17 @@ class CityRoad extends Road {
   void buildWhitePath() {
     final whitePath = Path();
 
-    // 22 * 2 = 44 → offsetX as a percent of 411 width = 44 / 411 ≈ 0.1071
     double offsetX = screenSize.width * 0.1071;
-    double endY = (startY - screenSize.height * scale.dy).roundToDouble();
+    double endY = (startY - screenSize.height).roundToDouble();
 
     // Helpers for clean coordinate translation
     double px(double originalX) =>
         screenSize.width *
-        ((originalX / 411) + (offsetX / screenSize.width)) *
-        scale.dx;
+        ((originalX / 411) + (offsetX / screenSize.width));
     double py(double originalY) =>
-        screenSize.height * (originalY / 798) * scale.dy + endY;
+        screenSize.height * (originalY / 798) + endY;
 
-    whitePath.moveTo(px(235.577), endY + screenSize.height * scale.dy);
+    whitePath.moveTo(px(235.577), endY + screenSize.height);
 
     whitePath.cubicTo(
       px(227.577),
@@ -237,9 +232,9 @@ class CityRoad extends Road {
       double distance = 0.0;
       while (distance < pathMetric.length) {
         Path dashPath =
-            pathMetric.extractPath(distance, distance + 10 * scale.dx);
+            pathMetric.extractPath(distance, distance + 10);
         canvas.drawPath(dashPath, paint);
-        distance += 20 * scale.dx;
+        distance += 20;
       }
     }
   }
@@ -247,7 +242,7 @@ class CityRoad extends Road {
   void drawGreyPath(Canvas canvas) {
     final greyPaint = Paint()
       ..color = const Color.fromARGB(255, 129, 147, 167)
-      ..strokeWidth = 50 * scale.dx
+      ..strokeWidth = 50
       ..style = PaintingStyle.stroke;
 
     canvas.drawPath(paths[0], greyPaint);
@@ -256,7 +251,7 @@ class CityRoad extends Road {
   void drawWhitePath(Canvas canvas) {
     final whitePaint = Paint()
       ..color = Colors.white
-      ..strokeWidth = 3 * scale.dx
+      ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 
     drawDashedPath(canvas, paths[1], whitePaint);
@@ -271,11 +266,10 @@ class CityRoad extends Road {
       ..color = const Color.fromARGB(255, 197, 222, 250)
       ..style = PaintingStyle.fill;
 
-    // Convert 411 and 798 to percentage-based dimensions
     final double left = 0;
     final double top =
-        oldStartY - (screenSize.height * scale.dy); // 798 is 100% of height
-    final double right = screenSize.width * scale.dx; // 411 is 100% of width
+        oldStartY - (screenSize.height);
+    final double right = screenSize.width;
     final double bottom = oldStartY;
 
     canvas.drawRect(
@@ -302,7 +296,6 @@ class CityRoad extends Road {
     for (Checkpoint checkpoint in checkpoints) {
       checkpoint.render(
         canvas,
-        scale,
         dropShadowPaint,
         checkpointPaint,
         innerShadowPaint,

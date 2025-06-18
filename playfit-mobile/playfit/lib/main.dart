@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:playfit/i18n/strings.g.dart';
@@ -35,11 +36,14 @@ void main() async {
   }
 
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => NotificationProvider()),
-      ],
-      child: TranslationProvider(child: const MyApp()),
+    DevicePreview(
+      enabled: !bool.fromEnvironment('dart.vm.product'),
+      builder: (context) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => NotificationProvider()),
+        ],
+        child: TranslationProvider(child: const MyApp()),
+      ),
     ),
   );
 }
@@ -50,6 +54,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      useInheritedMediaQuery: true,
+      builder: DevicePreview.appBuilder,
       title: 'Flutter App',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -64,7 +70,8 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => const ProfilePage(), // Route to profile page
         '/notifications': (context) => const NotificationPage(),
       },
-      locale: TranslationProvider.of(context).flutterLocale,
+      // locale: TranslationProvider.of(context).flutterLocale,
+      locale: DevicePreview.locale(context) ?? TranslationProvider.of(context).flutterLocale,
       supportedLocales: AppLocaleUtils.instance.supportedLocales,
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
     );

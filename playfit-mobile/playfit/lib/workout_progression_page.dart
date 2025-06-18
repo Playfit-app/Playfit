@@ -1,5 +1,8 @@
 import 'dart:ui' as ui;
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:playfit/camera_page.dart';
 import 'package:playfit/components/level_cinematic/character.dart';
 import 'package:playfit/components/level_cinematic/difficulty.dart';
@@ -33,6 +36,7 @@ class WorkoutProgressionPage extends StatefulWidget {
 
 class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
     with SingleTickerProviderStateMixin {
+  final FlutterSecureStorage storage = const FlutterSecureStorage();
   late AnimationController _controller;
   late Animation<double> _animation;
   late List<Offset> points;
@@ -58,7 +62,24 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
     ];
   }
 
-  void _onAnimationComplete() {
+  Future<void> completeWorkoutSession(String difficulty) async {
+    final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/workout';
+    final String? token = await storage.read(key: 'token');
+
+    final response = await http
+        .patch(Uri.parse('$baseUrl/update_workout_session/'), headers: {
+      'Authorization': 'Token $token',
+    }, body: {
+      'difficulty': difficulty,
+    });
+
+    if (response.statusCode == 200) {
+    } else {
+      print("Can't update workout session");
+    }
+  }
+
+  void _onAnimationComplete() async {
     String difficulty = "";
     switch (widget.difficulty) {
       case Difficulty.easy:
@@ -73,13 +94,16 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
     }
     if (widget.startingPoint ==
         widget.workoutSessionExercises[difficulty]!.length - 1) {
-      Navigator.of(context).pushReplacement(
+      await completeWorkoutSession(difficulty);
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context) => HomePage(
-            completedDifficulty: difficulty,
-            workoutDone: true,
+          builder: (_) => HomePage(
+            // completedDifficulty: difficulty,
+            // workoutDone: true,
           ),
         ),
+        (Route<dynamic> route) => false,
       );
       return;
     }
@@ -87,7 +111,7 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
 
     imageUrl = "/media${imageUrl.split('/media').last}";
 
-    Navigator.of(context).pushReplacement(
+    Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => CameraView(
           difficulty: difficulty,

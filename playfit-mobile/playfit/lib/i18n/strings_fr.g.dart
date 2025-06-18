@@ -48,6 +48,17 @@ class TranslationsFr extends Translations {
 	@override late final _TranslationsGdprConsentFormFr gdpr_consent_form = _TranslationsGdprConsentFormFr._(_root);
 	@override late final _TranslationsWorkoutSessionDialogFr workout_session_dialog = _TranslationsWorkoutSessionDialogFr._(_root);
 	@override late final _TranslationsSettingsFr settings = _TranslationsSettingsFr._(_root);
+	late final TranslationsLoginFr login = TranslationsLoginFr.internal(_root);
+	late final TranslationsRegisterFr register = TranslationsRegisterFr.internal(_root);
+	late final TranslationsHomeFr home = TranslationsHomeFr.internal(_root);
+	late final TranslationsCameraFr camera = TranslationsCameraFr.internal(_root);
+	late final TranslationsNotificationsFr notifications = TranslationsNotificationsFr.internal(_root);
+	late final TranslationsProfileFr profile = TranslationsProfileFr.internal(_root);
+	late final TranslationsSocialFr social = TranslationsSocialFr.internal(_root);
+	late final TranslationsGdprConsentFormFr gdpr_consent_form = TranslationsGdprConsentFormFr.internal(_root);
+	late final TranslationsWorkoutSessionDialogFr workout_session_dialog = TranslationsWorkoutSessionDialogFr.internal(_root);
+	late final TranslationsCustomizationFr customization = TranslationsCustomizationFr.internal(_root);
+	late final TranslationsIntroductionFr introduction = TranslationsIntroductionFr.internal(_root);
 }
 
 // Path: login
@@ -235,6 +246,36 @@ class _TranslationsSettingsFr extends TranslationsSettingsEn {
 	@override String get bottom => 'Bas';
 }
 
+// Path: customization
+class TranslationsCustomizationFr {
+	TranslationsCustomizationFr.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Quel look pour ce voyage ?';
+	String get next_button => 'Suivant';
+	String get confirm_button => 'Terminer';
+}
+
+// Path: introduction
+class TranslationsIntroductionFr {
+	TranslationsIntroductionFr.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get text_1 => 'Tout a commencé par une simple envie : se remettre au sport.';
+	String get text_2 => 'Pour cela, le joueur choisit une petite randonnée en forêt, sans se douter qu\'elle marquerait le début d\'un long périple.';
+	String get text_3 => 'Originaire de Rome, il marche, marche… jusqu\'à se perdre complètement.';
+	String get text_4 => 'Alors qu\'il fait une pause pour reprendre son souffle, un hamster surgit devant lui.';
+	String get text_5 => 'Pas un hamster ordinaire : celui-ci parle ! Intrigués, ils engagent la conversation.';
+	String get text_6 => 'Attends une minute… Tu viens de Rome, c\'est ça ? Eh bien mon pote… t\'es plus près de Paris que de ton lit !';
+	String get text_7 => 'Oh, tu fais cette tête-là. Je sais, ça surprend. Mais bon, faut dire que t\'as sacrément marché ! T\'as un bon pas, je te le reconnais.';
+	String get text_8 => 'Écoute, t\'as de la chance de m\'être tombé dessus. Je suis un grand explorateur, moi ! L\'Europe ? Je la connais comme mes poches. Bon, j\'ai pas de poches, mais tu vois l\'idée.';
+	String get text_9 => 'Si tu veux, je peux te ramener à Rome. Et tant qu\'à faire, on en profitera pour te cultiver un peu. T\'aimes les anecdotes historiques, non ?';
+}
+
 // Path: gdpr_consent_form.data_collection
 class _TranslationsGdprConsentFormDataCollectionFr extends TranslationsGdprConsentFormDataCollectionEn {
 	_TranslationsGdprConsentFormDataCollectionFr._(TranslationsFr root) : this._root = root, super.internal(root);
@@ -391,6 +432,18 @@ extension on TranslationsFr {
 			case 'settings.overlay_title': return 'Position du compteur';
 			case 'settings.left': return 'Gauche';
 			case 'settings.bottom': return 'Bas';
+			case 'customization.title': return 'Quel look pour ce voyage ?';
+			case 'customization.next_button': return 'Suivant';
+			case 'customization.confirm_button': return 'Terminer';
+			case 'introduction.text_1': return 'Tout a commencé par une simple envie : se remettre au sport.';
+			case 'introduction.text_2': return 'Pour cela, le joueur choisit une petite randonnée en forêt, sans se douter qu\'elle marquerait le début d\'un long périple.';
+			case 'introduction.text_3': return 'Originaire de Rome, il marche, marche… jusqu\'à se perdre complètement.';
+			case 'introduction.text_4': return 'Alors qu\'il fait une pause pour reprendre son souffle, un hamster surgit devant lui.';
+			case 'introduction.text_5': return 'Pas un hamster ordinaire : celui-ci parle ! Intrigués, ils engagent la conversation.';
+			case 'introduction.text_6': return 'Attends une minute… Tu viens de Rome, c\'est ça ? Eh bien mon pote… t\'es plus près de Paris que de ton lit !';
+			case 'introduction.text_7': return 'Oh, tu fais cette tête-là. Je sais, ça surprend. Mais bon, faut dire que t\'as sacrément marché ! T\'as un bon pas, je te le reconnais.';
+			case 'introduction.text_8': return 'Écoute, t\'as de la chance de m\'être tombé dessus. Je suis un grand explorateur, moi ! L\'Europe ? Je la connais comme mes poches. Bon, j\'ai pas de poches, mais tu vois l\'idée.';
+			case 'introduction.text_9': return 'Si tu veux, je peux te ramener à Rome. Et tant qu\'à faire, on en profitera pour te cultiver un peu. T\'aimes les anecdotes historiques, non ?';
 			default: return null;
 		}
 	}

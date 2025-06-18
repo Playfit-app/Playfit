@@ -14,14 +14,14 @@ import 'components/top_bar.dart';
 
 class HomePage extends StatefulWidget {
   final bool firstLogin;
-  final bool workoutDone;
-  final String? completedDifficulty;
+  // final bool workoutDone;
+  // final String? completedDifficulty;
 
   HomePage({
     super.key,
     this.firstLogin = false,
-    this.workoutDone = false,
-    this.completedDifficulty,
+    // this.workoutDone = false,
+    // this.completedDifficulty,
   });
 
   @override
@@ -64,10 +64,17 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     currentStreak = 0;
     _userProgressFuture = _fetchUserProgress();
+
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   if (widget.workoutDone) {
+    //     refreshStreakAfterWorkout();
+    //   }
+    // });
+
     _pages = [
       AdventurePage(
-        moveCharacter: widget.workoutDone,
-        completedDifficulty: widget.completedDifficulty,
+        // moveCharacter: widget.workoutDone,
+        // completedDifficulty: widget.completedDifficulty,
       ),
       const MissionsPage(),
       const BoutiquePage(),
@@ -84,6 +91,11 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // Future<void> refreshStreakAfterWorkout() async {
+  //   await Future.delayed(const Duration(seconds: 2));
+  //   await _fetchUserProgress();
+  // }
+
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
@@ -92,39 +104,53 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _userProgressFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text(t.home.error_loading));
-        }
+    // Heights and insets
+    final double navBaseHeight  = kBottomNavigationBarHeight;
+    final double curvedClipExtra = 40;
+    final double paddingExtra    = 10;
+    final double bottomInset     = MediaQuery.of(context).padding.bottom;
+    final double clipHeight      = navBaseHeight + curvedClipExtra;
 
-        final double navBaseHeight = kBottomNavigationBarHeight;
-        final double curvedClipExtra = 40;
-        final double paddingExtra = 10;
-
-        final double navBarHeight =
-            navBaseHeight + curvedClipExtra + paddingExtra;
-
-        return Scaffold(
-          extendBodyBehindAppBar: true,
-          extendBody: true,
-          appBar: _currentIndex == 4 || _currentIndex == 3
-              ? null
-              : AppBar(
-                  backgroundColor: Colors.transparent,
-                  title: TopBar(currentStreak: currentStreak),
-                  automaticallyImplyLeading: false,
-                ),
-          body: _pages[_currentIndex],
-          bottomNavigationBar: SizedBox(
-            height: navBarHeight,
-            child: ClipPath(
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      extendBody: true,
+      appBar: _currentIndex == 4 || _currentIndex == 3
+          ? null
+          : AppBar(
+              backgroundColor: Colors.transparent,
+              title: TopBar(currentStreak: currentStreak),
+              automaticallyImplyLeading: false,
+            ),
+      body: FutureBuilder(
+        future: _userProgressFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text(t.home.error_loading));
+          }
+          return _pages[_currentIndex];
+        },
+      ),
+      bottomNavigationBar: SizedBox(
+        height: clipHeight,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            ClipPath(
               clipper: NavBarClipper(),
+              child: Container(
+                height: clipHeight + bottomInset,
+                color: Colors.white,
+              ),
+            ),
+            Positioned(
+              bottom: -bottomInset,
+              left: 0,
+              right: 0,
               child: BottomNavigationBar(
-                backgroundColor: Colors.white,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
                 type: BottomNavigationBarType.fixed,
                 selectedItemColor: const Color.fromARGB(255, 74, 68, 89),
                 unselectedItemColor: const Color.fromARGB(255, 74, 68, 89),
@@ -141,9 +167,9 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 

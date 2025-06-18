@@ -63,6 +63,11 @@ class _ProfilePageState extends State<ProfilePage> {
   void _follow() async {
     if (widget.userId == null) return;
 
+    setState(() {
+        _isFollowing = true;
+        _followerCount += 1;
+      });
+
     final String url = '${dotenv.env['SERVER_BASE_URL']}/api/social/follow/';
     final String? token = await storage.read(key: 'token');
     final response = await http.post(
@@ -77,17 +82,21 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (response.statusCode == 201) {
-      setState(() {
-        _isFollowing = true;
-        _followerCount += 1;
-      });
     } else {
-      throw Exception('Failed to follow user: ${response.statusCode}');
+      setState(() {
+        _isFollowing = false;
+        _followerCount -= 1;
+      });
     }
   }
 
   void _unfollow() async {
     if (widget.userId == null) return;
+
+    setState(() {
+        _isFollowing = false;
+        _followerCount -= 1;
+      });
 
     final String url =
         '${dotenv.env['SERVER_BASE_URL']}/api/social/unfollow/${widget.userId}/';
@@ -100,13 +109,11 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (response.statusCode == 204) {
-      setState(() {
-        _isFollowing = false;
-        _followerCount -= 1;
-      });
     } else {
-      // Handle error
-      throw Exception('Failed to unfollow user: ${response.statusCode}');
+      setState(() {
+        _isFollowing = true;
+        _followerCount += 1;
+      });
     }
   }
 

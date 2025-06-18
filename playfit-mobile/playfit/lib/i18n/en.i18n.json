@@ -130,5 +130,21 @@
         "overlay_title": "Overlay Position",
         "left": "Left",
         "bottom": "Bottom"
+    },
+    "customization": {
+        "title": "What look for this trip?",
+        "next_button": "Next",
+        "confirm_button": "Finish"
+    },
+    "introduction": {
+        "text_1": "It all started with a simple desire: to get back into sports.",
+        "text_2": "To do that, the player chose a short hike in the forest, not suspecting it would mark the beginning of a long journey.",
+        "text_3": "Originally from Rome, he walks and walks… until he gets completely lost.",
+        "text_4": "While taking a break to catch his breath, a hamster suddenly appears in front of him.",
+        "text_5": "Not an ordinary hamster: this one talks! Intrigued, they strike up a conversation.",
+        "text_6": "Wait a minute… You're from Rome, right? Well buddy… you're closer to Paris than to your bed!",
+        "text_7": "Oh, that face you're making. I know, it's surprising. But hey, you’ve walked a lot! Gotta say, you’ve got a good stride.",
+        "text_8": "Listen, you're lucky you ran into me. I'm a great explorer! Europe? I know it like the back of my paw. Well, I don’t have paws—pockets, I mean—but you get the idea.",
+        "text_9": "If you want, I can take you back to Rome. And while we're at it, we might as well teach you a few things. You like historical fun facts, right?"
     }
 }

@@ -13,12 +13,12 @@ import 'package:playfit/utils/image.dart';
 
 class AdventurePage extends StatefulWidget {
   final bool moveCharacter;
-  final String? completedDifficulty;
+  // final String? completedDifficulty;
 
   const AdventurePage({
     super.key,
     this.moveCharacter = false,
-    this.completedDifficulty,
+    // this.completedDifficulty,
   });
 
   @override
@@ -40,27 +40,27 @@ class _AdventurePageState extends State<AdventurePage>
   @override
   void initState() {
     super.initState();
-    if (widget.moveCharacter) {
-      completeWorkoutSession();
-    }
+    // if (widget.moveCharacter) {
+    //   completeWorkoutSession();
+    // }
   }
 
-  void completeWorkoutSession() async {
-    final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/workout';
-    final String? token = await storage.read(key: 'token');
+  // void completeWorkoutSession() async {
+  //   final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/workout';
+  //   final String? token = await storage.read(key: 'token');
 
-    final response = await http
-        .patch(Uri.parse('$baseUrl/update_workout_session/'), headers: {
-      'Authorization': 'Token $token',
-    }, body: {
-      'difficulty': widget.completedDifficulty!,
-    });
+  //   final response = await http
+  //       .patch(Uri.parse('$baseUrl/update_workout_session/'), headers: {
+  //     'Authorization': 'Token $token',
+  //   }, body: {
+  //     'difficulty': widget.completedDifficulty!,
+  //   });
 
-    if (response.statusCode == 200) {
-    } else {
-      print("Can't update workout session");
-    }
-  }
+  //   if (response.statusCode == 200) {
+  //   } else {
+  //     print("Can't update workout session");
+  //   }
+  // }
 
   void _scrollToCharacter(List<dynamic> worldPositions) {
     if (checkpoints.isNotEmpty && worldPositions.isNotEmpty) {
@@ -137,25 +137,12 @@ class _AdventurePageState extends State<AdventurePage>
     }
   }
 
-  List<Road> _createRoads(Map<String, dynamic> decorationImages) {
+  List<Road> _createRoads(Map<String, dynamic> decorationImages, Size screenSize) {
     List<Road> roads = [];
     combinedPath = Path();
-
-    Size screenSize = MediaQueryData.fromView(
-            WidgetsBinding.instance.platformDispatcher.views.first)
-        .size;
-    debugPrint('Screen size: ${screenSize.width} x ${screenSize.height}');
-    double referenceScreenHeight = 798;
-    double referenceScreenWidth = 411;
-
     double height = screenSize.height * nbCities +
-        (screenSize.height * 0.5 * (nbCities - 1)) +
-        screenSize.height * 0.3;
+        (screenSize.height * 0.5 * (nbCities - 1));
     double startY = height;
-    Offset scale = Offset(
-      screenSize.width / referenceScreenWidth,
-      screenSize.height / referenceScreenHeight,
-    );
     int cityIndex = 0;
 
     for (int i = 0; i < nbCities + (nbCities - 1); i++) {
@@ -165,7 +152,6 @@ class _AdventurePageState extends State<AdventurePage>
         road = CityRoad(
           startY: startY,
           screenSize: screenSize,
-          scale: scale,
           decorationImages: decorationImages,
           cityIndex: cityIndex,
         );
@@ -174,7 +160,6 @@ class _AdventurePageState extends State<AdventurePage>
         road = TransitionRoad(
           startY: startY,
           screenSize: screenSize,
-          scale: scale,
           decorationImages: decorationImages,
           cityIndex: i,
         );
@@ -223,25 +208,22 @@ class _AdventurePageState extends State<AdventurePage>
 
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
-
     return FutureBuilder(
       future: _loadPositionsAndImages(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
+        Size screenSize = MediaQuery.of(context).size;
         final String serverBaseUrl = dotenv.env['SERVER_BASE_URL']!;
         final images = snapshot.data![0] as Map<String, dynamic>;
         final worldPositions = snapshot.data![1] as List<dynamic>;
 
         nbCities = images['country'].length;
-        // double referenceScreenHeight = 798;
         double height = screenSize.height * nbCities +
-            (screenSize.height * 0.5 * (nbCities - 1)) +
-            screenSize.height * 0.3;
+            (screenSize.height * 0.5 * (nbCities - 1));
 
-        final roads = _createRoads(images);
+        final roads = _createRoads(images, screenSize);
 
         checkpoints = roads
             .map((road) => road.getCheckpoints().map((c) => c.position))

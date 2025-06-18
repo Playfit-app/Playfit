@@ -5,6 +5,7 @@
 ///
 /// Locales: 2
 /// Strings: 276 (138 per locale)
+/// Strings: 276 (138 per locale)
 ///
 /// Built on 2025-06-18 at 10:09 UTC
 

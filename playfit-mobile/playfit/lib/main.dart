@@ -26,19 +26,13 @@ void main() async {
   );
   NotificationService().initFirebaseMessaging();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  final locale = await LanguageService.loadLocale();
+  var locale = await LanguageService.loadLocale();
 
   if (locale != null) {
     await LocaleSettings.setLocale(locale);
   } else {
-    final deviceLocale = PlatformDispatcher.instance.locale;
-
-    if (!AppLocaleUtils.instance.supportedLocales
-        .any((supportedLocale) => supportedLocale.languageCode == deviceLocale.languageCode)) {
-      await LocaleSettings.setLocale(AppLocale.en);
-    } else {
-      await LocaleSettings.setLocale(AppLocaleUtils.parse(deviceLocale.languageCode));
-    }
+    locale = await LocaleSettings.useDeviceLocale();
+    await LanguageService.saveLocale(locale);
   }
 
   runApp(

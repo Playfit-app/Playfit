@@ -52,6 +52,7 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	late final TranslationsIntroductionFr introduction = TranslationsIntroductionFr.internal(_root);
 	late final TranslationsMissionFr mission = TranslationsMissionFr.internal(_root);
 	late final TranslationsShopFr shop = TranslationsShopFr.internal(_root);
+	late final TranslationsWorkoutFr workout = TranslationsWorkoutFr.internal(_root);
 }
 
 // Path: login
@@ -254,6 +255,21 @@ class TranslationsShopFr {
 	String get title => 'Boutique';
 }
 
+// Path: workout
+class TranslationsWorkoutFr {
+	TranslationsWorkoutFr.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get difficulty => 'Difficulté :';
+	String get easy => 'Facile';
+	String get medium => 'Moyen';
+	String get hard => 'Difficile';
+	String get stage_1_level_1 => 'Étape 1 - Niveau 1';
+	String get stage_1_level_2 => 'Étape 1 - Niveau 2';
+}
+
 // Path: gdpr_consent_form.data_collection
 class TranslationsGdprConsentFormDataCollectionFr {
 	TranslationsGdprConsentFormDataCollectionFr.internal(this._root);
@@ -400,6 +416,12 @@ extension on Translations {
 			case 'introduction.text_9': return 'Si tu veux, je peux te ramener à Rome. Et tant qu\'à faire, on en profitera pour te cultiver un peu. T\'aimes les anecdotes historiques, non ?';
 			case 'mission.title': return 'Mission';
 			case 'shop.title': return 'Boutique';
+			case 'workout.difficulty': return 'Difficulté :';
+			case 'workout.easy': return 'Facile';
+			case 'workout.medium': return 'Moyen';
+			case 'workout.hard': return 'Difficile';
+			case 'workout.stage_1_level_1': return 'Étape 1 - Niveau 1';
+			case 'workout.stage_1_level_2': return 'Étape 1 - Niveau 2';
 			default: return null;
 		}
 	}

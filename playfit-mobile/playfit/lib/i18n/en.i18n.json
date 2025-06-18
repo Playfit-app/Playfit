@@ -124,5 +124,13 @@
     },
     "shop": {
         "title": "Shop"
+    },
+    "workout": {
+        "difficulty": "Difficulty:",
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard",
+        "stage_1_level_1": "Stage 1 - Level 1",
+        "stage_1_level_2": "Stage 1 - Level 2"
     }
 }

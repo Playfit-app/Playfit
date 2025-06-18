@@ -51,6 +51,7 @@ class TranslationsEn extends Translations {
 	@override late final _TranslationsIntroductionEn introduction = _TranslationsIntroductionEn._(_root);
 	@override late final _TranslationsMissionEn mission = _TranslationsMissionEn._(_root);
 	@override late final _TranslationsShopEn shop = _TranslationsShopEn._(_root);
+	@override late final _TranslationsWorkoutEn workout = _TranslationsWorkoutEn._(_root);
 }
 
 // Path: login
@@ -253,6 +254,21 @@ class _TranslationsShopEn extends TranslationsShopFr {
 	@override String get title => 'Shop';
 }
 
+// Path: workout
+class _TranslationsWorkoutEn extends TranslationsWorkoutFr {
+	_TranslationsWorkoutEn._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get difficulty => 'Difficulty:';
+	@override String get easy => 'Easy';
+	@override String get medium => 'Medium';
+	@override String get hard => 'Hard';
+	@override String get stage_1_level_1 => 'Stage 1 - Level 1';
+	@override String get stage_1_level_2 => 'Stage 1 - Level 2';
+}
+
 // Path: gdpr_consent_form.data_collection
 class _TranslationsGdprConsentFormDataCollectionEn extends TranslationsGdprConsentFormDataCollectionFr {
 	_TranslationsGdprConsentFormDataCollectionEn._(TranslationsEn root) : this._root = root, super.internal(root);
@@ -399,6 +415,12 @@ extension on TranslationsEn {
 			case 'introduction.text_9': return 'If you want, I can take you back to Rome. And while we\'re at it, we might as well teach you a few things. You like historical fun facts, right?';
 			case 'mission.title': return 'Mission';
 			case 'shop.title': return 'Shop';
+			case 'workout.difficulty': return 'Difficulty:';
+			case 'workout.easy': return 'Easy';
+			case 'workout.medium': return 'Medium';
+			case 'workout.hard': return 'Hard';
+			case 'workout.stage_1_level_1': return 'Stage 1 - Level 1';
+			case 'workout.stage_1_level_2': return 'Stage 1 - Level 2';
 			default: return null;
 		}
 	}

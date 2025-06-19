@@ -9,7 +9,7 @@ import 'package:playfit/components/level_cinematic/landmark.dart';
 class WorkoutProgressionPainter extends CustomPainter {
   final Difficulty difficulty;
   final Map<String, ui.Image> images;
-  final Offset scale;
+  final Size screenSize;
   final bool transition;
   late Decorations decorations;
   late Landmark landmark;
@@ -17,23 +17,19 @@ class WorkoutProgressionPainter extends CustomPainter {
   WorkoutProgressionPainter(
     this.difficulty,
     this.images,
-    this.scale,
+    this.screenSize,
     this.transition,
   ) : super() {
     decorations = Decorations(
       images: images,
       nbHills: difficulty.index + 3,
-      scale: scale,
-      screenHeight: scale.dy * 831,
-      hillHeight: scale.dy * 831 / 2,
+      screenSize: screenSize,
       transition: transition,
     );
     landmark = Landmark(
       image: images["landmark"]!,
-      scale: scale,
       difficulty: difficulty,
-      screenHeight: scale.dy * 831,
-      hillHeight: scale.dy * 831 / 2,
+      screenSize: screenSize,
     );
   }
 
@@ -64,15 +60,19 @@ class WorkoutProgressionPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final scale = Size(
+      size.width / 411,
+      size.height / 798,
+    );
     final hillImage = images["hill"]!;
-    final hillHeight = size.height / 2 * scale.dy;
+    final hillHeight = size.height / 2 * scale.height;
     double startY = size.height - (hillHeight / 6) * (difficulty.index + 2);
     final hillPaint = Paint()
       ..shader = ImageShader(
         images["hill"]!,
         ui.TileMode.clamp,
         ui.TileMode.clamp,
-        Matrix4.identity().scaled(scale.dx, scale.dy).storage,
+        Matrix4.identity().scaled(scale.width, scale.height).storage,
       );
     final Paint backgroundHillPaint = Paint()
       ..shader = LinearGradient(
@@ -104,7 +104,7 @@ class WorkoutProgressionPainter extends CustomPainter {
       final backgroundHillPath = BackgroundHillPathClipper(
         startY: startY,
         scale: scale,
-        height: size.height / 2 * scale.dy,
+        height: size.height / 2 * scale.height,
       );
       final hill = hillPath.getClip(size);
       // Keep aspect ratio for path texture

@@ -25,6 +25,8 @@ class NotificationPage extends StatelessWidget {
           ),
         ],
       ),
+      // This page displays the list of notifications
+      // Each notification is displayed as a ListTile with an icon, title, body, and timestamp
       body: ListView.builder(
         itemCount: provider.notifications.length,
         itemBuilder: (context, index) {

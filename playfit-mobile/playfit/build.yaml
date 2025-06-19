@@ -3,8 +3,11 @@ targets:
     builders:
       slang_build_runner:
         options:
-          base_locale: fr
+          base_locale: en
           input_directory: lib/i18n
           output_directory: lib/i18n
           use_device_locale: true
           fallback_strategy: base_locale
+          maps:
+            - settings.languages
+            - anecdotes

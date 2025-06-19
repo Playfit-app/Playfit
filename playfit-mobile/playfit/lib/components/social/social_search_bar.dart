@@ -13,6 +13,10 @@ class SocialSearchBar extends StatefulWidget {
   State<SocialSearchBar> createState() => _SocialSearchBarState();
 }
 
+/// This widget uses an [OpenContainer] to provide a smooth transition between
+/// a non-interactive search bar and a full search page. When closed, it displays
+/// a disabled [TextField] styled as a search bar. When tapped, it transitions
+/// to the [SearchUsersPage], allowing the user to search and select users.
 class _SocialSearchBarState extends State<SocialSearchBar> {
   @override
   Widget build(BuildContext context) {

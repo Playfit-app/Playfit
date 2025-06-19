@@ -15,6 +15,9 @@ class TopBar extends StatefulWidget {
 class _TopBarState extends State<TopBar> {
   @override
   Widget build(BuildContext context) {
+    // Build a top bar with a streak badge and a notification icon with a badge.
+    // The streak badge shows the current streak count, and the notification icon
+    // shows the number of unread notifications.
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
@@ -35,6 +38,8 @@ class _TopBarState extends State<TopBar> {
           ),
         ),
         Spacer(),
+        // Notification icon with a badge showing the number of unread notifications.
+        // The badge is shown only if there are unread notifications.
         Consumer<NotificationProvider>(
           builder: (context, notificationProvider, _) {
             return badges.Badge(

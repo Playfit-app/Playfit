@@ -66,6 +66,10 @@ class CreateAccountPageState extends State<CreateAccountPage> {
     });
   }
 
+  /// Handles the account creation process by calling the `register` method of `authService`
+  /// with the user's input data. If registration is successful, navigates to the
+  /// `IntroductionPage` with the selected introduction characters. Otherwise, displays
+  /// an error message using a `SnackBar`.
   void _createAccount() async {
     var result = await authService.register(
       context,
@@ -114,6 +118,16 @@ class CreateAccountPageState extends State<CreateAccountPage> {
     });
   }
 
+  /// Builds the registration page UI with a multi-step registration form.
+  ///
+  /// The page consists of a background image with a mascot, and an animated
+  /// container that slides up when the keyboard is visible. The registration
+  /// process is divided into three steps:
+  ///
+  /// A progress indicator and navigation buttons are provided to guide the user
+  /// through the steps. The "Next" or "Create Account" button is only enabled
+  /// when the current step's form is valid. The user can also navigate back to
+  /// the previous step or to the login page.
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -223,7 +237,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                       ),
                     SizedBox(height: screenHeight * 0.02),
                     // Hide the button below if the _currentStep is 2 and selectedCharacter is null
-                    if (_currentStep != 2 || selectedCharacter != null)  
+                    if (_currentStep != 2 || selectedCharacter != null)
                       ElevatedButton(
                         onPressed: () {
                           if (_currentStep == 0 && _isStep1Valid) {

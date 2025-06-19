@@ -64,6 +64,11 @@ class SpeechBubbleClipper extends CustomClipper<Path> {
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
+/// A custom painter that draws a speech bubble shape with a colored border.
+///
+/// The [SpeechBubblePainter] uses a [SpeechBubbleClipper] to define the shape
+/// of the speech bubble. It fills the bubble with white color and outlines it
+/// with a border of the specified [borderColor] and [strokeWidth].
 class SpeechBubblePainter extends CustomPainter {
   final Color borderColor;
   final double strokeWidth;
@@ -91,6 +96,7 @@ class SpeechBubblePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+/// A [StatefulWidget] that displays an introduction page with a list of images.
 class IntroductionPage extends StatefulWidget {
   final List<String> images;
 
@@ -124,6 +130,16 @@ class _IntroductionPageState extends State<IntroductionPage> {
       MaterialPageRoute(builder: (context) => HomePage(firstLogin: true)),
     );
   }
+
+  /// Builds the introduction page widget with a background image, gradient overlay,
+  /// and interactive text bubbles for onboarding.
+  ///
+  /// Tapping the text bubble or speech bubble advances the onboarding step,
+  /// updates the background image if necessary, and navigates to the home page
+  /// when the onboarding is complete.
+  ///
+  /// Uses [_textIndex] to track the current onboarding step and [_imageIndex] to
+  /// determine which background image to display.
 
   @override
   Widget build(BuildContext context) {

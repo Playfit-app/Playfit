@@ -23,6 +23,8 @@ class _SocialPageState extends State<SocialPage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
+            // The SocialSearchBar allows users to search for other users
+            // and navigate to their profile page when a user is selected.
             child: SocialSearchBar(
               onUserSelected: (user) {
                 Navigator.push(
@@ -38,6 +40,8 @@ class _SocialPageState extends State<SocialPage> {
           ),
           const Divider(height: 1),
           const SizedBox(height: 16),
+          // The PostFeed displays a list of posts from users
+          // It is a scrollable list that shows posts with images, text, and user interactions.
           Expanded(
             child: PostFeed(),
           ),

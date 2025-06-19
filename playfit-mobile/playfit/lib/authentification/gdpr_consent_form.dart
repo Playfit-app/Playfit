@@ -15,6 +15,10 @@ class GdprConsentForm extends StatefulWidget {
   _GdprConsentFormState createState() => _GdprConsentFormState();
 }
 
+/// State class for the GDPR Consent Form dialog.
+///
+/// This widget displays an [AlertDialog] containing detailed information about GDPR consent,
+/// including sections on data collection, data usage, data storage, and marketing usage.
 class _GdprConsentFormState extends State<GdprConsentForm> {
   @override
   Widget build(BuildContext context) {

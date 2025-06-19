@@ -10,6 +10,7 @@ class LevelProgressionDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Define the levels with their images, completion status, titles, and other details
     List<Map<String, dynamic>> levels = [
       {
         'image': '${dotenv.env['SERVER_BASE_URL']}${images[2]}',

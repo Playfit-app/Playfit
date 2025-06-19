@@ -37,6 +37,12 @@ class WorkoutProgressionPainter extends CustomPainter {
     );
   }
 
+  /// Draws a white gradient at the top of the canvas.
+  /// This gradient fades from white to transparent,
+  /// creating a smooth transition effect at the top of the screen.
+  ///
+  /// `canvas` is the canvas on which to draw the gradient.
+  /// `size` is the size of the canvas, used to determine the dimensions of the gradient.
   void _drawWhiteTopGradient(Canvas canvas, Size size) {
     final Paint paint = Paint()
       ..shader = LinearGradient(
@@ -51,6 +57,12 @@ class WorkoutProgressionPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, 292), paint);
   }
 
+  /// Draws a background rectangle with a light blue color.
+  /// This rectangle covers the entire canvas area,
+  /// providing a base background for the painting.
+  ///
+  /// `canvas` is the canvas on which to draw the background.
+  /// `size` is the size of the canvas, used to determine the dimensions of the rectangle.
   void _drawBackground(Canvas canvas, Size size) {
     final backgroundPaint = Paint()
       ..color = const Color.fromARGB(255, 197, 222, 250)
@@ -112,6 +124,9 @@ class WorkoutProgressionPainter extends CustomPainter {
       double targetWidth = hill.getBounds().width;
       double targetHeight = targetWidth / imageAspectRatio;
 
+      // if the index is odd, we flip the hill horizontally
+      // and rotate it 10 degrees to the left
+      // to create a zigzag effect
       if (i.isOdd) {
         Offset pivot = Offset(size.width / 2, size.height / 2);
         canvas.save();

@@ -25,6 +25,7 @@ class _PostFeedState extends State<PostFeed> {
     _loadPosts();
   }
 
+  /// Loads posts from the server asynchronously and updates the state accordingly.
   Future<void> _loadPosts() async {
     setState(() {
       _loading = true;

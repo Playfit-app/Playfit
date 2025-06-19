@@ -76,8 +76,8 @@ class _HomePageState extends State<HomePage> {
         // moveCharacter: widget.workoutDone,
         // completedDifficulty: widget.completedDifficulty,
       ),
-      const MissionsPage(),
-      const BoutiquePage(),
+      // const MissionsPage(),
+      // const BoutiquePage(),
       const SocialPage(),
       const ProfilePage(),
     ];
@@ -160,8 +160,8 @@ class _HomePageState extends State<HomePage> {
                 showUnselectedLabels: false,
                 items: [
                   _buildNavBarItem(Icons.fitness_center, 0),
-                  _buildNavBarItem(Icons.list_alt, 1),
-                  _buildNavBarItem(Icons.shopping_cart, 2),
+                  // _buildNavBarItem(Icons.list_alt, 1),
+                  // _buildNavBarItem(Icons.shopping_cart, 2),
                   _buildNavBarItem(Icons.group, 3),
                   _buildNavBarItem(Icons.person, 4),
                 ],

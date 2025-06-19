@@ -275,9 +275,9 @@ class _CameraViewState extends State<CameraView> {
         builder: (context) => WorkoutProgressionPage(
           difficulty: difficulty,
           images: [
-            "assets/images/pebble_path.jpg",
-            "${dotenv.env['SERVER_BASE_URL']}/media/decorations/building.webp",
-            "${dotenv.env['SERVER_BASE_URL']}/media/decorations/tree.webp",
+            "${dotenv.env['SERVER_BASE_URL']}${widget.characterImages['path']}",
+            "${dotenv.env['SERVER_BASE_URL']}${widget.characterImages['building']}",
+            "${dotenv.env['SERVER_BASE_URL']}${widget.characterImages['tree']}",
             "${dotenv.env['SERVER_BASE_URL']}${widget.landmarkImageUrl}",
           ],
           startingPoint: widget.currentExerciseIndex,

@@ -45,6 +45,7 @@ class _PostCardContentState extends State<PostCardContent> {
     }
   }
 
+  /// Sends a DELETE request to the server to unlike the current post.
   Future<void> _unlike() async {
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/posts/${widget.post['id']}/unlike/");
@@ -69,6 +70,16 @@ class _PostCardContentState extends State<PostCardContent> {
     }
   }
 
+  /// Builds the main content of a social post card widget.
+  ///
+  /// This widget displays the post's media (if available), user information,
+  /// like button with like count, and the post's textual content. The layout
+  /// adapts based on the screen size and whether all comments are shown.
+  ///
+  /// - Displays the post's media at the top, if present, with rounded corners.
+  /// - Shows the user's profile icon and username.
+  /// - Provides a like/unlike button and displays the number of likes.
+  /// - Shows the post's content if it is not empty.
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;

@@ -27,4 +27,12 @@ class LanguageService {
     }
     return null;
   }
+
+  static Future<void> clearLocale() async {
+    await _storage.delete(key: _key);
+  }
+
+  static String getLocaleName(AppLocale locale) {
+    return t.settings.languages[locale.languageCode] ?? locale.languageCode;
+  }
 }

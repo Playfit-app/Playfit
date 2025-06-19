@@ -27,19 +27,13 @@ void main() async {
   NotificationService().initFirebaseMessaging();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   // Load the selected language in local storage and use it to set app language. Default to english if not set.
-  final locale = await LanguageService.loadLocale();
+  var locale = await LanguageService.loadLocale();
 
   if (locale != null) {
     await LocaleSettings.setLocale(locale);
   } else {
-    final deviceLocale = PlatformDispatcher.instance.locale;
-
-    if (!AppLocaleUtils.instance.supportedLocales
-        .any((supportedLocale) => supportedLocale.languageCode == deviceLocale.languageCode)) {
-      await LocaleSettings.setLocale(AppLocale.en);
-    } else {
-      await LocaleSettings.setLocale(AppLocaleUtils.parse(deviceLocale.languageCode));
-    }
+    locale = await LocaleSettings.useDeviceLocale();
+    await LanguageService.saveLocale(locale);
   }
 
   runApp(

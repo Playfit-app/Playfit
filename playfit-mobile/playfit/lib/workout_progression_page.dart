@@ -142,11 +142,6 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
 
   @override
   Widget build(BuildContext context) {
-    final scale = Offset(
-      MediaQuery.of(context).size.width / 411,
-      MediaQuery.of(context).size.height / 831,
-    );
-
     // Ensure that the images are loaded before proceeding
     return FutureBuilder(
       future: Future.wait(
@@ -183,14 +178,11 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
             children: [
               RepaintBoundary(
                 child: CustomPaint(
-                  size: Size(
-                    MediaQuery.of(context).size.width,
-                    MediaQuery.of(context).size.height,
-                  ),
+                  size: MediaQuery.of(context).size,
                   painter: WorkoutProgressionPainter(
                     widget.difficulty,
                     images,
-                    scale,
+                    MediaQuery.of(context).size,
                     widget.transition,
                   ),
                 ),

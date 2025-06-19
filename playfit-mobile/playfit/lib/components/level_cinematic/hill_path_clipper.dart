@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 abstract class _HillClipper extends CustomClipper<Path> {
   final double startY;
-  final Offset scale;
+  final Size scale;
   final double height;
 
   _HillClipper({

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -14,6 +15,11 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  /// Send the FCM token to the backend server.
+  /// 
+  /// `token` is the FCM token to be sent.
+  /// 
+  /// Returns a [Future] that completes when the token is sent.
   /// Send the FCM token to the backend server.
   /// 
   /// `token` is the FCM token to be sent.
@@ -88,8 +94,10 @@ class NotificationService {
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       print("User granted notification permission.");
+      await saveNotificationSettings(true);
     } else {
       print("User denied notification permission.");
+      await saveNotificationSettings(false);
     }
   }
 
@@ -107,6 +115,31 @@ class NotificationService {
     }
   }
 
+  Future<void> handleNotificationPermissionFromSettings() async {
+    final status = await Permission.notification.status;
+
+    if (status.isGranted) {
+      // Permission is already granted – refresh FCM token if needed
+      await saveNotificationSettings(true);
+      await getToken();
+    } else if (status.isDenied) {
+      // Can re-request permission
+      await requestNotificationPermission();
+      final newStatus = await Permission.notification.status;
+      if (newStatus.isGranted) {
+        await saveNotificationSettings(true);
+        await getToken();
+      } else if (newStatus.isDenied) {
+        // Still denied, show a message or handle accordingly
+        print("Notification permission still denied after re-request.");
+        await saveNotificationSettings(false);
+      }
+    } else if (status.isPermanentlyDenied || status.isRestricted) {
+      // Can't re-request – redirect to system settings
+      await openAppSettings();
+    }
+  }
+  
   /// Shows a local notification with the given title and body.
   /// 
   /// `title` is the title of the notification.
@@ -124,5 +157,18 @@ class NotificationService {
 
     await _flutterLocalNotificationsPlugin.show(
         0, title, body, notificationDetails);
+  }
+
+  // Save notification settings to secure storage
+  Future<void> saveNotificationSettings(
+      bool notificationsEnabled) async {
+    final storage = FlutterSecureStorage();
+    await storage.write(key: 'notifications_enabled', value: notificationsEnabled.toString());
+  }
+
+  Future<bool> loadNotificationSettings() async {
+    final storage = FlutterSecureStorage();
+    String? value = await storage.read(key: 'notifications_enabled');
+    return value == 'true';
   }
 }

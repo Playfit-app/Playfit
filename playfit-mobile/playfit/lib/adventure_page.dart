@@ -167,7 +167,7 @@ class _AdventurePageState extends State<AdventurePage>
   /// `screenSize` is the size of the screen, used to calculate the height of the roads.
   ///
   /// Returns a list of `Road` objects representing the roads in the adventure.
-  List<Road> _createRoads(Map<String, dynamic> decorationImages, Size screenSize) {
+  List<Road> _createRoads(Map<String, dynamic> decorationImages, Size screenSize, String countryColor) {
     List<Road> roads = [];
     combinedPath = Path();
     // Calculate the total height of the roads based on the number of cities
@@ -189,6 +189,7 @@ class _AdventurePageState extends State<AdventurePage>
           screenSize: screenSize,
           decorationImages: decorationImages,
           cityIndex: cityIndex,
+          cityColor: _hexToColor(countryColor),
         );
         cityIndex++;
       } else {
@@ -205,6 +206,14 @@ class _AdventurePageState extends State<AdventurePage>
     }
 
     return roads;
+  }
+
+  Color _hexToColor(String hex) {
+    hex = hex.replaceAll("#", "");
+    if (hex.length == 6) {
+      hex = "FF$hex";
+    }
+    return Color(int.parse(hex, radix: 16));
   }
 
   @override
@@ -230,6 +239,8 @@ class _AdventurePageState extends State<AdventurePage>
           '${dotenv.env['SERVER_BASE_URL']}${_decorationImages['flag']}'),
       'building': await UIImageCacheManager().loadImageFromNetwork(
           '${dotenv.env['SERVER_BASE_URL']}${_decorationImages['building']}'),
+      'path': await UIImageCacheManager().loadImageFromNetwork(
+          '${dotenv.env['SERVER_BASE_URL']}${_decorationImages['path']}'),
       'country': [],
     };
 
@@ -259,12 +270,13 @@ class _AdventurePageState extends State<AdventurePage>
         final String serverBaseUrl = dotenv.env['SERVER_BASE_URL']!;
         final images = snapshot.data![0] as Map<String, dynamic>;
         final worldPositions = snapshot.data![1] as List<dynamic>;
+        final String countryColor = worldPositions[0]['country_color'];
 
         nbCities = images['country'].length;
         double height = screenSize.height * nbCities +
             (screenSize.height * 0.5 * (nbCities - 1));
 
-        final roads = _createRoads(images, screenSize);
+        final roads = _createRoads(images, screenSize, countryColor);
 
         // Extract checkpoints from roads
         // Each road has checkpoints, we need to flatten them into a single list
@@ -340,6 +352,12 @@ class _AdventurePageState extends State<AdventurePage>
                                     'in_city')
                                 ? '${_decorationImages['country'][worldPositions[0]['city'] - 1][worldPositions[0]['level'] - 1]}'
                                 : "/media/decorations/flag.webp",
+                            'tree':
+                                '${_decorationImages['tree']}',
+                            'building':
+                                '${_decorationImages['building']}',
+                            'path':
+                                '${_decorationImages['path']}',
                           },
                           sessionLevel: worldPositions[0]['level'],
                         ),

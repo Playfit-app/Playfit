@@ -4,6 +4,9 @@ import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/settings/dropdown_parameter.dart';
 import 'package:playfit/services/language_service.dart';
 import 'package:playfit/services/push_notification_service.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:convert';
 
 enum UserBoxType { left, bottom }
 
@@ -89,15 +92,53 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showDeleteConfirmationDialog() {
-    _showConfirmationDialog(
-      t.settings.delete_confirm_title,
-      t.settings.delete_account_confirmation,
-      () {
-        // Logique de suppression ici
-      },
-    );
-  }
+  
+void _showDeleteConfirmationDialog() {
+  _showConfirmationDialog(
+    t.settings.delete_confirm_title,
+    t.settings.delete_account_confirmation,
+    () async {
+      final token = await storage.read(key: 'token');
+
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Token non trouvé")),
+        );
+        return;
+      }
+
+      try {
+        final response = await http.delete(
+          Uri.parse('${dotenv.env['SERVER_BASE_URL']}/api/auth/delete_my_data/'),
+          headers: {
+            'Authorization': 'Token $token',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({"confirm": true}),
+        );
+
+        if (response.statusCode == 200 || response.statusCode == 204) {
+          await storage.delete(key: 'token');
+          await storage.delete(key: 'userId');
+
+          if (context.mounted) {
+            Navigator.pushReplacementNamed(context, '/login');
+          }
+        } else {
+          print("Erreur suppression : ${response.body}");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(t.settings.delete_account_fail)),
+          );
+        }
+      } catch (e) {
+        print("Erreur exception : $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(t.settings.delete_account_error)),
+        );
+      }
+    },
+  );
+}
 
   void logout() async {
     final token = await storage.read(key: 'token');

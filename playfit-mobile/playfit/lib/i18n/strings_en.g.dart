@@ -220,6 +220,8 @@ class TranslationsSettingsEn {
 	String get edit_email_confirmation => 'Do you really want to change your email address?';
 	String get change_password => 'Change password';
 	String get delete_account => 'Delete account';
+	String get delete_account_fail => 'Delete account fail';
+	String get delete_account_error => 'Delete account error';
 	String get others => 'Others';
 	String get delete_account_confirmation => 'Are you sure you want to delete your account? This action cannot be undone.';
 	String get logout => 'Logout';
@@ -410,6 +412,8 @@ extension on Translations {
 			case 'settings.edit_email_confirmation': return 'Do you really want to change your email address?';
 			case 'settings.change_password': return 'Change password';
 			case 'settings.delete_account': return 'Delete account';
+			case 'settings.delete_account_fail': return 'Delete account fail';
+			case 'settings.delete_account_error': return 'Delete account error';
 			case 'settings.others': return 'Others';
 			case 'settings.delete_account_confirmation': return 'Are you sure you want to delete your account? This action cannot be undone.';
 			case 'settings.logout': return 'Logout';

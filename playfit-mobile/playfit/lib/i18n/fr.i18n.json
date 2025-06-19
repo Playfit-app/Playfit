@@ -114,6 +114,8 @@
         "edit_email_confirmation": "Voulez-vous vraiment modifier votre adresse e-mail ?",
         "change_password": "Changer le mot de passe",
         "delete_account": "Supprimer le compte",
+        "delete_account_fail": "Échec de la suppression du compte",
+        "delete_account_error": "Erreur lors de la suppression",
         "others": "Autres",
         "delete_account_confirmation": "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
         "logout": "Se déconnecter",

@@ -81,8 +81,8 @@ class _HomePageState extends State<HomePage> {
         // moveCharacter: widget.workoutDone,
         // completedDifficulty: widget.completedDifficulty,
       ),
-      const MissionsPage(),
-      const BoutiquePage(),
+      // const MissionsPage(),
+      // const BoutiquePage(),
       const SocialPage(),
       const ProfilePage(),
     ];
@@ -129,7 +129,7 @@ class _HomePageState extends State<HomePage> {
       extendBody: true,
       // The app bar is hidden for the Social and Profile pages
       // to provide a full-screen experience for those pages.
-      appBar: _currentIndex == 4 || _currentIndex == 3
+      appBar: _currentIndex == 1 || _currentIndex == 2
           ? null
           : AppBar(
               backgroundColor: Colors.transparent,
@@ -180,10 +180,10 @@ class _HomePageState extends State<HomePage> {
                 showUnselectedLabels: false,
                 items: [
                   _buildNavBarItem(Icons.fitness_center, 0),
-                  _buildNavBarItem(Icons.list_alt, 1),
-                  _buildNavBarItem(Icons.shopping_cart, 2),
-                  _buildNavBarItem(Icons.group, 3),
-                  _buildNavBarItem(Icons.person, 4),
+                  // _buildNavBarItem(Icons.list_alt, 1),
+                  // _buildNavBarItem(Icons.shopping_cart, 2),
+                  _buildNavBarItem(Icons.group, 1),
+                  _buildNavBarItem(Icons.person, 2),
                 ],
               ),
             ),

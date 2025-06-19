@@ -32,7 +32,7 @@ class _SkinToneSelectionState extends State<SkinToneSelection> {
             widget.onImageSelected?.call(index);
           },
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 12),
+            // margin: const EdgeInsets.symmetric(horizontal: 12),
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: isSelected ? const Color(0xFFFFE9CA) : Colors.transparent,

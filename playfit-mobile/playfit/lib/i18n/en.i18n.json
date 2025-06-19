@@ -114,6 +114,8 @@
         "edit_email_confirmation": "Do you really want to change your email address?",
         "change_password": "Change password",
         "delete_account": "Delete account",
+        "delete_account_fail": "Delete account fail",
+        "delete_account_error": "Delete account error",
         "others": "Others",
         "delete_account_confirmation": "Are you sure you want to delete your account? This action cannot be undone.",
         "logout": "Logout",

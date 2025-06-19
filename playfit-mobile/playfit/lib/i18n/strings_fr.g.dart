@@ -245,6 +245,8 @@ class _TranslationsSettingsFr extends TranslationsSettingsEn {
 	@override String get edit_email_confirmation => 'Voulez-vous vraiment modifier votre adresse e-mail ?';
 	@override String get change_password => 'Changer le mot de passe';
 	@override String get delete_account => 'Supprimer le compte';
+	@override String get delete_account_fail => 'Échec de la suppression du compte';
+	@override String get delete_account_error => 'Erreur lors de la suppression';
 	@override String get others => 'Autres';
 	@override String get delete_account_confirmation => 'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.';
 	@override String get logout => 'Se déconnecter';
@@ -435,6 +437,8 @@ extension on TranslationsFr {
 			case 'settings.edit_email_confirmation': return 'Voulez-vous vraiment modifier votre adresse e-mail ?';
 			case 'settings.change_password': return 'Changer le mot de passe';
 			case 'settings.delete_account': return 'Supprimer le compte';
+			case 'settings.delete_account_fail': return 'Échec de la suppression du compte';
+			case 'settings.delete_account_error': return 'Erreur lors de la suppression';
 			case 'settings.others': return 'Autres';
 			case 'settings.delete_account_confirmation': return 'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.';
 			case 'settings.logout': return 'Se déconnecter';

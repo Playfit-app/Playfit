@@ -13,6 +13,8 @@ class ProfileIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Build a circular profile icon with a default background color
+    // and an image if provided, otherwise show a person icon.
     return Container(
       width: size,
       height: size,

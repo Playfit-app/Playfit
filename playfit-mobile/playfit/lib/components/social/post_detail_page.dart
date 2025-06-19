@@ -20,6 +20,7 @@ class PostDetailPage extends StatefulWidget {
   State<PostDetailPage> createState() => _PostDetailPageState();
 }
 
+/// This class is responsible for fetching and displaying the details of a specific post.
 class _PostDetailPageState extends State<PostDetailPage> {
   Map<String, dynamic>? post;
   bool _loading = true;

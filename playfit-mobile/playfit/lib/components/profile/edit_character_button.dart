@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
 import 'package:playfit/customization_page.dart';
 
+/// A button widget that opens a character customization page when tapped.
 class EditCharacterButton extends StatelessWidget {
   final String backgroundImageUrl;
   final VoidCallback? onClosed; // Add this

@@ -7,6 +7,9 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:playfit/providers/notification_provider.dart';
 
+/// This class provides methods for user authentication, including login functionality,
+/// and manages secure storage of authentication tokens. It also integrates with Google Sign-In
+/// and notifies the application of authentication state changes.
 class AuthService {
   final String? baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/auth/';
   final FlutterSecureStorage storage = const FlutterSecureStorage();
@@ -20,6 +23,7 @@ class AuthService {
     serverClientId: dotenv.env['GOOGLE_CLIENT_ID'],
   );
 
+  /// Logs in a user with [username] and [password], stores the token, and connects notifications.
   Future<Map<String, String>> login(
       BuildContext context, String username, String password) async {
     try {
@@ -55,6 +59,9 @@ class AuthService {
     return {'status': 'error', 'message': 'Unexpected error'};
   }
 
+  /// Registers a new user with the provided details.
+  /// Validates input, sends a POST request, and stores the token on success.
+  /// Returns a map with 'status' and 'message'.
   Future<Map<String, String>> register(
     BuildContext context,
     String email,
@@ -71,6 +78,12 @@ class AuthService {
       if (characterImage == null || characterImage.isEmpty) {
         return {'status': 'error', 'message': 'A valid character image is required'};
       }
+      /// Validates the user registration input fields.
+      ///
+      /// Checks if any of the required fields are empty or equal to zero, or if
+      /// user consent has not been provided.
+      ///
+      /// Returns an error map with a status and message if any validation fails.
       if (email.isEmpty ||
           username.isEmpty ||
           password.isEmpty ||
@@ -119,6 +132,8 @@ class AuthService {
     return {'status': 'error', 'message': 'Unexpected error'};
   }
 
+  /// Signs in the user with Google and authenticates with the backend.
+  /// Stores token and user ID on success, or returns an error message.
   Future<Map<String, String>> loginWithGoogle(BuildContext context) async {
     try {
       // Sign in with Google

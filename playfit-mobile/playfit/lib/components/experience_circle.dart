@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+/// A custom painter that draws a circular progress indicator representing experience.
+///
+/// The [ExperienceCirclePainter] draws a transparent background circle and a colored arc
+/// indicating the progress. The progress is a value between 0.0 and 1.0, where 1.0 means
+/// the circle is fully completed.
 class ExperienceCirclePainter extends CustomPainter {
   final double progress;
 

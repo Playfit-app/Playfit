@@ -4,59 +4,69 @@ import 'package:playfit/components/level_cinematic/difficulty.dart';
 
 class Landmark {
   final ui.Image image;
-  final Offset scale;
   final Difficulty difficulty;
-  final double screenHeight;
-  final double hillHeight;
+  final Size screenSize;
   late Offset position;
 
   Landmark({
     required this.image,
-    required this.scale,
     required this.difficulty,
-    required this.screenHeight,
-    required this.hillHeight,
+    required this.screenSize,
   }) {
     position = const Offset(0, 0);
+    Size scale = Size(
+      screenSize.width / 411,
+      screenSize.height / 798,
+    );
 
     if (difficulty == Difficulty.easy) {
-      _easyDifficultyPosition();
+      _easyDifficultyPosition(scale);
     } else if (difficulty == Difficulty.medium) {
-      _mediumDifficultyPosition();
+      _mediumDifficultyPosition(scale);
     } else {
-      _hardDifficultyPosition();
+      _hardDifficultyPosition(scale);
     }
   }
 
-  void _easyDifficultyPosition() {
+  void _easyDifficultyPosition(Size scale) {
+    double hillHeight = screenSize.height / 2;
+
     position = Offset(
-      300 * scale.dx,
-      screenHeight - hillHeight / 1.15,
+      300 * scale.width,
+      screenSize.height - hillHeight / 1.15,
     );
   }
 
-  void _mediumDifficultyPosition() {
+  void _mediumDifficultyPosition(Size scale) {
+    double hillHeight = screenSize.height / 2;
+
     position = Offset(
-      80 * scale.dx,
-      screenHeight - hillHeight,
+      80 * scale.width,
+      screenSize.height - hillHeight,
     );
   }
 
-  void _hardDifficultyPosition() {
+  void _hardDifficultyPosition(Size scale) {
+    double hillHeight = screenSize.height / 2;
+
     position = Offset(
-      300 * scale.dx,
-      screenHeight - hillHeight / 0.83,
+      300 * scale.width,
+      screenSize.height - hillHeight / 0.83,
     );
   }
 
   void render(Canvas canvas, Size size) {
-    double maxHeight = 150 * scale.dy;
+    Size scale = Size(
+      size.width / 411,
+      size.height / 798,
+    );
+    double maxHeight = 150 * scale.height;
     double aspectRatio = image.width / image.height.toDouble();
     // double maxWidth = maxHeight * aspectRatio;
     // Max width is 150 * scale.dx or aspect ratio of the image
     double maxWidth = maxHeight * aspectRatio;
-    if (maxWidth > 150 * scale.dx) {
-      maxWidth = 210 * scale.dx;
+    if (maxWidth > 150 * scale.width) {
+      maxWidth = 210 * scale.width;
       maxHeight = maxWidth / aspectRatio;
     }
 

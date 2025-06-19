@@ -15,6 +15,11 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  /// Send the FCM token to the backend server.
+  /// 
+  /// `token` is the FCM token to be sent.
+  /// 
+  /// Returns a [Future] that completes when the token is sent.
   static Future<void> sendTokenToBackend(String token) async {
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/store-device-token/");
@@ -37,6 +42,12 @@ class NotificationService {
     }
   }
 
+  /// Initializes Firebase Messaging and sets up notification listeners.
+  /// 
+  /// This method configures the Firebase Messaging service to handle incoming messages,
+  /// requests notification permissions, and initializes local notifications.
+  /// 
+  /// Returns a [Future] that completes when the initialization is done.
   Future<void> initFirebaseMessaging() async {
     // await getToken();
 
@@ -63,6 +74,12 @@ class NotificationService {
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
+  /// Requests notification permissions from the user.
+  /// 
+  /// This method prompts the user to allow notifications,
+  /// and checks the authorization status.
+  /// 
+  /// Returns a [Future] that completes when the permission request is done.
   Future<void> requestNotificationPermission() async {
     NotificationSettings settings = await _firebaseMessaging.requestPermission(
       alert: true,
@@ -79,6 +96,12 @@ class NotificationService {
     }
   }
 
+  /// Retrieves the FCM token and sends it to the backend.
+  /// 
+  /// This method fetches the FCM token from Firebase Messaging
+  /// and sends it to the backend server for registration.
+  /// 
+  /// Returns a [Future] that completes when the token is retrieved and sent.
   Future<void> getToken() async {
     String? token = await _firebaseMessaging.getToken();
 
@@ -111,7 +134,13 @@ class NotificationService {
       await openAppSettings();
     }
   }
-
+  
+  /// Shows a local notification with the given title and body.
+  /// 
+  /// `title` is the title of the notification.
+  /// `body` is the body text of the notification.
+  /// 
+  /// Returns a [Future] that completes when the notification is shown.
   Future<void> _showNotification(String title, String body) async {
     var androidDetails = const AndroidNotificationDetails(
       'high_importance_channel',

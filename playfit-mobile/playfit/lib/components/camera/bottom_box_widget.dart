@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+/// A widget that displays a bottom-aligned box containing workout information.
+///
+/// The widget features:
+/// - A timer icon and formatted elapsed time (MM:SS).
+/// - A fitness icon and the current/target count.
+/// - A mascot image displayed on the right side.
 class BottomBoxWidget extends StatelessWidget {
   final Duration elapsedTime;
   final int count;

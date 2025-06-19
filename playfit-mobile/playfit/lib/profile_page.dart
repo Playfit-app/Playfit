@@ -32,12 +32,25 @@ class _ProfilePageState extends State<ProfilePage> {
   int _followerCount = 0;
   late Future<Map<String, dynamic>> _futureUserData;
 
+  /// Formats the date from the API to a more readable format.
+  ///
+  /// For example, "2023-10-01T00:00:00Z" becomes "October 2023".
+  ///
+  /// `rawDate` The date string from the API.
+  ///
+  /// Return a formatted date string.
   String _formatDate(String rawDate) {
     final DateTime dateTime = DateTime.parse(rawDate);
     final DateFormat formatter = DateFormat('MMMM yyyy');
     return formatter.format(dateTime);
   }
 
+  /// Fetches user data from the API.
+  ///
+  /// If `widget.userId` is provided, it fetches data for that user.
+  /// If not, it fetches data for the current user ('me').
+  ///
+  /// Return a Future that resolves to a Map containing user data.
   Future<Map<String, dynamic>> fetchUserData() async {
     final String userId =
         widget.userId != null ? widget.userId.toString() : 'me';
@@ -60,6 +73,10 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  /// Follows the user with the given `widget.userId`.
+  ///
+  /// Updates the state to reflect that the user is now followed,
+  /// and increments the follower count.
   void _follow() async {
     if (widget.userId == null) return;
 
@@ -90,6 +107,10 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  /// Unfollows the user with the given `widget.userId`.
+  ///
+  /// Updates the state to reflect that the user is no longer followed,
+  /// and decrements the follower count.
   void _unfollow() async {
     if (widget.userId == null) return;
 
@@ -125,6 +146,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    /// Builds the profile page UI using a FutureBuilder to fetch user data.
+    ///
+    /// Displays a loading indicator while fetching data,
+    /// and once data is available, it constructs the profile layout.
     return FutureBuilder(
       future: _futureUserData,
       builder: (context, snapshot) {
@@ -145,6 +170,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         return Scaffold(
           extendBodyBehindAppBar: true,
+          // Transparent app bar with settings icon to go to settings page
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             actions: <Widget>[
@@ -164,6 +190,9 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           body: Stack(
             children: <Widget>[
+              // Container over the top half of the screen with a background image
+              // The image is a mountain image based on the user's level
+              // In the center of the image, there is a profile icon with the user's base character
               Positioned(
                 left: 0,
                 top: 0,
@@ -187,6 +216,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           size: 100,
                         ),
                         if (widget.userId == null)
+                          // Edit character button that appears only if the user is viewing their own profile
                           Positioned(
                             bottom: 0,
                             right: 0,
@@ -205,6 +235,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
+              // White container that covers the bottom half of the screen
+              // It contains the user's information, achievements, and other details
+              // The container has a rounded top with a border radius
+              // It also has a scrollbar and a single child scroll view to allow scrolling
               Positioned(
                 left: 0,
                 top: screenHeight * 0.3,
@@ -224,6 +258,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.all(28.0),
                         child: Column(
                           children: [
+                            // User's name and username
+                            // Follow/unfollow button if viewing another user's profile
                             Row(
                               children: [
                                 userData['user']['first_name'] != null
@@ -301,6 +337,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                               ),
                             ),
+                            // Follower and following count
                             Row(
                               children: [
                                 Text(
@@ -337,6 +374,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ],
                             ),
                             const SizedBox(height: 20),
+                            // Row with the user's level, day streak, and cities finished
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
@@ -383,6 +421,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ],
                             ),
                             const SizedBox(height: 30),
+                            // Graph showing the last 7 days of exercises
                             Container(
                               height: screenHeight * 0.2,
                               decoration: const BoxDecoration(
@@ -400,6 +439,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                             ),
                             const SizedBox(height: 10),
+                            // Legend for the graph
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -491,6 +531,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ],
                             ),
                             const SizedBox(height: 20),
+                            // Achievements section
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -499,6 +540,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                             ),
                             const SizedBox(height: 20),
+                            // Wrap widget to display achievements in a grid-like layout
+                            // Each achievement is displayed as a Success widget
                             Wrap(
                               spacing: 20,
                               runSpacing: 20,

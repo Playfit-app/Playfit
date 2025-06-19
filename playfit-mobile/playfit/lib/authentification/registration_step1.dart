@@ -20,6 +20,9 @@ class RegistrationStep1 extends StatefulWidget {
 }
 
 class _RegistrationStep1State extends State<RegistrationStep1> {
+  /// Builds the registration step 1 form UI, which includes input fields for username,
+  /// email, password, and password confirmation. Each field uses a [TextFormField]
+  /// with custom styling, validation logic, and clear buttons for user convenience.
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;

@@ -25,6 +25,12 @@ class PostCardComments extends StatefulWidget {
 }
 
 class _PostCardCommentsState extends State<PostCardComments> {
+  /// Deletes a comment with the given [commentId] from the server and updates the UI.
+  ///
+  /// Sends an HTTP DELETE request to the server to remove the comment.
+  /// If the deletion is successful (status code 204), the comment is also removed
+  /// from the local post's comments list and the UI is updated.
+  /// Prints an error message if the deletion fails.
   Future<void> _deleteComment(int commentId) async {
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/comments/$commentId/delete/");
@@ -71,7 +77,7 @@ class _PostCardCommentsState extends State<PostCardComments> {
               final content = comment['content'];
               final createdAt = DateTime.parse(comment['created_at']);
               final timeAgo = timeago.format(createdAt, locale: 'en_short');
-      
+
               return Padding(
                 padding: EdgeInsets.only(
                     left: screenWidth * 0.03, right: screenWidth * 0.03, top: screenHeight * 0.01),
@@ -116,6 +122,7 @@ class _PostCardCommentsState extends State<PostCardComments> {
                             style: const TextStyle(fontSize: 14),
                           ),
                         ),
+                        /// A popup menu button that displays additional options for a comment, such as "Delete" or "Report".
                         PopupMenuButton<String>(
                           icon: const Icon(Icons.more_vert, size: 18),
                           onSelected: (value) {

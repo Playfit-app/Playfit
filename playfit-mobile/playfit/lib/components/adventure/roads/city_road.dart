@@ -7,14 +7,17 @@ import 'package:playfit/components/adventure/decoration.dart' as dec;
 class CityRoad extends Road {
   final List<Path> paths = [];
   late double oldStartY;
+  late Color cityColor;
 
   CityRoad({
     required super.startY,
     required super.screenSize,
     required super.decorationImages,
     required super.cityIndex,
+    required this.cityColor,
   }) {
     oldStartY = startY;
+    cityColor = cityColor;
     buildGreyPath();
     buildWhitePath();
     setCheckpoints(6);
@@ -37,8 +40,8 @@ class CityRoad extends Road {
     );
     Size treeSize = Size(79 * scale.width, 118 * scale.height);
     Size buildingSize = Size(75 * scale.width, 131 * scale.height);
-    Size landmarkSize =
-        Size(landmarkImage.width.toDouble() * scale.width, landmarkImage.height.toDouble() * scale.height);
+    Size landmarkSize = Size(landmarkImage.width.toDouble() * scale.width,
+        landmarkImage.height.toDouble() * scale.height);
 
     decorations = [
       // Trees
@@ -105,10 +108,8 @@ class CityRoad extends Road {
     double endY = (startY - screenSize.height).roundToDouble();
     // Shortcut functions for percentage-based coordinates
     double px(double originalX) =>
-        screenSize.width *
-        ((originalX / 411) + (offsetX / screenSize.width));
-    double py(double originalY) =>
-        screenSize.height * (originalY / 798) + endY;
+        screenSize.width * ((originalX / 411) + (offsetX / screenSize.width));
+    double py(double originalY) => screenSize.height * (originalY / 798) + endY;
 
     greyPath.moveTo(px(259.577), endY + screenSize.height);
 
@@ -168,10 +169,8 @@ class CityRoad extends Road {
 
     // Helpers for clean coordinate translation
     double px(double originalX) =>
-        screenSize.width *
-        ((originalX / 411) + (offsetX / screenSize.width));
-    double py(double originalY) =>
-        screenSize.height * (originalY / 798) + endY;
+        screenSize.width * ((originalX / 411) + (offsetX / screenSize.width));
+    double py(double originalY) => screenSize.height * (originalY / 798) + endY;
 
     whitePath.moveTo(px(235.577), endY + screenSize.height);
 
@@ -231,8 +230,7 @@ class CityRoad extends Road {
     for (ui.PathMetric pathMetric in pathMetrics) {
       double distance = 0.0;
       while (distance < pathMetric.length) {
-        Path dashPath =
-            pathMetric.extractPath(distance, distance + 10);
+        Path dashPath = pathMetric.extractPath(distance, distance + 10);
         canvas.drawPath(dashPath, paint);
         distance += 20;
       }
@@ -263,12 +261,11 @@ class CityRoad extends Road {
   @override
   void drawBackground(Canvas canvas) {
     final backgroundPaint = Paint()
-      ..color = const Color.fromARGB(255, 197, 222, 250)
+      ..color = cityColor
       ..style = PaintingStyle.fill;
 
     final double left = 0;
-    final double top =
-        oldStartY - (screenSize.height);
+    final double top = oldStartY - (screenSize.height);
     final double right = screenSize.width;
     final double bottom = oldStartY;
 

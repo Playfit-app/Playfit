@@ -167,6 +167,8 @@ class WorldPositionResponseSerializer(serializers.Serializer):
                 'country': position.city.country.name,
                 'city': position.city.order,
                 'level': position.city_level,
+                'max_level': position.city.max_level,
+                'country_color': position.city.country.color,
             }
         else:
             return {
@@ -178,6 +180,8 @@ class WorldPositionResponseSerializer(serializers.Serializer):
                 'city_from': position.transition_from.order,
                 'city_to': position.transition_to.order,
                 'level': position.transition_level,
+                'max_level': 4,
+                'country_color': position.transition_from.country.color,
             }
 
 class UserSearchSerializer(serializers.ModelSerializer):

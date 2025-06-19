@@ -26,6 +26,7 @@ void main() async {
   );
   NotificationService().initFirebaseMessaging();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  // Load the selected language in local storage and use it to set app language. Default to english if not set.
   var locale = await LanguageService.loadLocale();
 
   if (locale != null) {
@@ -36,6 +37,8 @@ void main() async {
   }
 
   runApp(
+    // DevicesPreview is only enabled in debug mode
+    // It allows you to preview your app on different devices and screen sizes
     DevicePreview(
       enabled: !bool.fromEnvironment('dart.vm.product'),
       builder: (context) => MultiProvider(
@@ -70,7 +73,8 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => const ProfilePage(), // Route to profile page
         '/notifications': (context) => const NotificationPage(),
       },
-      // locale: TranslationProvider.of(context).flutterLocale,
+      // Use the locale from DevicePreview in debug mode,
+      // otherwise use the locale from the TranslationProvider
       locale: DevicePreview.locale(context) ?? TranslationProvider.of(context).flutterLocale,
       supportedLocales: AppLocaleUtils.instance.supportedLocales,
       localizationsDelegates: GlobalMaterialLocalizations.delegates,

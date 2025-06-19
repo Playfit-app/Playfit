@@ -62,6 +62,14 @@ class _AdventurePageState extends State<AdventurePage>
   //   }
   // }
 
+  /// Scrolls to the character's position based on the current checkpoint.
+  /// This method retrieves the world positions and animates the scroll
+  /// to the character's position on the screen.
+  ///
+  /// `worldPositions` is a list of positions that contains the current checkpoint
+  /// for the character.
+  ///
+  /// Throws an exception if there are no checkpoints or world positions available.
   void _scrollToCharacter(List<dynamic> worldPositions) {
     if (checkpoints.isNotEmpty && worldPositions.isNotEmpty) {
       final targetOffset = checkpoints[worldPositions[0]['current_checkpoint']];
@@ -78,6 +86,11 @@ class _AdventurePageState extends State<AdventurePage>
     }
   }
 
+  /// Fetches the world positions from the server.
+  /// This method retrieves the current positions of characters in the world
+  /// and calculates their current checkpoints based on their status and level.
+  ///
+  /// Returns a [Future] that resolves to a list of world positions.
   Future<List<dynamic>> _getWorldPositions() async {
     final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/social';
     final String? token = await storage.read(key: 'token');
@@ -97,14 +110,16 @@ class _AdventurePageState extends State<AdventurePage>
 
         if (d['status'] == 'in_city') {
           final int level = d['level'] - 1;
-          final int offsetTransition = (d['city'] - 1) * 4;
-          final int offsetCity = (d['city'] - 1) * 6;
+          final int offsetTransition = (d['city'] - 1) * 4; // Each transition has 4 checkpoints
+          final int offsetCity = (d['city'] - 1) * 6; // Each city has 6 checkpoints
 
           d['current_checkpoint'] = level + offsetTransition + offsetCity;
         } else {
+          // If the character is not in a city, calculate the checkpoint based on the transition
+          // and the city they are coming from.
           final int level = d['level'] - 1;
-          final int offsetTransition = (d['city_from'] - 1) * 4;
-          final int offsetCity = d['city_from'] * 6;
+          final int offsetTransition = (d['city_from'] - 1) * 4; // Each transition has 4 checkpoints
+          final int offsetCity = d['city_from'] * 6; // Each city has 6 checkpoints
 
           d['current_checkpoint'] = level + offsetTransition + offsetCity;
         }
@@ -116,6 +131,13 @@ class _AdventurePageState extends State<AdventurePage>
     }
   }
 
+  /// Fetches decoration images for the specified country.
+  /// This method retrieves images used for decorating the roads and cities
+  /// based on the country specified in the world positions.
+  ///
+  /// `country` is the country for which to fetch decoration images.
+  ///
+  /// Returns a [Future] that resolves to a map of decoration images.
   Future<Map<String, dynamic>> _getDecorationImages(String country) async {
     final String url =
         '${dotenv.env['SERVER_BASE_URL']}/api/social/get-decoration-images/$country/';
@@ -137,9 +159,20 @@ class _AdventurePageState extends State<AdventurePage>
     }
   }
 
-  List<Road> _createRoads(Map<String, dynamic> decorationImages, Size screenSize) {
+  /// Creates a list of roads based on the number of cities and decoration images.
+  /// This method generates a list of roads, each represented by a `Road` object,
+  /// and combines their paths into a single `Path` object.
+  ///
+  /// `decorationImages` is a map containing images used for decorating the roads.
+  /// `screenSize` is the size of the screen, used to calculate the height of the roads.
+  ///
+  /// Returns a list of `Road` objects representing the roads in the adventure.
+  List<Road> _createRoads(Map<String, dynamic> decorationImages, Size screenSize, String countryColor) {
     List<Road> roads = [];
     combinedPath = Path();
+    // Calculate the total height of the roads based on the number of cities
+    // A city road takes the full height of the screen,
+    // and a transition road takes half the height of the screen.
     double height = screenSize.height * nbCities +
         (screenSize.height * 0.5 * (nbCities - 1));
     double startY = height;
@@ -148,12 +181,15 @@ class _AdventurePageState extends State<AdventurePage>
     for (int i = 0; i < nbCities + (nbCities - 1); i++) {
       Road road;
 
+      // Alternate between CityRoad and TransitionRoad
+      // CityRoad for even indices, TransitionRoad for odd indices
       if (i % 2 == 0) {
         road = CityRoad(
           startY: startY,
           screenSize: screenSize,
           decorationImages: decorationImages,
           cityIndex: cityIndex,
+          cityColor: _hexToColor(countryColor),
         );
         cityIndex++;
       } else {
@@ -172,12 +208,26 @@ class _AdventurePageState extends State<AdventurePage>
     return roads;
   }
 
+  Color _hexToColor(String hex) {
+    hex = hex.replaceAll("#", "");
+    if (hex.length == 6) {
+      hex = "FF$hex";
+    }
+    return Color(int.parse(hex, radix: 16));
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
   }
 
+  /// Loads the world positions and decoration images asynchronously.
+  /// This method fetches the world positions from the server and retrieves
+  /// the decoration images based on the country of the first position.
+  ///
+  /// Returns a [Future] that resolves to a list containing the decoration images
+  /// and the world positions.
   Future<List<dynamic>> _loadPositionsAndImages() async {
     final positions = await _getWorldPositions();
     final String country = positions.first['country'];
@@ -189,6 +239,8 @@ class _AdventurePageState extends State<AdventurePage>
           '${dotenv.env['SERVER_BASE_URL']}${_decorationImages['flag']}'),
       'building': await UIImageCacheManager().loadImageFromNetwork(
           '${dotenv.env['SERVER_BASE_URL']}${_decorationImages['building']}'),
+      'path': await UIImageCacheManager().loadImageFromNetwork(
+          '${dotenv.env['SERVER_BASE_URL']}${_decorationImages['path']}'),
       'country': [],
     };
 
@@ -218,18 +270,26 @@ class _AdventurePageState extends State<AdventurePage>
         final String serverBaseUrl = dotenv.env['SERVER_BASE_URL']!;
         final images = snapshot.data![0] as Map<String, dynamic>;
         final worldPositions = snapshot.data![1] as List<dynamic>;
+        final String countryColor = worldPositions[0]['country_color'];
 
         nbCities = images['country'].length;
         double height = screenSize.height * nbCities +
             (screenSize.height * 0.5 * (nbCities - 1));
 
-        final roads = _createRoads(images, screenSize);
+        final roads = _createRoads(images, screenSize, countryColor);
 
+        // Extract checkpoints from roads
+        // Each road has checkpoints, we need to flatten them into a single list
+        // This will be used to position the characters correctly
+        // We assume that each road has checkpoints defined in its getCheckpoints method
+        // and that each checkpoint has a position property.
         checkpoints = roads
             .map((road) => road.getCheckpoints().map((c) => c.position))
             .expand((element) => element)
             .toList();
 
+        // Scroll to the character's position after the first frame is rendered
+        // This ensures that the character is visible on the screen
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _scrollToCharacter(worldPositions);
         });
@@ -243,14 +303,18 @@ class _AdventurePageState extends State<AdventurePage>
               width: screenSize.width,
               child: Stack(
                 children: [
+                  // Draw the roads and decorations using a CustomPainter
                   RepaintBoundary(
                     child: CustomPaint(
                       size: Size(screenSize.width, height),
                       painter: _RoadPainter(roads),
                     ),
                   ),
+                  // Display the characters on the roads (user's character and friends)
                   ...[
                     for (int i = 0; i < worldPositions.length; i++)
+                      // Only display the character if they are in the same country
+                      // or if it's the first character (the user's character)
                       if (i == 0 ||
                           worldPositions[i]['country'] ==
                                   worldPositions[0]['country'] &&
@@ -288,6 +352,12 @@ class _AdventurePageState extends State<AdventurePage>
                                     'in_city')
                                 ? '${_decorationImages['country'][worldPositions[0]['city'] - 1][worldPositions[0]['level'] - 1]}'
                                 : "/media/decorations/flag.webp",
+                            'tree':
+                                '${_decorationImages['tree']}',
+                            'building':
+                                '${_decorationImages['building']}',
+                            'path':
+                                '${_decorationImages['path']}',
                           },
                           sessionLevel: worldPositions[0]['level'],
                         ),
@@ -307,6 +377,13 @@ class _RoadPainter extends CustomPainter {
 
   _RoadPainter(this.roads);
 
+  /// Draws a white gradient at the top of the canvas.
+  ///
+  /// This method creates a gradient that fades from white to transparent,
+  /// giving the effect of a white top gradient on the canvas.
+  ///
+  /// `canvas` is the canvas on which to draw the gradient.
+  /// `size` is the size of the canvas, used to determine the dimensions of the gradient.
   void drawWhiteTopGradient(Canvas canvas, Size size) {
     final Paint paint = Paint()
       ..shader = LinearGradient(

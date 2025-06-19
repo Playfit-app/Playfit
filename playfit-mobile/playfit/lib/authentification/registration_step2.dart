@@ -41,6 +41,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
       children: [
         Padding(
           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
+          /// A [TextFormField] widget for selecting and displaying the user's birthdate.
           child: TextFormField(
             controller: widget.birthDateController,
             readOnly: true,
@@ -98,6 +99,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
         SizedBox(height: screenHeight * 0.02),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
+          /// A [TextFormField] widget for user height input in centimeters.
           child: TextFormField(
             controller: widget.heightController,
             keyboardType: TextInputType.number,
@@ -134,6 +136,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
         SizedBox(height: screenHeight * 0.02),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
+          /// A [TextFormField] widget for entering the user's weight during registration.
           child: TextFormField(
             controller: widget.weightController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),

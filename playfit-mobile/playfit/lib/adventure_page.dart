@@ -110,16 +110,20 @@ class _AdventurePageState extends State<AdventurePage>
 
         if (d['status'] == 'in_city') {
           final int level = d['level'] - 1;
-          final int offsetTransition = (d['city'] - 1) * 4; // Each transition has 4 checkpoints
-          final int offsetCity = (d['city'] - 1) * 6; // Each city has 6 checkpoints
+          final int offsetTransition =
+              (d['city'] - 1) * 4; // Each transition has 4 checkpoints
+          final int offsetCity =
+              (d['city'] - 1) * 6; // Each city has 6 checkpoints
 
           d['current_checkpoint'] = level + offsetTransition + offsetCity;
         } else {
           // If the character is not in a city, calculate the checkpoint based on the transition
           // and the city they are coming from.
           final int level = d['level'] - 1;
-          final int offsetTransition = (d['city_from'] - 1) * 4; // Each transition has 4 checkpoints
-          final int offsetCity = d['city_from'] * 6; // Each city has 6 checkpoints
+          final int offsetTransition =
+              (d['city_from'] - 1) * 4; // Each transition has 4 checkpoints
+          final int offsetCity =
+              d['city_from'] * 6; // Each city has 6 checkpoints
 
           d['current_checkpoint'] = level + offsetTransition + offsetCity;
         }
@@ -167,7 +171,8 @@ class _AdventurePageState extends State<AdventurePage>
   /// `screenSize` is the size of the screen, used to calculate the height of the roads.
   ///
   /// Returns a list of `Road` objects representing the roads in the adventure.
-  List<Road> _createRoads(Map<String, dynamic> decorationImages, Size screenSize, String countryColor) {
+  List<Road> _createRoads(Map<String, dynamic> decorationImages,
+      Size screenSize, String countryColor) {
     List<Road> roads = [];
     combinedPath = Path();
     // Calculate the total height of the roads based on the number of cities
@@ -352,14 +357,13 @@ class _AdventurePageState extends State<AdventurePage>
                                     'in_city')
                                 ? '${_decorationImages['country'][worldPositions[0]['city'] - 1][worldPositions[0]['level'] - 1]}'
                                 : "/media/decorations/flag.webp",
-                            'tree':
-                                '${_decorationImages['tree']}',
-                            'building':
-                                '${_decorationImages['building']}',
-                            'path':
-                                '${_decorationImages['path']}',
+                            'tree': '${_decorationImages['tree']}',
+                            'building': '${_decorationImages['building']}',
+                            'path': '${_decorationImages['path']}',
                           },
                           sessionLevel: worldPositions[0]['level'],
+                          city: worldPositions[0]['city'],
+                          level: worldPositions[0]['level'],
                         ),
                   ]
                 ],

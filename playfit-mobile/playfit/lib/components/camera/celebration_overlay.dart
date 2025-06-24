@@ -9,7 +9,13 @@ import 'package:flutter/material.dart';
 /// The overlay is responsive to screen size and uses custom styling for a festive look.
 class CelebrationOverlay extends StatelessWidget {
   final Duration finalTime;
-  const CelebrationOverlay({super.key, required this.finalTime});
+  final int city;
+  final int level;
+  const CelebrationOverlay(
+      {super.key,
+      required this.finalTime,
+      required this.city,
+      required this.level});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +48,7 @@ class CelebrationOverlay extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             children: [
               Text(
-                "Stage 1 - Level 1",
+                "${city} - t.workout_session_dialog.level ${level}",
                 style: TextStyle(
                   fontSize: screenWidth * 0.07,
                   fontWeight: FontWeight.bold,

@@ -98,7 +98,8 @@
     },
     "workout_session_dialog": {
         "session_title": "Session n°$session_number",
-        "start_button": "Start"
+        "start_button": "Start",
+        "level": "Level"
     },
     "settings": {
         "title": "Settings",

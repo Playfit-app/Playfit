@@ -14,6 +14,8 @@ class Character extends StatefulWidget {
   final Map<String, String?> images;
   final int sessionLevel;
   final FlutterSecureStorage storage = const FlutterSecureStorage();
+  final int level;
+  final int city;
 
   Character({
     super.key,
@@ -24,6 +26,8 @@ class Character extends StatefulWidget {
     required this.isMe,
     required this.images,
     required this.sessionLevel,
+    required this.city,
+    required this.level,
   }) : position = Offset(
           position.dx - size.width * scale.dx / 2,
           position.dy - size.height * scale.dy,
@@ -122,6 +126,8 @@ class _CharacterState extends State<Character> {
                   landmarkImageUrl: widget.images['landmark']!,
                   sessionLevel: widget.sessionLevel,
                   characterImages: widget.images,
+                  city: widget.city,
+                  level: widget.level,
                 );
               },
             );

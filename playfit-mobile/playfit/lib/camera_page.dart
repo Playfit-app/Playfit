@@ -22,6 +22,8 @@ class CameraView extends StatefulWidget {
   final String landmarkImageUrl;
   final Map<String, String?> characterImages;
   final BoxType boxType;
+  final int city;
+  final int level;
 
   const CameraView({
     super.key,
@@ -31,6 +33,8 @@ class CameraView extends StatefulWidget {
     required this.landmarkImageUrl,
     required this.characterImages,
     this.boxType = BoxType.left,
+    required this.city,
+    required this.level,
   });
 
   @override
@@ -135,7 +139,8 @@ class _CameraViewState extends State<CameraView> {
   Future<void> _announceCount() async {
     await flutterTts.stop();
     if (_count == _targetCount) {
-      await flutterTts.speak("Bravo ! Tu as atteint $_targetCount répétitions.");
+      await flutterTts
+          .speak("Bravo ! Tu as atteint $_targetCount répétitions.");
     } else {
       await flutterTts.speak("$_count");
     }
@@ -335,14 +340,18 @@ class _CameraViewState extends State<CameraView> {
 
                 // Overlay when count hits the target
                 if (_showCelebration)
-                  CelebrationOverlay(finalTime: _elapsedTime),
+                  CelebrationOverlay(
+                      finalTime: _elapsedTime,
+                      city: widget.city,
+                      level: widget.level),
                 if (_showCelebration && _celebrationCountdown > 0)
                   Positioned(
                     bottom: 40,
                     left: 0,
                     right: 0,
                     child: Text(
-                      t.camera.next_step_countdown(seconds: _celebrationCountdown),
+                      t.camera
+                          .next_step_countdown(seconds: _celebrationCountdown),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 20,

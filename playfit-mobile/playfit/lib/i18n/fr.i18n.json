@@ -68,7 +68,10 @@
         "achievements": "Succès"
     },
     "social": {
-        "title": "Social"
+        "title": "Social",
+        "no_posts_available": "Aucun post disponible.",
+        "post_delete": "Supprimer",
+        "post_report": "Signaler"
     },
     "gdpr_consent_form": {
         "title": "Consentement RGPD",
@@ -148,5 +151,19 @@
         "text_7": "Oh, tu fais cette tête-là. Je sais, ça surprend. Mais bon, faut dire que t'as sacrément marché ! T'as un bon pas, je te le reconnais.",
         "text_8": "Écoute, t'as de la chance de m'être tombé dessus. Je suis un grand explorateur, moi ! L'Europe ? Je la connais comme mes poches. Bon, j'ai pas de poches, mais tu vois l'idée.",
         "text_9": "Si tu veux, je peux te ramener à Rome. Et tant qu'à faire, on en profitera pour te cultiver un peu. T'aimes les anecdotes historiques, non ?"
+    },
+    "mission": {
+        "title": "Mission"
+    },
+    "shop": {
+        "title": "Boutique"
+    },
+    "workout": {
+        "difficulty": "Difficulté :",
+        "easy": "Facile",
+        "medium": "Moyen",
+        "hard": "Difficile",
+        "stage_1_level_1": "Étape 1 - Niveau 1",
+        "stage_1_level_2": "Étape 1 - Niveau 2"
     }
 }

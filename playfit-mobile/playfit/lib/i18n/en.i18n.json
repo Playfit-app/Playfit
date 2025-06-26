@@ -68,7 +68,10 @@
         "achievements": "Achievements"
     },
     "social": {
-        "title": "Social"
+        "title": "Social",
+        "no_posts_available": "No posts available.",
+        "post_delete": "Delete",
+        "post_report": "Report"
     },
     "gdpr_consent_form": {
         "title": "GDPR Consent",
@@ -148,5 +151,19 @@
         "text_7": "Oh, that face you're making. I know, it's surprising. But hey, you’ve walked a lot! Gotta say, you’ve got a good stride.",
         "text_8": "Listen, you're lucky you ran into me. I'm a great explorer! Europe? I know it like the back of my paw. Well, I don’t have paws—pockets, I mean—but you get the idea.",
         "text_9": "If you want, I can take you back to Rome. And while we're at it, we might as well teach you a few things. You like historical fun facts, right?"
+    },
+    "mission": {
+        "title": "Mission"
+    },
+    "shop": {
+        "title": "Shop"
+    },
+    "workout": {
+        "difficulty": "Difficulty:",
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard",
+        "stage_1_level_1": "Stage 1 - Level 1",
+        "stage_1_level_2": "Stage 1 - Level 2"
     }
 }

@@ -13,11 +13,15 @@ import 'package:playfit/utils/image.dart';
 
 class AdventurePage extends StatefulWidget {
   final bool moveCharacter;
+  final bool workoutDone;
+  final String? landmarkUrl;
   // final String? completedDifficulty;
 
   const AdventurePage({
     super.key,
     this.moveCharacter = false,
+    this.workoutDone = false,
+    this.landmarkUrl = null,
     // this.completedDifficulty,
   });
 
@@ -263,6 +267,19 @@ class _AdventurePageState extends State<AdventurePage>
     return [images, positions];
   }
 
+  void _showAnecdoteModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return AnecdoteDisplayer(
+          landmarkUrl: widget.landmarkUrl,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -365,6 +382,9 @@ class _AdventurePageState extends State<AdventurePage>
                           city: worldPositions[0]['city'],
                           level: worldPositions[0]['level'],
                         ),
+                  // Display the landmark if the workout is done
+                  if (widget.workoutDone && widget.landmarkUrl != null)
+                    _showAnecdoteModal(),
                   ]
                 ],
               ),

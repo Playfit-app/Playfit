@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:playfit/i18n/strings.g.dart';
+import 'package:playfit/utils/image.dart' as image_utils;
 
 class AnecdoteDisplayer extends StatelessWidget {
-  final String anecdote;
-  final String anecdoteMonument;
+  final String landmarkUrl;
 
-  const AnecdoteDisplayer({Key? key, required this.anecdote, required this.anecdoteMonument}) : super(key: key);
+  const AnecdoteDisplayer({Key? key, required this.landmarkUrl}) : super(key: key);
+
+  String getLandmarkName() {
+    // Extract the landmark name from the URL
+    return landmarkUrl.split('/').last.split('.').first;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +57,17 @@ class AnecdoteDisplayer extends StatelessWidget {
                       child: Padding(
                         padding:
                             EdgeInsets.symmetric(vertical: screenHeight * 0.02),
-                        child: Image.asset("assets/images/monument_${anecdoteMonument}.png"), // Have to get the monument name or number to update the path following the user's level
+                        //child: Image.asset(image_utils.getMonumentImagePath(anecdoteMonument)),
+                        child: FutureBuilder<ui.Image>(
+                          future: image_utils.UIImageCacheManager().loadImage(landmarkUrl),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+                              return RawImage(image: snapshot.data);
+                            } else {
+                              return CircularProgressIndicator();
+                            }
+                          },
+                        ),
                       ),
                     ),
                   ],
@@ -59,7 +75,7 @@ class AnecdoteDisplayer extends StatelessWidget {
               ),
               SizedBox(height: screenHeight * 0.02),
               Text(
-                anecdote,
+                t.anecdotes[getLandmarkName()],
                 style: TextStyle(
                   fontSize: screenWidth * 0.05,
                   fontWeight: FontWeight.w500,

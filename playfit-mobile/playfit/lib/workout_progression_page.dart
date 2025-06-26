@@ -116,6 +116,7 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
 
             // completedDifficulty: difficulty,
             workoutDone: true,
+            landmarkUrl: widget.images[3],
           ),
         ),
         (Route<dynamic> route) => false,

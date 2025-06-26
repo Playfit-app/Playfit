@@ -11,11 +11,11 @@ import 'boutique_page.dart';
 import 'profile_page.dart';
 import 'package:playfit/social_page.dart';
 import 'components/top_bar.dart';
-import 'components/anecdote_displayer.dart';
 
 class HomePage extends StatefulWidget {
   final bool firstLogin;
   final bool workoutDone;
+  final String? landmarkUrl;
   // final bool workoutDone;
   // final String? completedDifficulty;
 
@@ -23,6 +23,7 @@ class HomePage extends StatefulWidget {
     super.key,
     this.firstLogin = false,
     this.workoutDone = false,
+    // this.landmarkUrl = null,
     // this.completedDifficulty,
   });
 
@@ -101,28 +102,6 @@ class _HomePageState extends State<HomePage> {
         await service.getToken();
       });
     }
-  }
-
-  if (_workoutDone) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showAnecdoteModal();
-      // refreshStreakAfterWorkout();
-    });
-  }
-
-  /// Shows a modal with an anecdote after the workout is done.
-  void _showAnecdoteModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return AnecdoteDisplayer(
-          anecdote: // catch the anecdote's string,
-          anecdoteMonument: t.home.anecdote_monument,
-        );
-      },
-    );
   }
 
   // Future<void> refreshStreakAfterWorkout() async {

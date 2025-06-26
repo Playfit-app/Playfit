@@ -34,6 +34,11 @@ class _HomePageState extends State<HomePage> {
   late int currentStreak;
   late Future<void> _userProgressFuture;
 
+  /// Fetches the user's progress from the server.
+  /// This method retrieves the current streak of the user
+  /// and updates the state accordingly.
+  ///
+  /// Returns a [Future] that completes when the data is fetched.
   Future<void> _fetchUserProgress() async {
     const storage = FlutterSecureStorage();
     String? token = await storage.read(key: 'token');
@@ -81,6 +86,9 @@ class _HomePageState extends State<HomePage> {
       const SocialPage(),
       const ProfilePage(),
     ];
+    // Request notification permissions if it's the user's first login
+    // and get the notification token.
+    // This is useful for sending notifications about new missions or updates.
     if (widget.firstLogin) {
       Future.delayed(const Duration(), () async {
         final service = NotificationService();
@@ -96,6 +104,11 @@ class _HomePageState extends State<HomePage> {
   //   await _fetchUserProgress();
   // }
 
+  /// Handles the tap event on the bottom navigation bar items.
+  /// This method updates the current index of the selected page
+  /// and triggers a rebuild of the widget to display the selected page.
+  ///
+  /// `index` is the index of the tapped item in the bottom navigation bar.
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
@@ -114,13 +127,20 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       extendBody: true,
-      appBar: _currentIndex == 4 || _currentIndex == 3
+      // The app bar is hidden for the Social and Profile pages
+      // to provide a full-screen experience for those pages.
+      appBar: _currentIndex == 1 || _currentIndex == 2
           ? null
           : AppBar(
               backgroundColor: Colors.transparent,
               title: TopBar(currentStreak: currentStreak),
               automaticallyImplyLeading: false,
             ),
+      // The body of the home page is a FutureBuilder that waits for the user progress data to load.
+      // While loading, it shows a CircularProgressIndicator.
+      // If there's an error, it displays an error message.
+      // Once the data is loaded, it displays the corresponding page based on the current index.
+      // This allows the app to show different content based on the user's navigation choice.
       body: FutureBuilder(
         future: _userProgressFuture,
         builder: (context, snapshot) {
@@ -162,8 +182,8 @@ class _HomePageState extends State<HomePage> {
                   _buildNavBarItem(Icons.fitness_center, 0),
                   // _buildNavBarItem(Icons.list_alt, 1),
                   // _buildNavBarItem(Icons.shopping_cart, 2),
-                  _buildNavBarItem(Icons.group, 3),
-                  _buildNavBarItem(Icons.person, 4),
+                  _buildNavBarItem(Icons.group, 1),
+                  _buildNavBarItem(Icons.person, 2),
                 ],
               ),
             ),
@@ -173,6 +193,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// Builds a BottomNavigationBarItem with the specified icon and index.
+  /// This method checks if the item is selected based on the current index
+  /// and applies a background color if it is selected.
+  ///
+  /// `icon` is the icon to be displayed in the navigation bar item.
+  /// `index` is the index of the item in the navigation bar.
+  ///
+  /// Returns a [BottomNavigationBarItem] that can be used in the BottomNavigationBar.
   BottomNavigationBarItem _buildNavBarItem(IconData icon, int index) {
     bool isSelected = _currentIndex == index;
 
@@ -195,6 +223,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+// Custom clipper for the navigation bar to create a curved effect.
 class NavBarClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {

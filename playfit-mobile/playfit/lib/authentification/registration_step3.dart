@@ -27,6 +27,7 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
   int _selectedOutfitIndex = 0;
   final _totalSteps = 3;
 
+  /// Fetches character images from the server for the registration process.
   Future<Map<String, dynamic>> fetchImages() async {
     final String url =
         '${dotenv.env['SERVER_BASE_URL']}/api/social/get-character-images/?registration=true';
@@ -133,6 +134,7 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
     return introductionImages;
   }
 
+  /// Builds the widget tree for the registration step 3 screen.
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -199,6 +201,7 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
         });
   }
 
+  /// Builds the content widget for the current registration step based on the provided [data].
   Widget _buildStepContent(Map<String, dynamic> data) {
     final List<String> basicCharacterImages = _getCharacterImages(data);
 

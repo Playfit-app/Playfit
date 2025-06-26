@@ -19,6 +19,13 @@ class PostCardCommentInput extends StatefulWidget {
   State<PostCardCommentInput> createState() => _PostCardCommentInputState();
 }
 
+
+/// This class manages the comment input field, submission state, and interaction
+/// with the backend API to post new comments. It updates the UI to reflect the
+/// submission process and adds new comments to the post's comment list upon success.
+///
+/// The build method renders a styled input area with a text field and a send button.
+/// While submitting, a loading indicator is shown in place of the send button.
 class _PostCardCommentInputState extends State<PostCardCommentInput> {
   final TextEditingController _commentController = TextEditingController();
   bool _isSubmitting = false;

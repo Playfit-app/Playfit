@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:playfit/i18n/strings.g.dart';
 
+/// A widget that displays a celebratory overlay after completing a stage or level.
+///
+/// The [CelebrationOverlay] shows a semi-transparent background with a centered
+/// card containing the stage and level information, a character image, the final
+/// completion time, and the difficulty level.
+///
+/// The overlay is responsive to screen size and uses custom styling for a festive look.
 class CelebrationOverlay extends StatelessWidget {
   final Duration finalTime;
   const CelebrationOverlay({super.key, required this.finalTime});

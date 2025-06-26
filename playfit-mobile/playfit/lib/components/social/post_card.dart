@@ -49,6 +49,7 @@ class _PostCardState extends State<PostCard> {
     );
 
     if (response.statusCode == 201) {
+
     } else {
       setState(() {
         widget.post['is_liked'] = false;
@@ -57,6 +58,7 @@ class _PostCardState extends State<PostCard> {
     }
   }
 
+  /// Handles the "unlike" action for a post.
   Future<void> _unlike() async {
     setState(() {
       widget.post['is_liked'] = false;
@@ -85,6 +87,7 @@ class _PostCardState extends State<PostCard> {
     }
   }
 
+  /// Handles the process of submitting a comment to a post.
   Future<void> _comment() async {
     final content = _commentController.text.trim();
 
@@ -147,6 +150,7 @@ class _PostCardState extends State<PostCard> {
     }
   }
 
+  /// Deletes a comment with the given [commentId] from the post's comments list.
   Future<void> _deleteComment(int commentId) async {
     final commentToDelete = widget.post['comments']
         .firstWhere((comment) => comment['id'] == commentId);
@@ -178,6 +182,16 @@ class _PostCardState extends State<PostCard> {
     }
   }
 
+  /// Builds the UI for a social post card, displaying post content, media, likes, and comments.
+  ///
+  /// The widget displays:
+  /// - The post's media (if available) at the top, with rounded corners.
+  /// - The username of the post's author and like button with like count.
+  /// - The post's textual content (if available).
+  /// - A comment input field and send button when all comments are shown.
+  /// - A divider and a list of comments (up to 3 by default, or all if `showAllComments` is true).
+  /// - Each comment displays the commenter's username (tappable to view profile), content, and time ago.
+  /// - A popup menu for each comment, allowing the owner to delete or others to report.
   @override
   Widget build(BuildContext context) {
     final user = widget.post['user'];

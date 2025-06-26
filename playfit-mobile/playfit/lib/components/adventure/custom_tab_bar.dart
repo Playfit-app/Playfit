@@ -30,6 +30,12 @@ class _CustomTabBarState extends State<CustomTabBar>
     _exercises.addAll(_groupExercises());
   }
 
+  /// Groups workout session exercises by difficulty and arranges them into rows.
+  ///
+  /// For each difficulty level ('beginner', 'intermediate', 'advanced'), this method:
+  /// - Iterates through the exercises.
+  /// - Places each "jumpingJack" exercise in its own row.
+  /// - Groups other exercises into rows of up to two exercises each.
   Map<String, List<List<Map<String, dynamic>>>> _groupExercises() {
     Map<String, List<List<Map<String, dynamic>>>> groupedExercises = {
       'beginner': [],
@@ -67,6 +73,8 @@ class _CustomTabBarState extends State<CustomTabBar>
     }
   }
 
+  /// Builds a custom dialog widget containing a tab bar with three tabs ("Facile", "Moyen", "Difficile").
+  /// Each tab displays a different set of exercises based on the selected difficulty level.
   @override
   Widget build(BuildContext context) {
     return Dialog(

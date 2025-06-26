@@ -21,6 +21,16 @@ class PostCard extends StatefulWidget {
   State<PostCard> createState() => _PostCardState();
 }
 
+/// The private state class for the [PostCard] widget.
+///
+/// This class manages the UI and state for displaying a post card,
+/// including its content, comments, and input for new comments.
+///
+/// Widgets included in the post card:
+/// - [PostCardContent]: Displays the main content of the post.
+/// - [PostCardCommentInput]: (conditionally shown) Input field for adding new comments.
+/// - [PostCardComments]: Displays the list of comments for the post.
+/// - [PostCardBottom]: Displays the bottom section of the post card (e.g., actions).
 class _PostCardState extends State<PostCard> {
   final FlutterSecureStorage storage = const FlutterSecureStorage();
 

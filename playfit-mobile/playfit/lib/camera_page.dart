@@ -55,6 +55,13 @@ class _CameraViewState extends State<CameraView> {
   bool _celebrationStarted = false;
   late FlutterTts flutterTts;
 
+  /// Converts a workout name to a [WorkoutType].
+  /// This method maps the name of the workout to its corresponding enum value.
+  /// Throws an exception if the name is not recognized.
+  ///
+  /// `name` is the name of the workout as a string.
+  ///
+  /// Returns a [WorkoutType] corresponding to the name.
   WorkoutType workoutTypeFromName(String name) {
     switch (name.toLowerCase().replaceAll('-', '')) {
       case 'squat':
@@ -83,6 +90,7 @@ class _CameraViewState extends State<CameraView> {
     _configureTts();
 
     initCamera();
+    // Listen for changes in workout counts to update the count and trigger announcements
     _workoutAnalyzer.workoutCounts.addListener(() {
       final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
       if (count != null && count > _count && count <= _targetCount) {
@@ -99,6 +107,13 @@ class _CameraViewState extends State<CameraView> {
     });
   }
 
+  /// Configures the Text-to-Speech (TTS) settings.
+  /// This method sets the language, pitch, and speech rate for the TTS engine.
+  ///
+  /// It reads the selected locale from secure storage and applies it.
+  /// If no locale is found, it defaults to French (fr-FR).
+  ///
+  /// Returns a [Future] that completes when the configuration is done.
   Future<void> _configureTts() async {
     final storage = const FlutterSecureStorage();
     final selectedLocale = await storage.read(key: 'selected_locale');
@@ -112,6 +127,11 @@ class _CameraViewState extends State<CameraView> {
     await flutterTts.setSpeechRate(0.5);
   }
 
+  /// Announces the current count or target count using Text-to-Speech (TTS).
+  /// This method stops any ongoing speech and speaks the current count.
+  /// If the count matches the target count, it announces a congratulatory message.
+  ///
+  /// Returns a [Future] that completes when the speech is done.
   Future<void> _announceCount() async {
     await flutterTts.stop();
     if (_count == _targetCount) {
@@ -121,6 +141,11 @@ class _CameraViewState extends State<CameraView> {
     }
   }
 
+  /// Starts a timer that updates the elapsed time every second.
+  /// This method also checks if the target count has been reached
+  /// and sets a flag to show the celebration overlay.
+  ///
+  /// Returns a [void] that completes when the timer is started.
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() {
@@ -133,6 +158,14 @@ class _CameraViewState extends State<CameraView> {
     });
   }
 
+  /// Initializes the camera and sets up the camera controller.
+  /// This method retrieves the available cameras, selects the front camera,
+  /// and initializes the camera controller with a high resolution preset.
+  ///
+  /// It also sets up a listener for workout counts to update the count
+  /// and trigger the celebration overlay when the target count is reached.
+  ///
+  /// Returns a [Future] that completes when the camera is initialized.
   Future<void> initCamera() async {
     final cameras = await availableCameras();
     _controller = CameraController(
@@ -143,6 +176,7 @@ class _CameraViewState extends State<CameraView> {
     );
     await _controller?.initialize();
 
+    // Listen for changes in workout counts to update the count and trigger announcements
     _workoutAnalyzer.workoutCounts.addListener(() {
       final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
 
@@ -165,6 +199,11 @@ class _CameraViewState extends State<CameraView> {
   }
   //end function after help
 
+  /// Starts the workout detection process.
+  /// This method checks if the camera controller is initialized and not already streaming images.
+  /// If the conditions are met, it starts the image stream and begins detecting workouts.
+  ///
+  /// Returns a [void] that completes when the detection starts.
   void _startDetecting() async {
     if (_controller != null) {
       if (_controller!.value.isStreamingImages) return;
@@ -173,7 +212,11 @@ class _CameraViewState extends State<CameraView> {
       });
 
       _startTimer();
+      // Start the camera image stream
+      // This will call the detectWorkout method in WorkoutAnalyzer
+      // with the input image from the camera
       _controller!.startImageStream((image) async {
+        // Check if we are already detecting to avoid multiple detections
         if (_isDetecting) return;
         _isDetecting = true;
 
@@ -188,6 +231,13 @@ class _CameraViewState extends State<CameraView> {
     }
   }
 
+  /// Stops the workout detection process and starts a countdown for the celebration overlay.
+  /// This method checks if the camera controller is initialized and streaming images.
+  /// If so, it cancels the timer, stops the image stream,
+  /// and sets a flag to show the celebration overlay.
+  /// It also starts a countdown timer that updates the UI every second.
+  ///
+  /// Returns a [void] that completes when the detection is stopped.
   void _stopDetecting() async {
     if (_controller != null && _controller!.value.isStreamingImages) {
       _timer?.cancel();
@@ -207,6 +257,11 @@ class _CameraViewState extends State<CameraView> {
     });
   }
 
+  /// Navigates to the WorkoutProgressionPage with the current exercise index and difficulty.
+  /// This method creates a new route and passes the necessary parameters,
+  /// including the difficulty level, images, starting point, and character images.
+  ///
+  /// Returns a [void] that completes when the navigation is done.
   void _goToProgressionPage() {
     final Difficulty difficulty = widget.difficulty == "beginner"
         ? Difficulty.easy
@@ -220,9 +275,9 @@ class _CameraViewState extends State<CameraView> {
         builder: (context) => WorkoutProgressionPage(
           difficulty: difficulty,
           images: [
-            "assets/images/pebble_path.jpg",
-            "${dotenv.env['SERVER_BASE_URL']}/media/decorations/building.webp",
-            "${dotenv.env['SERVER_BASE_URL']}/media/decorations/tree.webp",
+            "${dotenv.env['SERVER_BASE_URL']}${widget.characterImages['path']}",
+            "${dotenv.env['SERVER_BASE_URL']}${widget.characterImages['building']}",
+            "${dotenv.env['SERVER_BASE_URL']}${widget.characterImages['tree']}",
             "${dotenv.env['SERVER_BASE_URL']}${widget.landmarkImageUrl}",
           ],
           startingPoint: widget.currentExerciseIndex,

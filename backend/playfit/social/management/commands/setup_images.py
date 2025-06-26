@@ -137,13 +137,18 @@ class Command(BaseCommand):
         Create countries in the database.
         """
         countries = [
-            ("France", "Europe"),
+            ("France", "Europe", "#C5DEFA"),
+            ("Italy", "Europe", "#FFE9CA"),
         ]
 
         self.stdout.write(self.style.NOTICE("Creating countries..."))
-        for country_name, continent_name in countries:
+        for country_name, continent_name, country_color in countries:
             continent = Continent.objects.get(name=continent_name)
-            country_obj, created = Country.objects.get_or_create(name=country_name, continent=continent)
+            country_obj, created = Country.objects.get_or_create(
+                name=country_name,
+                color=country_color,
+                continent=continent
+            )
             if created:
                 self.stdout.write(self.style.SUCCESS(f"Created country: {country_obj.name}"))
             else:
@@ -155,14 +160,16 @@ class Command(BaseCommand):
         Create cities in the database.
         """
         cities = [
-            ("Paris", "France", 1),
-            ("Lyon", "France", 2),
+            ("Paris", "France", 1, 6),
+            ("Lyon", "France", 2, 6),
+            ("Milan", "Italy", 1, 5),
+            ("Rome", "Italy", 2, 5),
         ]
 
         self.stdout.write(self.style.NOTICE("Creating cities..."))
-        for city_name, country_name, order in cities:
+        for city_name, country_name, order, max_level in cities:
             country = Country.objects.get(name=country_name)
-            city_obj, created = City.objects.get_or_create(name=city_name, country=country, order=order)
+            city_obj, created = City.objects.get_or_create(name=city_name, country=country, order=order, max_level=max_level)
             if created:
                 self.stdout.write(self.style.SUCCESS(f"Created city: {city_obj.name}"))
             else:
@@ -200,6 +207,33 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.SUCCESS(f"Created decoration image: {decoration_image.label}"))
                 else:
                     self.stdout.write(self.style.WARNING(f"Decoration image already exists: {decoration_image.label}"))
+
+            elif os.path.isdir(full_path) and "countries" in full_path:
+                for country_name in os.listdir(full_path):
+                    country_path = os.path.join(full_path, country_name)
+                    if not is_valid_directory(country_path):
+                        continue
+
+                    for image_file in os.listdir(country_path):
+                        image_path = os.path.join(country_path, image_file)
+                        if is_valid_file(image_path):
+                            label = get_label_from_path(image_file)
+                            label_with_extension = get_label_from_path(image_file, extension=True)
+
+                            try:
+                                decoration_image = DecorationImage.objects.get(label=label)
+                                created = False
+                            except DecorationImage.DoesNotExist:
+                                decoration_image = DecorationImage(label=label)
+                                decoration_image.image.save(label_with_extension, File(open(image_path, "rb")))
+                                decoration_image.save()
+                                created = True
+
+                            if created:
+                                self.stdout.write(self.style.SUCCESS(f"Created decoration image: {decoration_image.label}"))
+                            else:
+                                self.stdout.write(self.style.WARNING(f"Decoration image already exists: {decoration_image.label}"))
+
         self.stdout.write(self.style.SUCCESS("All decoration images created."))
 
     def create_mountain_decorations(self, base_path: str) -> None:

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/adventure/custom_tab_bar.dart';
 import 'package:playfit/camera_page.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class WorkoutSessionDialog extends StatefulWidget {
   final Map<String, List<dynamic>> workoutSessionExercises;
@@ -22,8 +23,26 @@ class WorkoutSessionDialog extends StatefulWidget {
   State<WorkoutSessionDialog> createState() => _WorkoutSessionDialogState();
 }
 
+/// State class for the [WorkoutSessionDialog] widget.
+///
+/// This state manages the UI and logic for displaying a workout session dialog,
+/// allowing users to select a workout difficulty and start a session.
+///
+/// Features:
+/// - Displays a dialog with a close button, a centered title, a custom tab menu for difficulty selection,
+///   and a start button.
+/// - The selected difficulty is managed by the [difficulty] state variable and updated via the [CustomTabBar].
+/// - On pressing the start button, navigates to the [CameraView] screen, passing the selected difficulty
+///   and other relevant session data.
+
 class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
   String difficulty = 'beginner';
+  final FlutterSecureStorage storage = const FlutterSecureStorage();
+
+  Future<BoxType> _getUserBoxType() async {
+    String? boxTypeStr = await storage.read(key: 'boxType');
+    return boxTypeStr == 'bottom' ? BoxType.bottom : BoxType.left;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +70,8 @@ class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 Text(
-                  t.workout_session_dialog.session_title(session_number: widget.sessionLevel.toString()),
+                  t.workout_session_dialog.session_title(
+                      session_number: widget.sessionLevel.toString()),
                   style: GoogleFonts.amaranth(
                     fontSize: 32,
                   ),
@@ -70,7 +90,8 @@ class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
               },
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                BoxType boxType = await _getUserBoxType();
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -79,7 +100,7 @@ class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
                       difficulty: difficulty,
                       currentExerciseIndex: 0,
                       landmarkImageUrl: widget.landmarkImageUrl,
-                      boxType: BoxType.left,
+                      boxType: boxType,
                       characterImages: widget.characterImages,
                     ),
                   ),

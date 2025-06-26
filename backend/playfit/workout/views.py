@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from authentification.models import UserAchievement, UserProgress
-from social.models import WorldPosition
+from social.models import WorldPosition, Notification, Post
+from social.utils import send_notification
 from .models import WorkoutSession, Exercise, WorkoutSessionExercise
 from .serializers import (
     WorkoutSessionSerializer,
@@ -158,6 +159,34 @@ class WorkoutSessionsView(APIView):
             # If the user has achievements, update them
             for achievement in user_achievements:
                 achievement.update_progress(workout_session)
+
+        # Create a post for the workout session
+        post = Post.objects.create(
+            user=request.user,
+            content=f"I just completed level {wp.city_level} workout session in {wp.city.name if wp.is_in_city() else f'transition from {wp.transition_from.name} to {wp.transition_to.name}'} with difficulty {difficulty}!",
+        )
+
+        # Send notification to the followers of the user
+        followers = list(request.user.get_followers())
+        notifications = [
+            Notification(
+                user=follower,
+                sender=request.user,
+                notification_type="post",
+                post=post,
+            )
+            for follower in followers
+        ]
+        Notification.objects.bulk_create(notifications)
+        for follower in followers:
+            send_notification(follower, {
+                'id': notifications[followers.index(follower)].id,
+                'sender': request.user.username,
+                'notification_type': notifications[followers.index(follower)].notification_type,
+                'created_at': notifications[followers.index(follower)].created_at.isoformat(),
+                'post': post.id,
+                'seen': notifications[followers.index(follower)].seen,
+            })
 
         return Response("Workout session updated successfully", status=status.HTTP_200_OK)
 

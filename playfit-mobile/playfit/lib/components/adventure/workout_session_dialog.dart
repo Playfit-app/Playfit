@@ -10,6 +10,8 @@ class WorkoutSessionDialog extends StatefulWidget {
   final String landmarkImageUrl;
   final int sessionLevel;
   final Map<String, String?> characterImages;
+  final String city;
+  final int level;
 
   const WorkoutSessionDialog({
     super.key,
@@ -17,7 +19,8 @@ class WorkoutSessionDialog extends StatefulWidget {
     required this.landmarkImageUrl,
     required this.sessionLevel,
     required this.characterImages,
-  });
+    required this.city,
+    required this.level,});
 
   @override
   State<WorkoutSessionDialog> createState() => _WorkoutSessionDialogState();
@@ -102,6 +105,8 @@ class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
                       landmarkImageUrl: widget.landmarkImageUrl,
                       boxType: boxType,
                       characterImages: widget.characterImages,
+                      city: widget.city,
+                      level: widget.level,
                     ),
                   ),
                 );

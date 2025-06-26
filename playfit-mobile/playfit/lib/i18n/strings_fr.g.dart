@@ -197,6 +197,7 @@ class _TranslationsWorkoutSessionDialogFr extends TranslationsWorkoutSessionDial
 	// Translations
 	@override String session_title({required Object session_number}) => 'Session n°${session_number}';
 	@override String get start_button => 'Démarrer';
+	@override String get level => '{city} - Niveau {level}';
 }
 
 // Path: settings
@@ -436,6 +437,7 @@ extension on TranslationsFr {
 			case 'gdpr_consent_form.accept_button': return 'Continuer';
 			case 'workout_session_dialog.session_title': return ({required Object session_number}) => 'Session n°${session_number}';
 			case 'workout_session_dialog.start_button': return 'Démarrer';
+			case 'workout_session_dialog.level': return '{city} - Niveau {level}';
 			case 'settings.title': return 'Paramètres';
 			case 'settings.language': return 'Langue';
 			case 'settings.notifications': return 'Notifications';

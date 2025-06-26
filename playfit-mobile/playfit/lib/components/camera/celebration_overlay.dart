@@ -115,14 +115,14 @@ class CelebrationOverlay extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Difficulté : ",
+                    t.workout.difficulty,
                     style: TextStyle(
                       fontSize: screenWidth * 0.055,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    "Facile",
+                    t.workout.easy,
                     style: TextStyle(
                       fontSize: screenWidth * 0.055,
                       fontWeight: FontWeight.bold,

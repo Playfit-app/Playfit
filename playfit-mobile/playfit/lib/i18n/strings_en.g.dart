@@ -271,6 +271,41 @@ class TranslationsIntroductionEn {
 	String get text_9 => 'If you want, I can take you back to Rome. And while we\'re at it, we might as well teach you a few things. You like historical fun facts, right?';
 }
 
+// Path: mission
+class _TranslationsMissionEn extends TranslationsMissionFr {
+	_TranslationsMissionEn._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Mission';
+}
+
+// Path: shop
+class _TranslationsShopEn extends TranslationsShopFr {
+	_TranslationsShopEn._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Shop';
+}
+
+// Path: workout
+class _TranslationsWorkoutEn extends TranslationsWorkoutFr {
+	_TranslationsWorkoutEn._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get difficulty => 'Difficulty:';
+	@override String get easy => 'Easy';
+	@override String get medium => 'Medium';
+	@override String get hard => 'Hard';
+	@override String get stage_1_level_1 => 'Stage 1 - Level 1';
+	@override String get stage_1_level_2 => 'Stage 1 - Level 2';
+}
+
 // Path: gdpr_consent_form.data_collection
 class TranslationsGdprConsentFormDataCollectionEn {
 	TranslationsGdprConsentFormDataCollectionEn.internal(this._root);
@@ -382,6 +417,9 @@ extension on Translations {
 			case 'profile.bpm_title': return 'BPM (Beats per minute)';
 			case 'profile.achievements': return 'Achievements';
 			case 'social.title': return 'Social';
+			case 'social.no_posts_available': return 'No posts available.';
+			case 'social.post_delete': return 'Delete';
+			case 'social.post_report': return 'Report';
 			case 'gdpr_consent_form.title': return 'GDPR Consent';
 			case 'gdpr_consent_form.description': return 'In accordance with the General Data Protection Regulation (GDPR), we are required to inform you about the collection, use, and storage of your personal data.';
 			case 'gdpr_consent_form.data_collection.title': return '1. Data Collected\n';
@@ -442,6 +480,14 @@ extension on Translations {
 			case 'introduction.text_7': return 'Oh, that face you\'re making. I know, it\'s surprising. But hey, you’ve walked a lot! Gotta say, you’ve got a good stride.';
 			case 'introduction.text_8': return 'Listen, you\'re lucky you ran into me. I\'m a great explorer! Europe? I know it like the back of my paw. Well, I don’t have paws—pockets, I mean—but you get the idea.';
 			case 'introduction.text_9': return 'If you want, I can take you back to Rome. And while we\'re at it, we might as well teach you a few things. You like historical fun facts, right?';
+			case 'mission.title': return 'Mission';
+			case 'shop.title': return 'Shop';
+			case 'workout.difficulty': return 'Difficulty:';
+			case 'workout.easy': return 'Easy';
+			case 'workout.medium': return 'Medium';
+			case 'workout.hard': return 'Hard';
+			case 'workout.stage_1_level_1': return 'Stage 1 - Level 1';
+			case 'workout.stage_1_level_2': return 'Stage 1 - Level 2';
 			default: return null;
 		}
 	}

@@ -186,7 +186,9 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
                           horizontal: screenWidth * 0.06, vertical: 10),
                     ),
                     child: Text(
-                      _currentStep == _totalSteps - 1 ? 'Terminer' : 'Suivant',
+                      _currentStep == _totalSteps - 1
+                          ? t.register.create_account
+                          : t.register.next,
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.white,
@@ -225,7 +227,7 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
       case 2:
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            _getSelectedCharacter(data); 
+            _getSelectedCharacter(data);
           }
         });
 

@@ -270,6 +270,41 @@ class _TranslationsIntroductionFr extends TranslationsIntroductionEn {
 	@override String get text_9 => 'Si tu veux, je peux te ramener à Rome. Et tant qu\'à faire, on en profitera pour te cultiver un peu. T\'aimes les anecdotes historiques, non ?';
 }
 
+// Path: mission
+class TranslationsMissionFr {
+	TranslationsMissionFr.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Mission';
+}
+
+// Path: shop
+class TranslationsShopFr {
+	TranslationsShopFr.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Boutique';
+}
+
+// Path: workout
+class TranslationsWorkoutFr {
+	TranslationsWorkoutFr.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get difficulty => 'Difficulté :';
+	String get easy => 'Facile';
+	String get medium => 'Moyen';
+	String get hard => 'Difficile';
+	String get stage_1_level_1 => 'Étape 1 - Niveau 1';
+	String get stage_1_level_2 => 'Étape 1 - Niveau 2';
+}
+
 // Path: gdpr_consent_form.data_collection
 class _TranslationsGdprConsentFormDataCollectionFr extends TranslationsGdprConsentFormDataCollectionEn {
 	_TranslationsGdprConsentFormDataCollectionFr._(TranslationsFr root) : this._root = root, super.internal(root);
@@ -381,6 +416,9 @@ extension on TranslationsFr {
 			case 'profile.bpm_title': return 'BPM (Battements par minute)';
 			case 'profile.achievements': return 'Succès';
 			case 'social.title': return 'Social';
+			case 'social.no_posts_available': return 'Aucun post disponible.';
+			case 'social.post_delete': return 'Supprimer';
+			case 'social.post_report': return 'Signaler';
 			case 'gdpr_consent_form.title': return 'Consentement RGPD';
 			case 'gdpr_consent_form.description': return 'Conformément au Règlement Général sur la Protection des Données (RGPD), nous sommes tenus de vous informer sur la collecte, l\'utilisation et le stockage de vos données personnelles.';
 			case 'gdpr_consent_form.data_collection.title': return '1. Données Collectées\n';
@@ -441,6 +479,14 @@ extension on TranslationsFr {
 			case 'introduction.text_7': return 'Oh, tu fais cette tête-là. Je sais, ça surprend. Mais bon, faut dire que t\'as sacrément marché ! T\'as un bon pas, je te le reconnais.';
 			case 'introduction.text_8': return 'Écoute, t\'as de la chance de m\'être tombé dessus. Je suis un grand explorateur, moi ! L\'Europe ? Je la connais comme mes poches. Bon, j\'ai pas de poches, mais tu vois l\'idée.';
 			case 'introduction.text_9': return 'Si tu veux, je peux te ramener à Rome. Et tant qu\'à faire, on en profitera pour te cultiver un peu. T\'aimes les anecdotes historiques, non ?';
+			case 'mission.title': return 'Mission';
+			case 'shop.title': return 'Boutique';
+			case 'workout.difficulty': return 'Difficulté :';
+			case 'workout.easy': return 'Facile';
+			case 'workout.medium': return 'Moyen';
+			case 'workout.hard': return 'Difficile';
+			case 'workout.stage_1_level_1': return 'Étape 1 - Niveau 1';
+			case 'workout.stage_1_level_2': return 'Étape 1 - Niveau 2';
 			default: return null;
 		}
 	}

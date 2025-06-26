@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:playfit/i18n/strings.g.dart';
 
 /// A widget that displays a celebratory overlay after completing a stage or level.
 ///
@@ -48,7 +49,9 @@ class CelebrationOverlay extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             children: [
               Text(
-                "${city} - t.workout_session_dialog.level ${level}",
+                t.workout_session_dialog.level
+                    .replaceAll('{city}', city.toString())
+                    .replaceAll('{level}', level.toString()),
                 style: TextStyle(
                   fontSize: screenWidth * 0.07,
                   fontWeight: FontWeight.bold,

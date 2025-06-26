@@ -18,7 +18,7 @@ class WorkoutProgressionPage extends StatefulWidget {
   final Map<String, List<dynamic>> workoutSessionExercises;
   final int currentExerciseIndex;
   final Map<String, String?> characterImages;
-  final int city;
+  final String city;
   final int level;
 
   const WorkoutProgressionPage({

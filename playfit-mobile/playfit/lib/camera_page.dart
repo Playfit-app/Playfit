@@ -22,7 +22,7 @@ class CameraView extends StatefulWidget {
   final String landmarkImageUrl;
   final Map<String, String?> characterImages;
   final BoxType boxType;
-  final int city;
+  final String city;
   final int level;
 
   const CameraView({

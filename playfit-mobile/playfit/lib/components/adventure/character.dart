@@ -15,7 +15,7 @@ class Character extends StatefulWidget {
   final int sessionLevel;
   final FlutterSecureStorage storage = const FlutterSecureStorage();
   final int level;
-  final int city;
+  final String city;
 
   Character({
     super.key,

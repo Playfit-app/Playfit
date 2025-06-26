@@ -362,7 +362,7 @@ class _AdventurePageState extends State<AdventurePage>
                             'path': '${_decorationImages['path']}',
                           },
                           sessionLevel: worldPositions[0]['level'],
-                          city: worldPositions[0]['city'],
+                          city: worldPositions[0]['city_name'],
                           level: worldPositions[0]['level'],
                         ),
                   ]

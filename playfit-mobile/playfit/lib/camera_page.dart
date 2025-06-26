@@ -289,6 +289,8 @@ class _CameraViewState extends State<CameraView> {
           workoutSessionExercises: widget.workoutSessionExercises,
           currentExerciseIndex: widget.currentExerciseIndex + 1,
           characterImages: widget.characterImages,
+          city: widget.city,
+          level: widget.level,
         ),
       ),
     );

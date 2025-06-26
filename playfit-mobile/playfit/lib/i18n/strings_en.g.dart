@@ -224,6 +224,7 @@ class TranslationsWorkoutSessionDialogEn {
 	// Translations
 	String session_title({required Object session_number}) => 'Session n°${session_number}';
 	String get start_button => 'Start';
+	String get level => '{city} - Level {level}';
 }
 
 // Path: settings
@@ -425,6 +426,7 @@ extension on Translations {
 			case 'gdpr_consent_form.accept_button': return 'Continue';
 			case 'workout_session_dialog.session_title': return ({required Object session_number}) => 'Session n°${session_number}';
 			case 'workout_session_dialog.start_button': return 'Start';
+			case 'workout_session_dialog.level': return '{city} - Level {level}';
 			case 'settings.title': return 'Settings';
 			case 'settings.language': return 'Language';
 			case 'settings.notifications': return 'Notifications';

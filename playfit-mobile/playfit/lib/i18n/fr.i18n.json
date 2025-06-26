@@ -99,7 +99,7 @@
     "workout_session_dialog": {
         "session_title": "Session n°$session_number",
         "start_button": "Démarrer",
-        "level": "Niveau"
+        "level": "{city} - Niveau {level}"
     },
     "settings": {
         "title": "Paramètres",

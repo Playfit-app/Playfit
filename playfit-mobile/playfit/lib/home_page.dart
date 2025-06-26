@@ -11,16 +11,18 @@ import 'boutique_page.dart';
 import 'profile_page.dart';
 import 'package:playfit/social_page.dart';
 import 'components/top_bar.dart';
+import 'components/anecdote_displayer.dart';
 
 class HomePage extends StatefulWidget {
   final bool firstLogin;
+  final bool workoutDone;
   // final bool workoutDone;
   // final String? completedDifficulty;
 
   HomePage({
     super.key,
     this.firstLogin = false,
-    // this.workoutDone = false,
+    this.workoutDone = false,
     // this.completedDifficulty,
   });
 
@@ -33,6 +35,7 @@ class _HomePageState extends State<HomePage> {
   late List<Widget> _pages;
   late int currentStreak;
   late Future<void> _userProgressFuture;
+  bool _workoutDone = false;
 
   /// Fetches the user's progress from the server.
   /// This method retrieves the current streak of the user
@@ -67,6 +70,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _workoutDone = widget.workoutDone;
     currentStreak = 0;
     _userProgressFuture = _fetchUserProgress();
 
@@ -97,6 +101,28 @@ class _HomePageState extends State<HomePage> {
         await service.getToken();
       });
     }
+  }
+
+  if (_workoutDone) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showAnecdoteModal();
+      // refreshStreakAfterWorkout();
+    });
+  }
+
+  /// Shows a modal with an anecdote after the workout is done.
+  void _showAnecdoteModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return AnecdoteDisplayer(
+          anecdote: // catch the anecdote's string,
+          anecdoteMonument: t.home.anecdote_monument,
+        );
+      },
+    );
   }
 
   // Future<void> refreshStreakAfterWorkout() async {
@@ -240,3 +266,5 @@ class NavBarClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(NavBarClipper oldClipper) => false;
 }
+
+

@@ -109,8 +109,9 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (_) => HomePage(
+
             // completedDifficulty: difficulty,
-            // workoutDone: true,
+            workoutDone: true,
           ),
         ),
         (Route<dynamic> route) => false,

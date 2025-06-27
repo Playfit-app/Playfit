@@ -32,99 +32,9 @@ on:
 
 jobs:
   android:
-    name: Android Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
-      - name: Set Up Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 3.29.0
-          channel: stable
-      - name: Install dependencies
-        run: flutter pub get
-        working-directory: ./playfit-mobile/playfit
-      - name: Decode Google Services credentials
-        run: echo "${{ secrets.FLUTTER_GOOGLE_SERVICES }}" | base64 --decode > android/app/google-services.json
-        working-directory: ./playfit-mobile/playfit
-      - name: Set up environment variables
-        run: |
-          echo "SERVER_BASE_URL=http://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
-          echo "SERVER_BASE_WS_URL=ws://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
-          echo "GOOGLE_CLIENT_ID=${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}" >> .env
-        working-directory: ./playfit-mobile/playfit
-      - name: Decode Keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
-        working-directory: ./playfit-mobile/playfit
-      - name: Create key.properties
-        run: |
-          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=keystore.jks" >> android/key.properties
-        working-directory: ./playfit-mobile/playfit
-      - name: Build APK & AAB
-        run: |
-            flutter build apk --release
-            flutter build appbundle --release
-        working-directory: ./playfit-mobile/playfit
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-build
-          path: |
-            ./playfit-mobile/playfit/build/app/outputs/flutter-apk/app-release.apk
-            ./playfit-mobile/playfit/build/app/outputs/bundle/release/app-release.aab
-
+    uses: ./.github/workflows/build_android.yml
   # ios:
-  #   name: iOS Build
-  #   runs-on: macos-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         ref: ${{ inputs.ref }}
-  #     - name: Set Up Java
-  #       uses: actions/setup-java@v4
-  #       with:
-  #         java-version: '17'
-  #         distribution: 'temurin'
-  #     - name: Set up Flutter
-  #       uses: subosito/flutter-action@v2
-  #       with:
-  #         flutter-version: 3.29.0
-  #         channel: stable
-  #     - name: Install dependencies
-  #       run: flutter pub get
-  #       working-directory: ./playfit-mobile/playfit
-  #     - name: Decode Google Services credentials
-  #       run: echo "${{ secrets.FLUTTER_GOOGLE_SERVICES }}" | base64 --decode > android/app/google-services.json
-  #       working-directory: ./playfit-mobile/playfit
-  #     - name: Set up environment variables
-  #       run: |
-  #         echo "SERVER_BASE_URL=http://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
-  #         echo "SERVER_BASE_WS_URL=ws://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
-  #         echo "GOOGLE_CLIENT_ID=${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}" >> .env
-  #       working-directory: ./playfit-mobile/playfit
-  #     - name: Build IPA (no codesign)
-  #       run: flutter build ipa --no-codesign
-  #       working-directory: ./playfit-mobile/playfit
-  #     - name: Compress and Upload iOS Build
-  #       run: |
-  #         cd build
-  #         tar -czf ios_build.tar.gz ios
-  #       working-directory: ./playfit-mobile/playfit
-  #     - name: Upload iOS Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: ios-build
-  #         path: ./playfit-mobile/playfit/build/ios_build.tar.gz
+  #   uses: ./.github/workflows/build_ios.yml
 
   release:
     name: Create GitHub Release
@@ -139,13 +49,28 @@ jobs:
       - name: Generate Tag
         id: tag
         run: |
-          echo "::set-output name=release_tag::$(date +"%Y.%m.%d_%H.%M")"
-          echo "::set-output name=release_name::Release_$(date +"%Y.%m.%d_%H.%M")"
+          # Récupérer le dernier tag du type vX.Y
+          LAST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+$' | head -n 1)
+          echo "Dernier tag trouvé: $LAST_TAG"
+
+          if [ -z "$LAST_TAG" ]; then
+            MAJOR=1
+            MINOR=0
+          else
+            MAJOR=$(echo "$LAST_TAG" | cut -d'.' -f1 | tr -d 'v')
+            MINOR=$(echo "$LAST_TAG" | cut -d'.' -f2)
+            MINOR=$((MINOR + 1))
+          fi
+
+          NEW_TAG="v$MAJOR.$MINOR"
+          echo "Nouveau tag: $NEW_TAG"
+          echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
+          echo "name=Release $NEW_TAG" >> $GITHUB_OUTPUT
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ steps.tag.outputs.release_tag }}
-          name: ${{ steps.tag.outputs.release_name }}
+          tag: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.name }}
           token: ${{ secrets.GH_PAT }}
           artifacts: |
             ./artifacts/android-build/**/*.apk,

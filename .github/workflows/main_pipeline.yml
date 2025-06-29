@@ -1,12 +1,12 @@
-name: CI Pipeline
+name: Pipeline on main branch
 
 on:
   push:
     branches:
-      - dev
+      - main
   pull_request:
     branches:
-      - dev
+      - main
 
 jobs:
   lint:

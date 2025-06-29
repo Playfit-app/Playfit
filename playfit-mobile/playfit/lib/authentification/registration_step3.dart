@@ -35,9 +35,9 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
 
     final response = await http.get(
       Uri.parse(url),
-      headers: {
-        'Authorization': 'Token $token',
-      },
+      // headers: {
+      //   'Authorization': 'Token $token',
+      // },
     );
 
     if (response.statusCode == 200) {

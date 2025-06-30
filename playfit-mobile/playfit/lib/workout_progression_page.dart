@@ -20,6 +20,8 @@ class WorkoutProgressionPage extends StatefulWidget {
   final Map<String, String?> characterImages;
   final String city;
   final int level;
+  final BoxType boxType;
+
 
   const WorkoutProgressionPage({
     super.key,
@@ -29,6 +31,7 @@ class WorkoutProgressionPage extends StatefulWidget {
     required this.workoutSessionExercises,
     required this.currentExerciseIndex,
     required this.characterImages,
+    required this.boxType,
     required this.city,
     required this.level,
     this.transition = false,
@@ -135,6 +138,7 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
           landmarkImageUrl: imageUrl,
           workoutSessionExercises: widget.workoutSessionExercises,
           characterImages: widget.characterImages,
+          boxType: widget.boxType,
           city: widget.city,
           level: widget.level,
         ),

@@ -32,7 +32,7 @@ class CameraView extends StatefulWidget {
     required this.currentExerciseIndex,
     required this.landmarkImageUrl,
     required this.characterImages,
-    this.boxType = BoxType.left,
+    required this.boxType,
     required this.city,
     required this.level,
   });
@@ -289,6 +289,7 @@ class _CameraViewState extends State<CameraView> {
           workoutSessionExercises: widget.workoutSessionExercises,
           currentExerciseIndex: widget.currentExerciseIndex + 1,
           characterImages: widget.characterImages,
+          boxType: widget.boxType,
           city: widget.city,
           level: widget.level,
         ),

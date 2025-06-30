@@ -9,6 +9,7 @@ import 'package:playfit/components/adventure/roads/city_road.dart';
 import 'package:playfit/components/adventure/roads/road.dart';
 import 'package:playfit/components/adventure/roads/transition_road.dart';
 import 'package:playfit/components/adventure/character.dart';
+import 'package:playfit/components/anecdote_displayer.dart';
 import 'package:playfit/utils/image.dart';
 
 class AdventurePage extends StatefulWidget {
@@ -40,10 +41,12 @@ class _AdventurePageState extends State<AdventurePage>
   late int nbCities;
   // int currentCheckpoint = 0;
   late Map<String, dynamic> _decorationImages;
+  late bool workoutDone;
 
   @override
   void initState() {
     super.initState();
+    workoutDone = widget.workoutDone;
     // if (widget.moveCharacter) {
     //   completeWorkoutSession();
     // }
@@ -267,19 +270,6 @@ class _AdventurePageState extends State<AdventurePage>
     return [images, positions];
   }
 
-  void _showAnecdoteModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return AnecdoteDisplayer(
-          landmarkUrl: widget.landmarkUrl,
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -317,78 +307,94 @@ class _AdventurePageState extends State<AdventurePage>
         });
 
         return Scaffold(
-          body: SingleChildScrollView(
-            controller: _scrollController,
-            reverse: true,
-            child: SizedBox(
-              height: height,
-              width: screenSize.width,
-              child: Stack(
-                children: [
-                  // Draw the roads and decorations using a CustomPainter
-                  RepaintBoundary(
-                    child: CustomPaint(
-                      size: Size(screenSize.width, height),
-                      painter: _RoadPainter(roads),
-                    ),
-                  ),
-                  // Display the characters on the roads (user's character and friends)
-                  ...[
-                    for (int i = 0; i < worldPositions.length; i++)
-                      // Only display the character if they are in the same country
-                      // or if it's the first character (the user's character)
-                      if (i == 0 ||
-                          worldPositions[i]['country'] ==
-                                  worldPositions[0]['country'] &&
-                              checkpoints[worldPositions[i]
-                                      ['current_checkpoint']] !=
-                                  checkpoints[worldPositions[0]
-                                      ['current_checkpoint']])
-                        Character(
-                          position: (i == 0 && widget.moveCharacter)
-                              ? checkpoints[
-                                  worldPositions[i]['current_checkpoint'] + 1]
-                              : checkpoints[worldPositions[i]
-                                  ['current_checkpoint']],
-                          scale: const Offset(0.15, 0.15),
-                          size: const Size(410, 732),
-                          isFlipped:
-                              worldPositions[i]['current_checkpoint'] % 2 == 0,
-                          isMe: i == 0,
-                          images: {
-                            'base_character':
-                                '$serverBaseUrl${worldPositions[i]['character']['base_character']['image']}',
-                            'hat':
-                                '$serverBaseUrl${worldPositions[i]['character']['hat']}',
-                            'backpack':
-                                '$serverBaseUrl${worldPositions[i]['character']['backpack']}',
-                            'shirt':
-                                '$serverBaseUrl${worldPositions[i]['character']['shirt']}',
-                            'pants':
-                                '$serverBaseUrl${worldPositions[i]['character']['pants']}',
-                            'shoes':
-                                '$serverBaseUrl${worldPositions[i]['character']['shoes']}',
-                            'gloves':
-                                '$serverBaseUrl${worldPositions[i]['character']['gloves']}',
-                            'landmark': (worldPositions[0]['status'] ==
-                                    'in_city')
-                                ? '${_decorationImages['country'][worldPositions[0]['city'] - 1][worldPositions[0]['level'] - 1]}'
-                                : "/media/decorations/flag.webp",
-                            'tree': '${_decorationImages['tree']}',
-                            'building': '${_decorationImages['building']}',
-                            'path': '${_decorationImages['path']}',
-                          },
-                          sessionLevel: worldPositions[0]['level'],
-                          city: worldPositions[0]['city'],
-                          level: worldPositions[0]['level'],
+          body: Stack(
+            children: [
+              SingleChildScrollView(
+                controller: _scrollController,
+                reverse: true,
+                child: SizedBox(
+                  height: height,
+                  width: screenSize.width,
+                  child: Stack(
+                    children: [
+                      // Draw the roads and decorations using a CustomPainter
+                      RepaintBoundary(
+                        child: CustomPaint(
+                          size: Size(screenSize.width, height),
+                          painter: _RoadPainter(roads),
                         ),
-                  // Display the landmark if the workout is done
-                  if (widget.workoutDone && widget.landmarkUrl != null)
-                    _showAnecdoteModal(),
-                  ]
-                ],
+                      ),
+                      // Display the characters on the roads (user's character and friends)
+                      ...[
+                        for (int i = 0; i < worldPositions.length; i++)
+                          // Only display the character if they are in the same country
+                          // or if it's the first character (the user's character)
+                          if (i == 0 ||
+                              worldPositions[i]['country'] ==
+                                      worldPositions[0]['country'] &&
+                                  checkpoints[worldPositions[i]
+                                          ['current_checkpoint']] !=
+                                      checkpoints[worldPositions[0]
+                                          ['current_checkpoint']])
+                            Character(
+                              position: (i == 0 && widget.moveCharacter)
+                                  ? checkpoints[worldPositions[i]
+                                          ['current_checkpoint'] +
+                                      1]
+                                  : checkpoints[worldPositions[i]
+                                      ['current_checkpoint']],
+                              scale: const Offset(0.15, 0.15),
+                              size: const Size(410, 732),
+                              isFlipped:
+                                  worldPositions[i]['current_checkpoint'] % 2 ==
+                                      0,
+                              isMe: i == 0,
+                              images: {
+                                'base_character':
+                                    '$serverBaseUrl${worldPositions[i]['character']['base_character']['image']}',
+                                'hat':
+                                    '$serverBaseUrl${worldPositions[i]['character']['hat']}',
+                                'backpack':
+                                    '$serverBaseUrl${worldPositions[i]['character']['backpack']}',
+                                'shirt':
+                                    '$serverBaseUrl${worldPositions[i]['character']['shirt']}',
+                                'pants':
+                                    '$serverBaseUrl${worldPositions[i]['character']['pants']}',
+                                'shoes':
+                                    '$serverBaseUrl${worldPositions[i]['character']['shoes']}',
+                                'gloves':
+                                    '$serverBaseUrl${worldPositions[i]['character']['gloves']}',
+                                'landmark': (worldPositions[0]['status'] ==
+                                        'in_city')
+                                    ? '${_decorationImages['country'][worldPositions[0]['city'] - 1][worldPositions[0]['level'] - 1]}'
+                                    : "/media/decorations/flag.webp",
+                                'tree': '${_decorationImages['tree']}',
+                                'building': '${_decorationImages['building']}',
+                                'path': '${_decorationImages['path']}',
+                              },
+                              sessionLevel: worldPositions[0]['level'],
+                              city: worldPositions[0]['city'],
+                              level: worldPositions[0]['level'],
+                            ),
+                      ],
+                      // Display the landmark if the workout is done
+                    ],
+                  ),
+                ),
               ),
-            ),
+              if (workoutDone && widget.landmarkUrl != null)
+                Positioned(
+                  child: AnecdoteDisplayer(
+                    landmarkUrl: widget.landmarkUrl!,
+                    onClose: () {
+                      setState(() {
+                        workoutDone = false;
+                        print(workoutDone);
+                      });
+                    },
+                  ),
+                ),
+            ],
           ),
         );
       },

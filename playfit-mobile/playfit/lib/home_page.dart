@@ -23,6 +23,7 @@ class HomePage extends StatefulWidget {
     super.key,
     this.firstLogin = false,
     this.workoutDone = false,
+    this.landmarkUrl,
     // this.landmarkUrl = null,
     // this.completedDifficulty,
   });
@@ -36,7 +37,6 @@ class _HomePageState extends State<HomePage> {
   late List<Widget> _pages;
   late int currentStreak;
   late Future<void> _userProgressFuture;
-  bool _workoutDone = false;
 
   /// Fetches the user's progress from the server.
   /// This method retrieves the current streak of the user
@@ -71,7 +71,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _workoutDone = widget.workoutDone;
     currentStreak = 0;
     _userProgressFuture = _fetchUserProgress();
 
@@ -83,6 +82,8 @@ class _HomePageState extends State<HomePage> {
 
     _pages = [
       AdventurePage(
+        workoutDone: widget.workoutDone,
+        landmarkUrl: widget.landmarkUrl,
         // moveCharacter: widget.workoutDone,
         // completedDifficulty: widget.completedDifficulty,
       ),

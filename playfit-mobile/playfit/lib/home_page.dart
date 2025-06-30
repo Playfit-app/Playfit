@@ -14,13 +14,17 @@ import 'components/top_bar.dart';
 
 class HomePage extends StatefulWidget {
   final bool firstLogin;
+  final bool workoutDone;
+  final String? landmarkUrl;
   // final bool workoutDone;
   // final String? completedDifficulty;
 
   HomePage({
     super.key,
     this.firstLogin = false,
-    // this.workoutDone = false,
+    this.workoutDone = false,
+    this.landmarkUrl,
+    // this.landmarkUrl = null,
     // this.completedDifficulty,
   });
 
@@ -78,6 +82,8 @@ class _HomePageState extends State<HomePage> {
 
     _pages = [
       AdventurePage(
+        workoutDone: widget.workoutDone,
+        landmarkUrl: widget.landmarkUrl,
         // moveCharacter: widget.workoutDone,
         // completedDifficulty: widget.completedDifficulty,
       ),
@@ -240,3 +246,5 @@ class NavBarClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(NavBarClipper oldClipper) => false;
 }
+
+

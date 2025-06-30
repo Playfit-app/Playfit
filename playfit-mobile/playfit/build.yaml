@@ -10,3 +10,4 @@ targets:
           fallback_strategy: base_locale
           maps:
             - settings.languages
+            - anecdotes

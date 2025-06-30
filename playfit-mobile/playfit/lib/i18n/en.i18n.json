@@ -68,7 +68,10 @@
         "achievements": "Achievements"
     },
     "social": {
-        "title": "Social"
+        "title": "Social",
+        "no_posts_available": "No posts available.",
+        "post_delete": "Delete",
+        "post_report": "Report"
     },
     "gdpr_consent_form": {
         "title": "GDPR Consent",
@@ -177,5 +180,19 @@
         "chateau_saint_ange": "Castel Sant'Angelo is a fortress that has seen a lot! Originally, it was a mausoleum built for Emperor Hadrian nearly 2,000 years ago. Over the centuries, it became a fortress, a papal residence, and even a prison.",
         "collisee": "The Colosseum is the ultimate ancient stadium! Built between 70 and 80 AD, it could hold up to 50,000 spectators ready to cheer for gladiator fights and other spectacles. This thing was a real thrill machine: chariot races, wild animal hunts, epic reenactments...",
         "fontaine_de_trevi": "The Trevi Fountain is Rome's fountain superstar! Built in the 18th century, it marks the end of the aqueduct that brought water to the city since Antiquity. Tradition says if you toss a coin over your shoulder into the fountain, you're guaranteed to return to Rome."
+    },
+    "mission": {
+        "title": "Mission"
+    },
+    "shop": {
+        "title": "Shop"
+    },
+    "workout": {
+        "difficulty": "Difficulty:",
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard",
+        "stage_1_level_1": "Stage 1 - Level 1",
+        "stage_1_level_2": "Stage 1 - Level 2"
     }
 }

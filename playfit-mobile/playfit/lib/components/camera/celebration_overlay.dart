@@ -10,7 +10,7 @@ import 'package:playfit/i18n/strings.g.dart';
 /// The overlay is responsive to screen size and uses custom styling for a festive look.
 class CelebrationOverlay extends StatelessWidget {
   final Duration finalTime;
-  final int city;
+  final String city;
   final int level;
   const CelebrationOverlay(
       {super.key,
@@ -115,14 +115,14 @@ class CelebrationOverlay extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Difficulté : ",
+                    t.workout.difficulty,
                     style: TextStyle(
                       fontSize: screenWidth * 0.055,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    "Facile",
+                    t.workout.easy,
                     style: TextStyle(
                       fontSize: screenWidth * 0.055,
                       fontWeight: FontWeight.bold,

@@ -68,7 +68,10 @@
         "achievements": "Succès"
     },
     "social": {
-        "title": "Social"
+        "title": "Social",
+        "no_posts_available": "Aucun post disponible.",
+        "post_delete": "Supprimer",
+        "post_report": "Signaler"
     },
     "gdpr_consent_form": {
         "title": "Consentement RGPD",
@@ -179,5 +182,19 @@
         "chateau_saint_ange": "Le Château Saint-Ange, c'est une forteresse qui en a vu du monde ! À l'origine, c'était un mausolée construit pour l'empereur Hadrien il y a près de 2 000 ans. Puis, au fil des siècles, il est devenu une forteresse, une résidence papale, et même une prison.",
         "collisee": "Le Colisée, c'est LE stade antique par excellence ! Construit entre 70 et 80 après J.-C., il pouvait accueillir jusqu'à 50 000 spectateurs prêts à vibrer pour les combats de gladiateurs et autres spectacles. Ce truc était une vraie machine à sensations : courses de chars, chasses d'animaux, mises en scène épiques...",
         "fontaine_de_trevi": "La Fontaine de Trevi, c'est la star des fontaines à Rome ! Construite au XVIIIe siècle, elle marque la fin de l'aqueduc qui apportait l'eau à la ville depuis l'Antiquité. La tradition dit que si tu jettes une pièce par-dessus ton épaule dans la fontaine, tu reviendras forcément à Rome."
+    },
+    "mission": {
+        "title": "Mission"
+    },
+    "shop": {
+        "title": "Boutique"
+    },
+    "workout": {
+        "difficulty": "Difficulté :",
+        "easy": "Facile",
+        "medium": "Moyen",
+        "hard": "Difficile",
+        "stage_1_level_1": "Étape 1 - Niveau 1",
+        "stage_1_level_2": "Étape 1 - Niveau 2"
     }
 }

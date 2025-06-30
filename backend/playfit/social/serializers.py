@@ -169,6 +169,7 @@ class WorldPositionResponseSerializer(serializers.Serializer):
                 'level': position.city_level,
                 'max_level': position.city.max_level,
                 'country_color': position.city.country.color,
+                'city_name': position.city.name,
             }
         else:
             return {

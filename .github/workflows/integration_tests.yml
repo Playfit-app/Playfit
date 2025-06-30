@@ -34,64 +34,8 @@ on:
         required: true
 
 jobs:
-    django_tests:
-        name: Run Django tests
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                ref: ${{ inputs.ref }}
-            - name: Set up Python
-              uses: actions/setup-python@v2
-              with:
-                python-version: 3.11
-            - name: Install dependencies
-              run: pip install -r requirements.txt
-              working-directory: ./backend
-            - name: Decode Google credentials
-              run: echo "${{ secrets.DJANGO_GOOGLE_APPLICATION_JSON }}" | base64 --decode > serviceAccountKey.json
-              working-directory: ./backend/playfit
-            - name: Set environment variables
-              run: |
-                echo "SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> .env
-                echo "DEBUG=${{ vars.DJANGO_DEBUG }}" >> .env
-                echo "CRYPTOGRAPHY_KEY=${{ secrets.DJANGO_CRYPTOGRAPHY_KEY }}" >> .env
-                echo "EMAIL_HOST_USER=${{ secrets.DJANGO_EMAIL_HOST_USER }}" >> .env
-                echo "EMAIL_HOST_PASSWORD=${{ secrets.DJANGO_EMAIL_HOST_PASSWORD }}" >> .env
-                echo "REDIS_HOST=${{ vars.DJANGO_REDIS_HOST }}" >> .env
-                echo "REDIS_PORT=${{ vars.DJANGO_REDIS_PORT }}" >> .env
-                echo "REDIS_DB=${{ vars.DJANGO_REDIS_DB }}" >> .env
-                echo "FCM_API_KEY=${{ secrets.DJANGO_FCM_API_KEY }}" >> .env
-                echo "GOOGLE_APPLICATION_CREDENTIALS=serviceAccountKey.json" >> .env
-              working-directory: ./backend/playfit
-            - name: Run tests
-              run: python manage.py test
-              working-directory: ./backend/playfit
+  django_tests:
+    uses: ./.github/workflows/django_test.yml
 
-    flutter_tests:
-        name: Run Flutter tests
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                ref: ${{ inputs.ref }}
-            - name: Set up Flutter
-              uses: subosito/flutter-action@v2
-              with:
-                flutter-version: 3.29.0
-                channel: stable
-            - name: Install dependencies
-              run: flutter pub get
-              working-directory: ./playfit-mobile/playfit
-            - name: Decode Google Services credentials
-              run: echo "${{ secrets.FLUTTER_GOOGLE_SERVICES }}" | base64 --decode > android/app/google-services.json
-              working-directory: ./playfit-mobile/playfit
-            - name: Set up environment variables
-              run: |
-                echo "SERVER_BASE_URL=http://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
-                echo "SERVER_BASE_WS_URL=ws://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
-                echo "GOOGLE_CLIENT_ID=${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}" >> .env
-              working-directory: ./playfit-mobile/playfit
-            - name: Run tests
-              run: flutter test
-              working-directory: ./playfit-mobile/playfit
+  flutter_tests:
+    uses: ./.github/workflows/flutter_test.yml

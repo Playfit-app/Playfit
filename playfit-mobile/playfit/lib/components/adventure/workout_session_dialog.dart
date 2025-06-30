@@ -10,7 +10,7 @@ class WorkoutSessionDialog extends StatefulWidget {
   final String landmarkImageUrl;
   final int sessionLevel;
   final Map<String, String?> characterImages;
-  final int city;
+  final String city;
   final int level;
 
   const WorkoutSessionDialog({

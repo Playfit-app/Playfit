@@ -20,11 +20,6 @@ class NotificationService {
   /// `token` is the FCM token to be sent.
   /// 
   /// Returns a [Future] that completes when the token is sent.
-  /// Send the FCM token to the backend server.
-  /// 
-  /// `token` is the FCM token to be sent.
-  /// 
-  /// Returns a [Future] that completes when the token is sent.
   static Future<void> sendTokenToBackend(String token) async {
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/store-device-token/");

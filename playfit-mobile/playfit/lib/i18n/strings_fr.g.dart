@@ -296,6 +296,41 @@ class _TranslationsIntroductionFr extends TranslationsIntroductionEn {
 	@override String get text_9 => 'Si tu veux, je peux te ramener à Rome. Et tant qu\'à faire, on en profitera pour te cultiver un peu. T\'aimes les anecdotes historiques, non ?';
 }
 
+// Path: mission
+class TranslationsMissionFr {
+	TranslationsMissionFr.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Mission';
+}
+
+// Path: shop
+class TranslationsShopFr {
+	TranslationsShopFr.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Boutique';
+}
+
+// Path: workout
+class TranslationsWorkoutFr {
+	TranslationsWorkoutFr.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get difficulty => 'Difficulté :';
+	String get easy => 'Facile';
+	String get medium => 'Moyen';
+	String get hard => 'Difficile';
+	String get stage_1_level_1 => 'Étape 1 - Niveau 1';
+	String get stage_1_level_2 => 'Étape 1 - Niveau 2';
+}
+
 // Path: gdpr_consent_form.data_collection
 class _TranslationsGdprConsentFormDataCollectionFr extends TranslationsGdprConsentFormDataCollectionEn {
 	_TranslationsGdprConsentFormDataCollectionFr._(TranslationsFr root) : this._root = root, super.internal(root);
@@ -407,6 +442,9 @@ extension on TranslationsFr {
 			case 'profile.bpm_title': return 'BPM (Battements par minute)';
 			case 'profile.achievements': return 'Succès';
 			case 'social.title': return 'Social';
+			case 'social.no_posts_available': return 'Aucun post disponible.';
+			case 'social.post_delete': return 'Supprimer';
+			case 'social.post_report': return 'Signaler';
 			case 'gdpr_consent_form.title': return 'Consentement RGPD';
 			case 'gdpr_consent_form.description': return 'Conformément au Règlement Général sur la Protection des Données (RGPD), nous sommes tenus de vous informer sur la collecte, l\'utilisation et le stockage de vos données personnelles.';
 			case 'gdpr_consent_form.data_collection.title': return '1. Données Collectées\n';
@@ -467,30 +505,14 @@ extension on TranslationsFr {
 			case 'introduction.text_7': return 'Oh, tu fais cette tête-là. Je sais, ça surprend. Mais bon, faut dire que t\'as sacrément marché ! T\'as un bon pas, je te le reconnais.';
 			case 'introduction.text_8': return 'Écoute, t\'as de la chance de m\'être tombé dessus. Je suis un grand explorateur, moi ! L\'Europe ? Je la connais comme mes poches. Bon, j\'ai pas de poches, mais tu vois l\'idée.';
 			case 'introduction.text_9': return 'Si tu veux, je peux te ramener à Rome. Et tant qu\'à faire, on en profitera pour te cultiver un peu. T\'aimes les anecdotes historiques, non ?';
-			case 'anecdotes.sacre_coeur': return 'Ah, le Panthéon de Paris ! Rien à voir avec les dieux romains, celui-là, c\'est pour les grands humains. Voltaire, Rousseau, Marie Curie… ils sont tous là, peinards dans la crypte. Une vraie coloc de génies.';
-			case 'anecdotes.notre_dame': return 'Ah, Notre-Dame de Paris ! Commencée en 1163, finie 200 ans plus tard. Ici, y\'a eu le sacre de Napoléon, la Révolution qui l\'a bien abîmée, et un Victor Hugo qui l\'a rendue célèbre avec son Quasimodo. Même l\'incendie de 2019 l\'a pas fait plier. Une vraie survivante, cette cathédrale !';
-			case 'anecdotes.louvre': return 'Le Louvre ! À la base, une forteresse du XIIe siècle pour protéger Paris. Puis les rois l\'ont transformé en palais, surtout François Ier et Louis XIV — jusqu\'à ce que ce dernier préfère Versailles. Depuis la Révolution, c\'est un musée, et pas n\'importe lequel : le plus grand du monde !';
-			case 'anecdotes.obelisk': return 'L\'Obélisque de la Concorde ! Un vrai morceau d\'Égypte planté en plein Paris. Offert par le vice-roi d\'Égypte en 1830, il date de plus de 3 000 ans et vient du temple de Louxor. Y\'a même des hiéroglyphes dessus qui racontent les exploits de Ramsès II.';
-			case 'anecdotes.opera_paris': return 'L\'Opéra Garnier, rien que ça ! Construit sous Napoléon III, inauguré en 1875… Un vrai bijou du style Second Empire. Escaliers en marbre, plafonds peints, dorures partout — t\'as l\'impression d\'entrer dans un gâteau de luxe.';
-			case 'anecdotes.triumph_arc': return 'L\'Arc de Triomphe ! Commandé par Napoléon en 1806 pour célébrer ses victoires… mais il a pas eu le temps de le voir fini. Il trône au milieu de la plus grosse étoile de routes de Paris, comme un boss final de la circulation.';
-			case 'anecdotes.eiffel_tower': return 'La Tour Eiffel ! Construite pour l\'Expo universelle de 1889, et à la base… elle devait être démontée après 20 ans ! Résultat : c\'est devenu le symbole de Paris. À l\'époque, certains trouvaient ça moche — maintenant, tout le monde veut sa photo avec.';
-			case 'anecdotes.la_serre_du_parc_de_la_tete_d\'or': return 'Le Parc de la Tête d\'Or, c\'est un vrai coin de nature en pleine ville ! Ouvert en 1857, c\'est l\'un des plus grands parcs urbains de France. Et cette serre ? Une vraie jungle tropicale en plein Lyon ! Construite en 1890, elle abrite des plantes rares et exotiques. Parfait pour se croire ailleurs sans quitter la ville.';
-			case 'anecdotes.opera_lyon': return 'L\'Opéra de Lyon, c\'est un mix de classique et de moderne ! Le bâtiment principal date de 1831, mais la grande salle a été rénovée dans les années 90 avec une architecture super contemporaine.';
-			case 'anecdotes.cathedrale_st_jean': return 'La Cathédrale Saint-Jean, c\'est la star du Vieux Lyon ! Construite entre le XIIe et le XVe siècle, elle mélange plein de styles : roman, gothique. Et regarde cette horloge astronomique du XIVe siècle, une vraie merveille ! Elle indique pas juste l\'heure, mais aussi les phases de la lune, les fêtes religieuses… un gadget médiéval ultra sophistiqué.';
-			case 'anecdotes.statue_équestre_de_louis_XIV': return 'La Place Bellecour, c\'est le cœur de Lyon, la deuxième plus grande place piétonne d\'Europe ! Elle est là depuis le XVIIe siècle, un vrai lieu de rendez-vous pour les Lyonnais.';
-			case 'anecdotes.fontaine_bartholdi': return 'La Fontaine Bartholdi, c\'est une sacrée œuvre d\'art en plein cœur de Lyon ! Créée par Frédéric Bartholdi — oui, le gars qui a imaginé la Statue de la Liberté. Elle représente la ville de Lyon, portée par quatre chevaux puissants. Chaque cheval symbolise un grand fleuve de la région.';
-			case 'anecdotes.theatre_antique': return 'Le Théâtre Antique de Lyon, c\'est du lourd ! Construit au Ier siècle, c\'est l\'un des plus vieux théâtres romains encore debout. Il pouvait accueillir jusqu\'à 10 000 spectateurs — autant dire que les pièces, ça se jouait en grand !';
-			case 'anecdotes.basilique_notre-dame_de_fourviere': return 'La Basilique de Fourvière, c\'est le symbole de Lyon perché sur sa colline. Construite entre 1872 et 1884, elle a été édifiée après la guerre franco-prussienne. Son architecture mêle roman et byzantin, avec des mosaïques magnifiques et des vitraux colorés.';
-			case 'anecdotes.galerie_victor_emmanuel_2': return 'La Galerie Victor Emmanuel II ? C\'est le grand salon de Milan ! Inaugurée en 1877, elle porte le nom du premier roi d\'Italie unifiée. Une vraie fierté nationale.';
-			case 'anecdotes.chateau_des_sforza': return 'Le Château des Sforza, c\'est du costaud ! Construit au XVe siècle par la puissante famille Sforza, c\'était à la fois une forteresse, un palais… et un symbole de pouvoir à Milan. Léonard de Vinci y a même bossé! Et aujourd\'hui, c\'est rempli de musées, avec des œuvres de Michel-Ange, entre autres. Franchement, c\'est un peu un château à trésors.';
-			case 'anecdotes.plazza_del_duomo': return 'La Piazza del Duomo, c\'est le cœur battant de Milan ! Depuis des siècles, tout part de là. Le Duomo ? Commencé en 1386, il a fallu près de 500 ans pour le terminer. 135 flèches, des milliers de statues, et la Madonnina dorée tout en haut qui veille sur la ville. C\'est pas juste une place, c\'est une leçon d\'histoire à ciel ouvert !';
-			case 'anecdotes.santa_maria_delle_grazie': return 'Santa Maria delle Grazie, c\'est pas juste une église gothique classe, c\'est carrément un trésor classé à l\'UNESCO ! Construite entre 1463 et 1497, elle a été confiée à l\'ordre dominicain, et c\'est Ludovic Sforza, le duc de Milan, qui a commandé la rénovation de son cloître . Et surtout… dans le réfectoire, y\'a La Cène de Léonard de Vinci. Peinte direct sur le mur entre 1495 et 1498.';
-			case 'anecdotes.arco_della_pace': return 'L\'Arco della Pace, c\'est la grande porte de Milan vers la paix. Construite au début du XIXe siècle, elle célèbre la fin des guerres napoléoniennes et la paix retrouvée en Europe.';
-			case 'anecdotes.basilique_saint_pierre': return 'La Basilique Saint-Pierre, c\'est LE cœur du Vatican et l\'une des plus grandes églises du monde. Construite sur la tombe de Saint Pierre, l\'un des apôtres de Jésus, elle a été édifiée entre le XVIe et le XVIIe siècle.';
-			case 'anecdotes.pantheon_rome': return 'Le Panthéon de Rome, c\'est un chef-d\'œuvre antique qui a traversé les siècles. Construit il y a près de 2 000 ans sous l\'empereur Hadrien, c\'était un temple dédié à tous les dieux de Rome. Sa coupole énorme, avec ce fameux oculus au centre, c\'est un tour de force architectural — la plus grande coupole en béton non armé du monde !';
-			case 'anecdotes.chateau_saint_ange': return 'Le Château Saint-Ange, c\'est une forteresse qui en a vu du monde ! À l\'origine, c\'était un mausolée construit pour l\'empereur Hadrien il y a près de 2 000 ans. Puis, au fil des siècles, il est devenu une forteresse, une résidence papale, et même une prison.';
-			case 'anecdotes.collisee': return 'Le Colisée, c\'est LE stade antique par excellence ! Construit entre 70 et 80 après J.-C., il pouvait accueillir jusqu\'à 50 000 spectateurs prêts à vibrer pour les combats de gladiateurs et autres spectacles. Ce truc était une vraie machine à sensations : courses de chars, chasses d\'animaux, mises en scène épiques...';
-			case 'anecdotes.fontaine_de_trevi': return 'La Fontaine de Trevi, c\'est la star des fontaines à Rome ! Construite au XVIIIe siècle, elle marque la fin de l\'aqueduc qui apportait l\'eau à la ville depuis l\'Antiquité. La tradition dit que si tu jettes une pièce par-dessus ton épaule dans la fontaine, tu reviendras forcément à Rome.';
+			case 'mission.title': return 'Mission';
+			case 'shop.title': return 'Boutique';
+			case 'workout.difficulty': return 'Difficulté :';
+			case 'workout.easy': return 'Facile';
+			case 'workout.medium': return 'Moyen';
+			case 'workout.hard': return 'Difficile';
+			case 'workout.stage_1_level_1': return 'Étape 1 - Niveau 1';
+			case 'workout.stage_1_level_2': return 'Étape 1 - Niveau 2';
 			default: return null;
 		}
 	}

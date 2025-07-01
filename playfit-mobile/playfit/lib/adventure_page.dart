@@ -47,27 +47,7 @@ class _AdventurePageState extends State<AdventurePage>
   void initState() {
     super.initState();
     workoutDone = widget.workoutDone;
-    // if (widget.moveCharacter) {
-    //   completeWorkoutSession();
-    // }
   }
-
-  // void completeWorkoutSession() async {
-  //   final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/workout';
-  //   final String? token = await storage.read(key: 'token');
-
-  //   final response = await http
-  //       .patch(Uri.parse('$baseUrl/update_workout_session/'), headers: {
-  //     'Authorization': 'Token $token',
-  //   }, body: {
-  //     'difficulty': widget.completedDifficulty!,
-  //   });
-
-  //   if (response.statusCode == 200) {
-  //   } else {
-  //     print("Can't update workout session");
-  //   }
-  // }
 
   /// Scrolls to the character's position based on the current checkpoint.
   /// This method retrieves the world positions and animates the scroll
@@ -382,6 +362,25 @@ class _AdventurePageState extends State<AdventurePage>
                   ),
                 ),
               ),
+              // White gradient at the top of the screen
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.3,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.white,
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
               if (workoutDone && widget.landmarkUrl != null)
                 Positioned(
                   child: AnecdoteDisplayer(
@@ -389,7 +388,6 @@ class _AdventurePageState extends State<AdventurePage>
                     onClose: () {
                       setState(() {
                         workoutDone = false;
-                        print(workoutDone);
                       });
                     },
                   ),
@@ -407,27 +405,6 @@ class _RoadPainter extends CustomPainter {
 
   _RoadPainter(this.roads);
 
-  /// Draws a white gradient at the top of the canvas.
-  ///
-  /// This method creates a gradient that fades from white to transparent,
-  /// giving the effect of a white top gradient on the canvas.
-  ///
-  /// `canvas` is the canvas on which to draw the gradient.
-  /// `size` is the size of the canvas, used to determine the dimensions of the gradient.
-  void drawWhiteTopGradient(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomLeft,
-        colors: [
-          Colors.white,
-          Colors.white.withAlpha(0),
-        ],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, 292));
-
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, 292), paint);
-  }
-
   @override
   void paint(Canvas canvas, Size size) {
     for (Road road in roads) {
@@ -437,8 +414,6 @@ class _RoadPainter extends CustomPainter {
     for (Road road in roads) {
       road.paint(canvas, size);
     }
-
-    drawWhiteTopGradient(canvas, size);
   }
 
   @override

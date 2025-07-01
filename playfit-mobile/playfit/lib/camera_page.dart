@@ -344,9 +344,11 @@ class _CameraViewState extends State<CameraView> {
                 // Overlay when count hits the target
                 if (_showCelebration)
                   CelebrationOverlay(
-                      finalTime: _elapsedTime,
-                      city: widget.city,
-                      level: widget.level),
+                    finalTime: _elapsedTime,
+                    city: widget.city,
+                    level: widget.level,
+                    characterImages: widget.characterImages,
+                  ),
                 if (_showCelebration && _celebrationCountdown > 0)
                   Positioned(
                     bottom: 40,

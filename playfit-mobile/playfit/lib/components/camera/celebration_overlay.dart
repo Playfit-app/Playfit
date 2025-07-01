@@ -12,11 +12,15 @@ class CelebrationOverlay extends StatelessWidget {
   final Duration finalTime;
   final String city;
   final int level;
-  const CelebrationOverlay(
-      {super.key,
-      required this.finalTime,
-      required this.city,
-      required this.level});
+  final Map<String, String?> characterImages;
+
+  const CelebrationOverlay({
+    super.key,
+    required this.finalTime,
+    required this.city,
+    required this.level,
+    required this.characterImages,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +77,11 @@ class CelebrationOverlay extends StatelessWidget {
                       child: Padding(
                         padding:
                             EdgeInsets.symmetric(vertical: screenHeight * 0.02),
-                        child: Image.asset("assets/images/character.png"),
+                        child: Image.network(
+                          characterImages['base_character']!,
+                          width: 100,
+                          height: 100,
+                        ),
                       ),
                     ),
                   ],

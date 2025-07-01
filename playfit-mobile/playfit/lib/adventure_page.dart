@@ -16,13 +16,15 @@ class AdventurePage extends StatefulWidget {
   final bool moveCharacter;
   final bool workoutDone;
   final String? landmarkUrl;
+  final VoidCallback? onAnecdoteClosed;
   // final String? completedDifficulty;
 
   const AdventurePage({
     super.key,
     this.moveCharacter = false,
     this.workoutDone = false,
-    this.landmarkUrl = null,
+    this.landmarkUrl,
+    this.onAnecdoteClosed,
     // this.completedDifficulty,
   });
 
@@ -389,6 +391,7 @@ class _AdventurePageState extends State<AdventurePage>
                       setState(() {
                         workoutDone = false;
                       });
+                      widget.onAnecdoteClosed?.call();
                     },
                   ),
                 ),

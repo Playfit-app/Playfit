@@ -37,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   late List<Widget> _pages;
   late int currentStreak;
   late Future<void> _userProgressFuture;
+  bool _anecdoteSeen = false;
 
   /// Fetches the user's progress from the server.
   /// This method retrieves the current streak of the user
@@ -82,8 +83,13 @@ class _HomePageState extends State<HomePage> {
 
     _pages = [
       AdventurePage(
-        workoutDone: widget.workoutDone,
+        workoutDone: widget.workoutDone && !_anecdoteSeen,
         landmarkUrl: widget.landmarkUrl,
+        onAnecdoteClosed: () {
+          setState(() {
+            _anecdoteSeen = true;
+          });
+        },
         // moveCharacter: widget.workoutDone,
         // completedDifficulty: widget.completedDifficulty,
       ),

@@ -2,6 +2,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:playfit/home_page.dart';
 import 'package:playfit/i18n/strings.g.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:playfit/services/tts_service.dart';
 
 class _CustomRadialTransform extends GradientTransform {
   final double scaleX;
@@ -123,6 +125,8 @@ class _IntroductionPageState extends State<IntroductionPage> {
     t.introduction.text_8,
     t.introduction.text_9,
   ];
+  late FlutterTts _flutterTts;
+  bool _isSpeaking = false;
 
   void _navigateToHome(BuildContext context) {
     Navigator.pushReplacement(
@@ -130,6 +134,31 @@ class _IntroductionPageState extends State<IntroductionPage> {
       MaterialPageRoute(builder: (context) => HomePage(firstLogin: true)),
     );
   }
+
+  Future<void> _speakCurrentText() async {
+    if (_isSpeaking) return; // Prevent multiple calls while already speaking
+    _isSpeaking = true;
+    await _flutterTts.stop(); // Stop any previous speech
+    await _flutterTts.speak(texts[_textIndex]);
+    _isSpeaking = false;
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    _flutterTts = FlutterTts();
+    configureTtsLanguage(_flutterTts);
+    _speakCurrentText();
+  }
+
+  @override
+  void dispose() {
+    _flutterTts.stop();
+    super.dispose();
+  }
+
+
 
   /// Builds the introduction page widget with a background image, gradient overlay,
   /// and interactive text bubbles for onboarding.
@@ -196,6 +225,7 @@ class _IntroductionPageState extends State<IntroductionPage> {
                           _imageIndex = 1;
                         }
                       });
+                      _speakCurrentText();
                     },
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -262,6 +292,7 @@ class _IntroductionPageState extends State<IntroductionPage> {
                       _imageIndex = 1;
                     }
                   });
+                  _speakCurrentText();
                 },
                 child: CustomPaint(
                   painter: SpeechBubblePainter(borderColor: Colors.orange),

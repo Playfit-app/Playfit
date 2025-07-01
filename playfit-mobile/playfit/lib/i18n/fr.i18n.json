@@ -193,8 +193,6 @@
         "difficulty": "Difficulté :",
         "easy": "Facile",
         "medium": "Moyen",
-        "hard": "Difficile",
-        "stage_1_level_1": "Étape 1 - Niveau 1",
-        "stage_1_level_2": "Étape 1 - Niveau 2"
+        "hard": "Difficile"
     }
 }

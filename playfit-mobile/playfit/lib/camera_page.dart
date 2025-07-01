@@ -49,6 +49,7 @@ class _CameraViewState extends State<CameraView> {
   WorkoutTimerService _workoutTimerService = WorkoutTimerService();
   late WorkoutType _workoutType;
   late String _exerciseName;
+  late Duration _elapsedTime;
 
   int _count = 0;
   late int _targetCount;
@@ -85,6 +86,14 @@ class _CameraViewState extends State<CameraView> {
   void initState() {
     super.initState();
 
+    _elapsedTime = _workoutTimerService.elapsed;
+    _workoutTimerService.onTick = (elapsed) {
+      if (mounted) {
+        setState(() {
+          _elapsedTime = elapsed;
+        });
+      }
+    };
     final exercise = widget.workoutSessionExercises[widget.difficulty]![
         widget.currentExerciseIndex];
     _workoutType = workoutTypeFromName(exercise['name']);
@@ -325,12 +334,12 @@ class _CameraViewState extends State<CameraView> {
                 ),
                 if (widget.boxType == BoxType.left)
                   LeftBoxWidget(
-                      elapsedTime: _workoutTimerService.elapsed,
+                      elapsedTime: _elapsedTime,
                       count: _count,
                       targetCount: _targetCount),
                 if (widget.boxType == BoxType.bottom)
                   BottomBoxWidget(
-                      elapsedTime: _workoutTimerService.elapsed,
+                      elapsedTime: _elapsedTime,
                       count: _count,
                       targetCount: _targetCount),
 
@@ -397,6 +406,7 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   void dispose() {
+    _workoutTimerService.onTick = null;
     _workoutTimerService.stop();
     _celebrationTimer?.cancel();
     _workoutAnalyzer.dispose();

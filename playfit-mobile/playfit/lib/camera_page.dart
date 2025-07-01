@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/level_cinematic/difficulty.dart';
+import 'package:playfit/services/workout_timer_service.dart';
 import 'package:playfit/workout_analyzer.dart';
 import 'package:playfit/image_converter.dart';
 import 'package:playfit/components/camera/left_box_widget.dart';
@@ -45,8 +46,7 @@ class _CameraViewState extends State<CameraView> {
   CameraController? _controller;
   bool _isDetecting = false;
   final WorkoutAnalyzer _workoutAnalyzer = WorkoutAnalyzer();
-  Timer? _timer;
-  Duration _elapsedTime = Duration.zero;
+  WorkoutTimerService _workoutTimerService = WorkoutTimerService();
   late WorkoutType _workoutType;
   late String _exerciseName;
 
@@ -152,15 +152,7 @@ class _CameraViewState extends State<CameraView> {
   ///
   /// Returns a [void] that completes when the timer is started.
   void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      setState(() {
-        _elapsedTime += const Duration(seconds: 1);
-
-        if (_count == _targetCount) {
-          _showCelebration = true;
-        }
-      });
-    });
+    _workoutTimerService.start();
   }
 
   /// Initializes the camera and sets up the camera controller.
@@ -245,7 +237,8 @@ class _CameraViewState extends State<CameraView> {
   /// Returns a [void] that completes when the detection is stopped.
   void _stopDetecting() async {
     if (_controller != null && _controller!.value.isStreamingImages) {
-      _timer?.cancel();
+      // Stop the workout timer
+      _workoutTimerService.stop();
       await _controller!.stopImageStream();
       _isDetecting = false;
     }
@@ -332,22 +325,23 @@ class _CameraViewState extends State<CameraView> {
                 ),
                 if (widget.boxType == BoxType.left)
                   LeftBoxWidget(
-                      elapsedTime: _elapsedTime,
+                      elapsedTime: _workoutTimerService.elapsed,
                       count: _count,
                       targetCount: _targetCount),
                 if (widget.boxType == BoxType.bottom)
                   BottomBoxWidget(
-                      elapsedTime: _elapsedTime,
+                      elapsedTime: _workoutTimerService.elapsed,
                       count: _count,
                       targetCount: _targetCount),
 
                 // Overlay when count hits the target
                 if (_showCelebration)
                   CelebrationOverlay(
-                    finalTime: _elapsedTime,
+                    finalTime: _workoutTimerService.elapsed,
                     city: widget.city,
                     level: widget.level,
                     characterImages: widget.characterImages,
+                    difficulty: widget.difficulty,
                   ),
                 if (_showCelebration && _celebrationCountdown > 0)
                   Positioned(
@@ -403,7 +397,7 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _workoutTimerService.stop();
     _celebrationTimer?.cancel();
     _workoutAnalyzer.dispose();
     if (_controller != null) {

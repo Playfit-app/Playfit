@@ -14,6 +14,8 @@ class Character extends StatefulWidget {
   final Map<String, String?> images;
   final int sessionLevel;
   final FlutterSecureStorage storage = const FlutterSecureStorage();
+  final int level;
+  final String city;
 
   Character({
     super.key,
@@ -24,6 +26,8 @@ class Character extends StatefulWidget {
     required this.isMe,
     required this.images,
     required this.sessionLevel,
+    required this.city,
+    required this.level,
   }) : position = Offset(
           position.dx - size.width * scale.dx / 2,
           position.dy - size.height * scale.dy,
@@ -33,6 +37,13 @@ class Character extends StatefulWidget {
   State<Character> createState() => _CharacterState();
 }
 
+/// The private state class for the [Character] widget, responsible for managing
+/// the character's flipped state and fetching workout session exercises from the server.
+///
+/// This class maintains a map of exercises categorized by difficulty levels
+/// ('beginner', 'intermediate', 'advanced'). When the character is tapped and
+/// belongs to the current user, it fetches the exercises from the backend if not
+/// already loaded, and displays them in a [WorkoutSessionDialog].
 class _CharacterState extends State<Character> {
   late bool isFlipped;
   Map<String, List<dynamic>> workoutSessionExercises = {
@@ -115,6 +126,8 @@ class _CharacterState extends State<Character> {
                   landmarkImageUrl: widget.images['landmark']!,
                   sessionLevel: widget.sessionLevel,
                   characterImages: widget.images,
+                  city: widget.city,
+                  level: widget.level,
                 );
               },
             );

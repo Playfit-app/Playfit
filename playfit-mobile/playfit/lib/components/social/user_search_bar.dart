@@ -16,6 +16,8 @@ class UserSearchBar extends StatefulWidget {
   State<UserSearchBar> createState() => _UserSearchBarState();
 }
 
+/// State for [UserSearchBar] widget, handling user search with debounced input,
+/// paginated results, and overlay display for user selection.
 class _UserSearchBarState extends State<UserSearchBar> {
   final TextEditingController _controller = TextEditingController();
   final LayerLink _layerLink = LayerLink();
@@ -46,6 +48,9 @@ class _UserSearchBarState extends State<UserSearchBar> {
     super.dispose();
   }
 
+  /// Called when the scroll position changes.
+  /// If the user has scrolled within 50 pixels of the bottom of the scrollable area,
+  /// this method triggers the fetching of the next page of data by calling [_fetchNextPage()].
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 50) {
@@ -53,8 +58,13 @@ class _UserSearchBarState extends State<UserSearchBar> {
     }
   }
 
+  /// Handles changes to the search bar input with debounce logic.
+  ///
+  /// Cancels any existing debounce timer and starts a new one with a 300ms delay.
+  /// If the input [value] is not empty after the delay, it triggers a user search
+  /// by calling `_searchUsers(value)`. If the input is empty, it clears the search
+  /// results and removes the overlay.
   void _onChanged(String value) {
-    debugPrint("Search value: $value");
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
       if (value.isNotEmpty) {
@@ -66,6 +76,11 @@ class _UserSearchBarState extends State<UserSearchBar> {
     });
   }
 
+  /// Fetches the next page of user search results from the server.
+  ///
+  /// This method checks if there is a next page URL and if a loading operation is not already in progress.
+  /// It appends the new results to the existing list and updates the next page URL.
+  /// If the request fails, the loading state is reset without updating the results.
   Future<void> _fetchNextPage() async {
     if (_nextPageUrl == null || _loading) return;
     setState(() => _loading = true);
@@ -123,6 +138,7 @@ class _UserSearchBarState extends State<UserSearchBar> {
     }
   }
 
+  /// Displays an overlay dropdown below the search bar, showing user search results.
   void _showOverlay() {
     _removeOverlay();
     final overlay = Overlay.of(context);

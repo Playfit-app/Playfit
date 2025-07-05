@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:playfit/profile_page.dart';
+import 'package:playfit/i18n/strings.g.dart';
 
 class PostCard extends StatefulWidget {
   final Map<String, dynamic> post;
@@ -29,6 +30,11 @@ class _PostCardState extends State<PostCard> {
   bool _isSubmitting = false;
 
   Future<void> _like() async {
+    setState(() {
+      widget.post['is_liked'] = true;
+      widget.post['nb_likes'] += 1;
+    });
+
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/posts/${widget.post['id']}/like/");
     final token = await storage.read(key: "token");
@@ -43,16 +49,22 @@ class _PostCardState extends State<PostCard> {
     );
 
     if (response.statusCode == 201) {
-      setState(() {
-        widget.post['is_liked'] = true;
-        widget.post['nb_likes'] += 1;
-      });
+
     } else {
-      print("Failed to like post: ${response.statusCode}");
+      setState(() {
+        widget.post['is_liked'] = false;
+        widget.post['nb_likes'] -= 1;
+      });
     }
   }
 
+  /// Handles the "unlike" action for a post.
   Future<void> _unlike() async {
+    setState(() {
+      widget.post['is_liked'] = false;
+      widget.post['nb_likes'] -= 1;
+    });
+
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/posts/${widget.post['id']}/unlike/");
     final token = await storage.read(key: "token");
@@ -67,20 +79,36 @@ class _PostCardState extends State<PostCard> {
     );
 
     if (response.statusCode == 204) {
-      setState(() {
-        widget.post['is_liked'] = false;
-        widget.post['nb_likes'] -= 1;
-      });
     } else {
-      print("Failed to unlike post: ${response.statusCode}");
+      setState(() {
+        widget.post['is_liked'] = true;
+        widget.post['nb_likes'] += 1;
+      });
     }
   }
 
+  /// Handles the process of submitting a comment to a post.
   Future<void> _comment() async {
     final content = _commentController.text.trim();
 
     if (content.isEmpty) return;
     setState(() => _isSubmitting = true);
+
+    final newComment = {
+      "id": -1,
+      "content": content,
+      "user": {
+        "id": 0,
+        "username": "Me",
+      },
+      "created_at": DateTime.now().toIso8601String(),
+    };
+
+    setState(() {
+      widget.post['comments'].insert(0, newComment);
+      _commentController.clear();
+    });
+
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/posts/${widget.post['id']}/comment/");
     final token = await storage.read(key: "token");
@@ -97,7 +125,6 @@ class _PostCardState extends State<PostCard> {
 
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
-      debugPrint("Comment added: $data");
       final newComment = {
         "id": data['id'],
         "content": content,
@@ -109,17 +136,31 @@ class _PostCardState extends State<PostCard> {
       };
 
       setState(() {
+        widget.post['comments'].removeWhere((comment) => comment['id'] == -1);
         widget.post['comments'].insert(0, newComment);
         _commentController.clear();
         _isSubmitting = false;
       });
     } else {
-      print("Failed to comment: ${response.statusCode}");
-      setState(() => _isSubmitting = false);
+      setState(() {
+        widget.post['comments'].remove(newComment);
+        _commentController.clear();
+        _isSubmitting = false;
+      });
     }
   }
 
+  /// Deletes a comment with the given [commentId] from the post's comments list.
   Future<void> _deleteComment(int commentId) async {
+    final commentToDelete = widget.post['comments']
+        .firstWhere((comment) => comment['id'] == commentId);
+    if (commentToDelete == null) return;
+    final index = widget.post['comments'].indexOf(commentToDelete);
+    if (index == -1) return;
+    setState(() {
+      widget.post['comments'].remove(commentToDelete);
+    });
+
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/comments/$commentId/delete/");
     final token = await storage.read(key: "token");
@@ -134,15 +175,23 @@ class _PostCardState extends State<PostCard> {
     );
 
     if (response.statusCode == 204) {
-      setState(() {
-        widget.post['comments']
-            .removeWhere((comment) => comment['id'] == commentId);
-      });
     } else {
-      print("Failed to delete comment: ${response.statusCode}");
+      setState(() {
+        widget.post['comments'].insert(index, commentToDelete);
+      });
     }
   }
 
+  /// Builds the UI for a social post card, displaying post content, media, likes, and comments.
+  ///
+  /// The widget displays:
+  /// - The post's media (if available) at the top, with rounded corners.
+  /// - The username of the post's author and like button with like count.
+  /// - The post's textual content (if available).
+  /// - A comment input field and send button when all comments are shown.
+  /// - A divider and a list of comments (up to 3 by default, or all if `showAllComments` is true).
+  /// - Each comment displays the commenter's username (tappable to view profile), content, and time ago.
+  /// - A popup menu for each comment, allowing the owner to delete or others to report.
   @override
   Widget build(BuildContext context) {
     final user = widget.post['user'];
@@ -300,14 +349,14 @@ class _PostCardState extends State<PostCard> {
                           },
                           itemBuilder: (context) => [
                             if (widget.isOwner)
-                              const PopupMenuItem<String>(
+                              PopupMenuItem<String>(
                                 value: 'delete',
-                                child: Text('Delete'),
+                                child: Text(t.social.post_delete),
                               )
                             else
-                              const PopupMenuItem<String>(
+                              PopupMenuItem<String>(
                                 value: 'report',
-                                child: Text('Report'),
+                                child: Text(t.social.post_report),
                               ),
                           ],
                         )

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:playfit/i18n/strings.g.dart';
 
 class RegistrationStep1 extends StatefulWidget {
   final TextEditingController usernameController;
@@ -19,6 +20,9 @@ class RegistrationStep1 extends StatefulWidget {
 }
 
 class _RegistrationStep1State extends State<RegistrationStep1> {
+  /// Builds the registration step 1 form UI, which includes input fields for username,
+  /// email, password, and password confirmation. Each field uses a [TextFormField]
+  /// with custom styling, validation logic, and clear buttons for user convenience.
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -31,7 +35,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
           child: TextFormField(
             controller: widget.usernameController,
             decoration: InputDecoration(
-              labelText: 'Nom d\'utilisateur',
+              labelText: t.register.username,
               filled: true,
               fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.person),
@@ -48,10 +52,10 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Veuillez entrer un nom d\'utilisateur';
+                return t.register.empty_username;
               }
               if (value.length < 4) {
-                return 'Le nom d\'utilisateur doit contenir au moins 4 caractères';
+                return t.register.invalid_username;
               }
               return null;
             },
@@ -63,7 +67,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
           child: TextFormField(
             controller: widget.emailController,
             decoration: InputDecoration(
-              labelText: 'Adresse e-mail',
+              labelText: t.register.email,
               filled: true,
               fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.email),
@@ -81,11 +85,11 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Veuillez entrer une adresse e-mail';
+                return t.register.empty_email;
               }
               if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
                   .hasMatch(value)) {
-                return 'Veuillez entrer une adresse e-mail valide';
+                return t.register.invalid_email;
               }
               return null;
             },
@@ -98,7 +102,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
             controller: widget.passwordController,
             obscureText: true,
             decoration: InputDecoration(
-              labelText: 'Mot de passe',
+              labelText: t.register.password,
               filled: true,
               fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.lock_outline),
@@ -115,14 +119,14 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Veuillez entrer un mot de passe';
+                return t.register.empty_password;
               }
               if (value.length < 8) {
-                return 'Le mot de passe doit contenir au moins 8 caractères';
+                return t.register.invalid_password;
               }
               if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$')
                   .hasMatch(value)) {
-                return 'Le mot de passe doit contenir au moins une lettre et un chiffre';
+                return t.register.invalid_password;
               }
               return null;
             },
@@ -135,7 +139,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
             controller: widget.confirmPasswordController,
             obscureText: true,
             decoration: InputDecoration(
-              labelText: 'Confirmez le mot de passe',
+              labelText: t.register.confirm_password,
               filled: true,
               fillColor: const Color.fromARGB(255, 255, 233, 202),
               prefixIcon: const Icon(Icons.lock_outline),
@@ -152,10 +156,10 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Veuillez confirmer votre mot de passe';
+                return t.register.empty_confirm_password;
               }
               if (value != widget.passwordController.text) {
-                return 'Les mots de passe ne correspondent pas';
+                return t.register.passwords_do_not_match;
               }
               return null;
             },

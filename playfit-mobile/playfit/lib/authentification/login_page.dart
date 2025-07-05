@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/services/auth_service.dart';
 import 'package:playfit/home_page.dart';
 import 'package:playfit/authentification/registration_page.dart';
@@ -21,6 +22,9 @@ class _LoginPageState extends State<LoginPage> {
   bool _isGoogleSignInLoading = false;
   bool _isKeyboardVisible = false;
 
+  /// Initializes the state of the widget and sets up a post-frame callback to determine
+  /// if the keyboard is visible by checking the bottom inset of the current MediaQuery.
+  /// This is useful for adjusting the UI based on keyboard visibility.
   @override
   void initState() {
     super.initState();
@@ -29,6 +33,8 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
+  /// Hides the on-screen keyboard by removing focus from the current input field,
+  /// and updates the state to indicate that the keyboard is no longer visible.
   void _hideKeyboard() {
     FocusScope.of(context).unfocus();
 
@@ -37,6 +43,7 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
+  /// Handles the login process for the user.
   void _login() async {
     setState(() {
       _isGoogleSignInLoading = true;
@@ -54,7 +61,6 @@ class _LoginPageState extends State<LoginPage> {
           MaterialPageRoute(builder: (context) => HomePage()),
         );
       } else {
-        debugPrint(result["message"]!);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result["message"]!),
@@ -91,6 +97,15 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  /// Builds the login page UI with a mascot image, background, and an animated login form.
+  ///
+  /// The layout consists of:
+  /// - A background image with a mascot aligned near the top.
+  /// - An animated form container that shifts position based on keyboard visibility.
+  /// - The form includes fields for username and password, with validation and clear buttons.
+  /// - Displays error messages if login fails.
+  /// - Provides a login button, a navigation button to the account creation page,
+  ///   and a Google sign-in option (Android only).
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -137,7 +152,7 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     SizedBox(height: screenHeight * 0.03),
                     Text(
-                      'Connexion',
+                      t.login.title,
                       style: GoogleFonts.amaranth(
                         fontSize: 36,
                         color: Colors.black,
@@ -191,12 +206,12 @@ class _LoginPageState extends State<LoginPage> {
                                   borderRadius: BorderRadius.circular(10.0),
                                   borderSide: BorderSide.none,
                                 ),
-                                labelText: "Nom d'utilisateur",
+                                labelText: t.login.username,
                               ),
                               keyboardType: TextInputType.text,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Veuillez entrer votre nom d\'utilisateur';
+                                  return t.login.empty_username;
                                 }
                                 return null;
                               },
@@ -231,12 +246,12 @@ class _LoginPageState extends State<LoginPage> {
                                   borderRadius: BorderRadius.circular(10.0),
                                   borderSide: BorderSide.none,
                                 ),
-                                labelText: "Mot de passe",
+                                labelText: t.login.password,
                               ),
                               keyboardType: TextInputType.text,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Veuillez entrer votre mot de passe';
+                                  return t.login.empty_password;
                                 }
                                 return null;
                               },
@@ -258,8 +273,8 @@ class _LoginPageState extends State<LoginPage> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: screenWidth * 0.06, vertical: 10),
                             ),
-                            child: const Text(
-                              'Connexion',
+                            child: Text(
+                              t.login.login,
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.white,
@@ -269,8 +284,8 @@ class _LoginPageState extends State<LoginPage> {
                           SizedBox(height: screenHeight * 0.03),
                           TextButton(
                             onPressed: () => _navigateToCreateAccount(context),
-                            child: const Text(
-                              'Première fois ? Créez un compte !',
+                            child: Text(
+                              t.login.first_time_login,
                               style: TextStyle(
                                 color: Color.fromARGB(255, 30, 144, 255),
                                 fontSize: 12,

@@ -2,7 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/level_cinematic/difficulty.dart';
+import 'package:playfit/services/tts_service.dart';
+import 'package:playfit/services/workout_timer_service.dart';
 import 'package:playfit/workout_analyzer.dart';
 import 'package:playfit/image_converter.dart';
 import 'package:playfit/components/camera/left_box_widget.dart';
@@ -19,6 +23,8 @@ class CameraView extends StatefulWidget {
   final String landmarkImageUrl;
   final Map<String, String?> characterImages;
   final BoxType boxType;
+  final String city;
+  final int level;
 
   const CameraView({
     super.key,
@@ -27,7 +33,9 @@ class CameraView extends StatefulWidget {
     required this.currentExerciseIndex,
     required this.landmarkImageUrl,
     required this.characterImages,
-    this.boxType = BoxType.left,
+    required this.boxType,
+    required this.city,
+    required this.level,
   });
 
   @override
@@ -38,10 +46,10 @@ class _CameraViewState extends State<CameraView> {
   CameraController? _controller;
   bool _isDetecting = false;
   final WorkoutAnalyzer _workoutAnalyzer = WorkoutAnalyzer();
-  Timer? _timer;
-  Duration _elapsedTime = Duration.zero;
+  WorkoutTimerService _workoutTimerService = WorkoutTimerService();
   late WorkoutType _workoutType;
   late String _exerciseName;
+  late Duration _elapsedTime;
 
   int _count = 0;
   late int _targetCount;
@@ -50,7 +58,15 @@ class _CameraViewState extends State<CameraView> {
   int _celebrationCountdown = 5;
   Timer? _celebrationTimer;
   bool _celebrationStarted = false;
+  late FlutterTts _flutterTts;
 
+  /// Converts a workout name to a [WorkoutType].
+  /// This method maps the name of the workout to its corresponding enum value.
+  /// Throws an exception if the name is not recognized.
+  ///
+  /// `name` is the name of the workout as a string.
+  ///
+  /// Returns a [WorkoutType] corresponding to the name.
   WorkoutType workoutTypeFromName(String name) {
     switch (name.toLowerCase().replaceAll('-', '')) {
       case 'squat':
@@ -70,18 +86,30 @@ class _CameraViewState extends State<CameraView> {
   void initState() {
     super.initState();
 
+    _elapsedTime = _workoutTimerService.elapsed;
+    _workoutTimerService.onTick = (elapsed) {
+      if (mounted) {
+        setState(() {
+          _elapsedTime = elapsed;
+        });
+      }
+    };
     final exercise = widget.workoutSessionExercises[widget.difficulty]![
         widget.currentExerciseIndex];
     _workoutType = workoutTypeFromName(exercise['name']);
     _targetCount = exercise['repetitions'];
     _exerciseName = exercise['name'];
+    _flutterTts = FlutterTts();
+    configureTtsLanguage(_flutterTts);
 
     initCamera();
+    // Listen for changes in workout counts to update the count and trigger announcements
     _workoutAnalyzer.workoutCounts.addListener(() {
       final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
       if (count != null && count > _count && count <= _targetCount) {
         setState(() {
           _count = count;
+          _announceCount();
           if (_count == _targetCount && !_celebrationStarted) {
             _celebrationStarted = true;
             _showCelebration = true;
@@ -92,18 +120,38 @@ class _CameraViewState extends State<CameraView> {
     });
   }
 
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      setState(() {
-        _elapsedTime += const Duration(seconds: 1);
-
-        if (_count == _targetCount) {
-          _showCelebration = true;
-        }
-      });
-    });
+  /// Announces the current count or target count using Text-to-Speech (TTS).
+  /// This method stops any ongoing speech and speaks the current count.
+  /// If the count matches the target count, it announces a congratulatory message.
+  ///
+  /// Returns a [Future] that completes when the speech is done.
+  Future<void> _announceCount() async {
+    await _flutterTts.stop();
+    if (_count == _targetCount) {
+      await _flutterTts
+          .speak("Bravo ! Tu as atteint $_targetCount répétitions.");
+    } else {
+      await _flutterTts.speak("$_count");
+    }
   }
 
+  /// Starts a timer that updates the elapsed time every second.
+  /// This method also checks if the target count has been reached
+  /// and sets a flag to show the celebration overlay.
+  ///
+  /// Returns a [void] that completes when the timer is started.
+  void _startTimer() {
+    _workoutTimerService.start();
+  }
+
+  /// Initializes the camera and sets up the camera controller.
+  /// This method retrieves the available cameras, selects the front camera,
+  /// and initializes the camera controller with a high resolution preset.
+  ///
+  /// It also sets up a listener for workout counts to update the count
+  /// and trigger the celebration overlay when the target count is reached.
+  ///
+  /// Returns a [Future] that completes when the camera is initialized.
   Future<void> initCamera() async {
     final cameras = await availableCameras();
     _controller = CameraController(
@@ -114,6 +162,7 @@ class _CameraViewState extends State<CameraView> {
     );
     await _controller?.initialize();
 
+    // Listen for changes in workout counts to update the count and trigger announcements
     _workoutAnalyzer.workoutCounts.addListener(() {
       final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
 
@@ -136,6 +185,11 @@ class _CameraViewState extends State<CameraView> {
   }
   //end function after help
 
+  /// Starts the workout detection process.
+  /// This method checks if the camera controller is initialized and not already streaming images.
+  /// If the conditions are met, it starts the image stream and begins detecting workouts.
+  ///
+  /// Returns a [void] that completes when the detection starts.
   void _startDetecting() async {
     if (_controller != null) {
       if (_controller!.value.isStreamingImages) return;
@@ -144,7 +198,11 @@ class _CameraViewState extends State<CameraView> {
       });
 
       _startTimer();
+      // Start the camera image stream
+      // This will call the detectWorkout method in WorkoutAnalyzer
+      // with the input image from the camera
       _controller!.startImageStream((image) async {
+        // Check if we are already detecting to avoid multiple detections
         if (_isDetecting) return;
         _isDetecting = true;
 
@@ -152,7 +210,6 @@ class _CameraViewState extends State<CameraView> {
           final inputImage = ImageUtils.getInputImage(image, _controller);
           await _workoutAnalyzer.detectWorkout(inputImage, _workoutType);
         } catch (e) {
-          debugPrint('Error processing image: $e');
         } finally {
           _isDetecting = false;
         }
@@ -160,9 +217,17 @@ class _CameraViewState extends State<CameraView> {
     }
   }
 
+  /// Stops the workout detection process and starts a countdown for the celebration overlay.
+  /// This method checks if the camera controller is initialized and streaming images.
+  /// If so, it cancels the timer, stops the image stream,
+  /// and sets a flag to show the celebration overlay.
+  /// It also starts a countdown timer that updates the UI every second.
+  ///
+  /// Returns a [void] that completes when the detection is stopped.
   void _stopDetecting() async {
     if (_controller != null && _controller!.value.isStreamingImages) {
-      _timer?.cancel();
+      // Stop the workout timer
+      _workoutTimerService.stop();
       await _controller!.stopImageStream();
       _isDetecting = false;
     }
@@ -179,6 +244,11 @@ class _CameraViewState extends State<CameraView> {
     });
   }
 
+  /// Navigates to the WorkoutProgressionPage with the current exercise index and difficulty.
+  /// This method creates a new route and passes the necessary parameters,
+  /// including the difficulty level, images, starting point, and character images.
+  ///
+  /// Returns a [void] that completes when the navigation is done.
   void _goToProgressionPage() {
     final Difficulty difficulty = widget.difficulty == "beginner"
         ? Difficulty.easy
@@ -186,21 +256,24 @@ class _CameraViewState extends State<CameraView> {
             ? Difficulty.medium
             : Difficulty.hard;
 
-    Navigator.pushReplacement(
+    Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => WorkoutProgressionPage(
           difficulty: difficulty,
           images: [
-            "assets/images/pebble_path.jpg",
-            "${dotenv.env['SERVER_BASE_URL']}/media/decorations/building.webp",
-            "${dotenv.env['SERVER_BASE_URL']}/media/decorations/tree.webp",
+            "${dotenv.env['SERVER_BASE_URL']}${widget.characterImages['path']}",
+            "${dotenv.env['SERVER_BASE_URL']}${widget.characterImages['building']}",
+            "${dotenv.env['SERVER_BASE_URL']}${widget.characterImages['tree']}",
             "${dotenv.env['SERVER_BASE_URL']}${widget.landmarkImageUrl}",
           ],
           startingPoint: widget.currentExerciseIndex,
           workoutSessionExercises: widget.workoutSessionExercises,
           currentExerciseIndex: widget.currentExerciseIndex + 1,
           characterImages: widget.characterImages,
+          boxType: widget.boxType,
+          city: widget.city,
+          level: widget.level,
         ),
       ),
     );
@@ -252,14 +325,21 @@ class _CameraViewState extends State<CameraView> {
 
                 // Overlay when count hits the target
                 if (_showCelebration)
-                  CelebrationOverlay(finalTime: _elapsedTime),
+                  CelebrationOverlay(
+                    finalTime: _workoutTimerService.elapsed,
+                    city: widget.city,
+                    level: widget.level,
+                    characterImages: widget.characterImages,
+                    difficulty: widget.difficulty,
+                  ),
                 if (_showCelebration && _celebrationCountdown > 0)
                   Positioned(
                     bottom: 40,
                     left: 0,
                     right: 0,
                     child: Text(
-                      "Prochaine étape dans $_celebrationCountdown...",
+                      t.camera
+                          .next_step_countdown(seconds: _celebrationCountdown),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 20,
@@ -292,8 +372,8 @@ class _CameraViewState extends State<CameraView> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
-                      child: const Text(
-                        'Démarrer',
+                      child: Text(
+                        t.camera.start_workout,
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),
@@ -306,7 +386,8 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _workoutTimerService.onTick = null;
+    _workoutTimerService.stop();
     _celebrationTimer?.cancel();
     _workoutAnalyzer.dispose();
     if (_controller != null) {
@@ -315,6 +396,7 @@ class _CameraViewState extends State<CameraView> {
       }
       _controller!.dispose();
     }
+    _flutterTts.stop();
     super.dispose();
   }
 }

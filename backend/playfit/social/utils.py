@@ -1,4 +1,3 @@
-import sys
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync, sync_to_async
 from push_notifications.models import GCMDevice
@@ -10,7 +9,7 @@ def send_push_notification(user, title, message):
     for device in devices:
         try:
             device.send_message(title=title, message=message)
-        except Exception as e:
+        except Exception:
             device.active = False
             device.save()
 

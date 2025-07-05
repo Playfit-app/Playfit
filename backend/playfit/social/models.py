@@ -62,6 +62,11 @@ class BaseCharacter(models.Model):
                 raise ValidationError("The image must be a PNG or WebP file")
         super().save(*args, **kwargs)
 
+class IntroductionCharacter(models.Model):
+    base_character = models.ForeignKey(BaseCharacter, related_name='introduction_characters', on_delete=models.CASCADE)
+    name = models.CharField(max_length=50, unique=True)
+    image = models.ImageField(upload_to='introduction_characters/')
+
 class Customization(models.Model):
     user = models.OneToOneField(User, related_name='customizations', on_delete=models.CASCADE)
     base_character = models.ForeignKey(BaseCharacter, related_name='character', on_delete=models.SET_NULL, null=True, blank=True)
@@ -151,6 +156,7 @@ class Continent(models.Model):
 class Country(models.Model):
     name = models.CharField(max_length=50, unique=True)
     continent = models.ForeignKey(Continent, related_name='countries', on_delete=models.CASCADE)
+    color = models.CharField(max_length=7, default='#FFFFFF')
 
     def __str__(self):
         return self.name
@@ -159,6 +165,7 @@ class City(models.Model):
     name = models.CharField(max_length=50)
     country = models.ForeignKey(Country, related_name='cities', on_delete=models.CASCADE)
     order = models.PositiveIntegerField()
+    max_level = models.PositiveIntegerField(default=6)
 
     class Meta:
         unique_together = ("country", "order")
@@ -179,6 +186,17 @@ class WorldPosition(models.Model):
     transition_to = models.ForeignKey(City, related_name='arriving_users', on_delete=models.SET_NULL, null=True, blank=True)
     transition_level = models.PositiveIntegerField(null=True, blank=True, choices=TRANSITION_LEVEL_CHOICES)
 
+    @property
+    def country(self):
+        return self.city.country if self.city else (
+            self.transition_to.country if self.transition_to else None
+        )
+
+    @property
+    def continent(self):
+        country = self.country
+        return country.continent if country else None
+
     def is_in_city(self):
         return self.city is not None
 
@@ -187,7 +205,7 @@ class WorldPosition(models.Model):
 
     def move_to_next_level(self):
         if self.is_in_city():
-            if self.city_level < 6:
+            if self.city_level < self.city.max_level:
                 self.city_level += 1
             else:
                 try:

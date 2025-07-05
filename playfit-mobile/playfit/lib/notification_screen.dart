@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/providers/notification_provider.dart';
 
+// I think the file is useless, as it is not used anywhere in the app.
 class NotificationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -9,7 +11,7 @@ class NotificationScreen extends StatelessWidget {
       builder: (context, notificationProvider, child) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Notifications'),
+            title: Text(t.notifications.title),
           ),
           body: ListView.builder(
             itemCount: notificationProvider.notifications.length,

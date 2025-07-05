@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:playfit/components/social/post_detail_page.dart';
-import 'package:playfit/components/social/post_card.dart';
+import 'package:playfit/components/social/post_card/post_card.dart';
+import 'package:playfit/i18n/strings.g.dart';
 
 class PostFeed extends StatefulWidget {
   const PostFeed({super.key});
@@ -25,8 +26,11 @@ class _PostFeedState extends State<PostFeed> {
     _loadPosts();
   }
 
+  /// Loads posts from the server asynchronously and updates the state accordingly.
   Future<void> _loadPosts() async {
-    debugPrint("Loading posts...");
+    setState(() {
+      _loading = true;
+    });
     final token = await storage.read(key: 'token');
     final url = Uri.parse("${dotenv.env['SERVER_BASE_URL']}/api/social/posts/");
 
@@ -58,7 +62,7 @@ class _PostFeedState extends State<PostFeed> {
     }
 
     if (_posts.isEmpty) {
-      return const Center(child: Text("No posts available"));
+      return Center(child: Text(t.social.no_posts_available));
     }
 
     return ListView.builder(
@@ -71,7 +75,7 @@ class _PostFeedState extends State<PostFeed> {
           future: userIdFuture,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return const SizedBox.shrink(); // Placeholder while loading
+              return const SizedBox.shrink();
             }
 
             final bool isMine = post['user']['id'].toString() == snapshot.data;

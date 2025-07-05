@@ -1,0 +1,48 @@
+name: Build iOS App
+
+on:
+  workflow_call: {}
+
+jobs:
+  ios:
+    name: iOS Build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Set Up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.29.0
+          channel: stable
+      - name: Install dependencies
+        run: flutter pub get
+        working-directory: ./playfit-mobile/playfit
+      - name: Decode Google Services credentials
+        run: echo "${{ secrets.FLUTTER_GOOGLE_SERVICES }}" | base64 --decode > android/app/google-services.json
+        working-directory: ./playfit-mobile/playfit
+      - name: Set up environment variables
+        run: |
+          echo "SERVER_BASE_URL=http://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
+          echo "SERVER_BASE_WS_URL=ws://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
+          echo "GOOGLE_CLIENT_ID=${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}" >> .env
+        working-directory: ./playfit-mobile/playfit
+      - name: Build IPA (no codesign)
+        run: flutter build ipa --no-codesign
+        working-directory: ./playfit-mobile/playfit
+      - name: Compress and Upload iOS Build
+        run: |
+          cd build
+          tar -czf ios_build.tar.gz ios
+        working-directory: ./playfit-mobile/playfit
+      - name: Upload iOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: ./playfit-mobile/playfit/build/ios_build.tar.gz

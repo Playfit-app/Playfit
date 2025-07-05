@@ -1,0 +1,194 @@
+{
+    "login": {
+        "title": "Login",
+        "username": "Username",
+        "password": "Password",
+        "login": "Login",
+        "invalid_credentials": "Invalid username or password.",
+        "empty_username": "Please enter your username.",
+        "empty_password": "Please enter your password.",
+        "first_time_login": "First time? Create an account!"
+    },
+    "register": {
+        "title": "Create an account",
+        "previous": "Previous",
+        "next": "Next",
+        "already_have_account": "Already have an account? Log in!",
+        "username": "Username",
+        "empty_username": "Please enter a username.",
+        "invalid_username": "Username must be at least 4 characters long.",
+        "email": "Email address",
+        "empty_email": "Please enter an email address.",
+        "invalid_email": "Please enter a valid email address.",
+        "password": "Password",
+        "empty_password": "Please enter a password.",
+        "invalid_password": "Password must be at least 8 characters long, contain an uppercase letter, a lowercase letter, and a number.",
+        "confirm_password": "Confirm password",
+        "empty_confirm_password": "Please confirm your password.",
+        "passwords_do_not_match": "Passwords do not match.",
+        "birthdate": "Birthdate",
+        "empty_birthdate": "Please enter your birthdate.",
+        "invalid_birthdate": "You must be at least 18 years old to register.",
+        "height": "Height (cm)",
+        "empty_height": "Please enter your height.",
+        "invalid_height": "Please enter a valid height.",
+        "weight": "Weight (kg)",
+        "empty_weight": "Please enter your weight.",
+        "invalid_weight": "Please enter a valid weight.",
+        "gdpr_consent_title": "GDPR Consent",
+        "gdpr_consent": "I accept the GDPR consent form and the Privacy Policy (Required).",
+        "gdpr_consent_invalid": "You must accept the GDPR consent form and the Privacy Policy.",
+        "marketing_consent": "I agree to receive marketing communications (Optional).",
+        "avatar_choose": "Choose your avatar",
+        "create_account": "Create an account"
+    },
+    "home": {
+        "error_loading": "Error loading data."
+    },
+    "camera": {
+        "next_step_countdown": "Next step in $seconds seconds...",
+        "start_workout": "Start"
+    },
+    "notifications": {
+        "title": "Notifications",
+        "read_all": "Read all",
+        "empty": "No notifications at the moment.",
+        "no_title": "No title",
+        "no_body": "No content"
+    },
+    "profile": {
+        "follow": "Follow",
+        "unfollow": "Unfollow",
+        "member_since": "Member since $date",
+        "followers": "followers",
+        "following": "following",
+        "cities_finished": "Cities finished",
+        "nb_exercises_done_title": "Number of exercises done",
+        "bpm_title": "BPM (Beats per minute)",
+        "achievements": "Achievements"
+    },
+    "social": {
+        "title": "Social",
+        "no_posts_available": "No posts available.",
+        "post_delete": "Delete",
+        "post_report": "Report"
+    },
+    "gdpr_consent_form": {
+        "title": "GDPR Consent",
+        "description": "In accordance with the General Data Protection Regulation (GDPR), we are required to inform you about the collection, use, and storage of your personal data.",
+        "data_collection": {
+            "title": "1. Data Collected\n",
+            "description": "We collect the following data during registration:\n",
+            "essential_data": " - Essential data: username, email address, password, date of birth to access the application.\n",
+            "optional_data": " - Optional data: height, weight, goals, fitness level, physical characteristics to personalize your user experience.\n"
+        },
+        "data_usage": {
+            "title": "2. Data Usage\n",
+            "description": "We use your data for the following purposes:\n",
+            "purposes_1": " - To allow you to access the application and enjoy its features.\n",
+            "purposes_2": " - To personalize your user experience based on your goals and fitness level.\n",
+            "purposes_3": " - To comply with our legal and regulatory obligations.\n"
+        },
+        "data_storage": {
+            "title": "3. Data Storage\n",
+            "description": "Your data is securely stored on our servers and is not shared with third parties without your consent.\n"
+        },
+        "marketing_usage": {
+            "title": "4. Marketing Usage\n",
+            "description": "We use your data to send you marketing emails regarding promotions, events, or reminders related to the application.\n"
+        },
+        "accept_button": "Continue"
+    },
+    "workout_session_dialog": {
+        "session_title": "Session n°$session_number",
+        "start_button": "Start",
+        "level": "{city} - Level {level}"
+    },
+    "settings": {
+        "title": "Settings",
+        "language": "Language",
+        "notifications": "Notifications",
+        "disable_notifications_info": "Notifications have been disabled. You can re-enable them later in your device settings if needed.",
+        "account": "Account",
+        "username": "Username",
+        "edit_username_title": "Edit username",
+        "edit_username_confirmation": "Do you really want to change your username?",
+        "email": "Email",
+        "edit_email_title": "Edit email",
+        "edit_email_confirmation": "Do you really want to change your email address?",
+        "change_password": "Change password",
+        "delete_account": "Delete account",
+        "delete_account_fail": "Delete account fail",
+        "delete_account_error": "Delete account error",
+        "others": "Others",
+        "delete_account_confirmation": "Are you sure you want to delete your account? This action cannot be undone.",
+        "logout": "Logout",
+        "languages": {
+            "fr": "French",
+            "en": "English"
+        },
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "delete_confirm_title": "Confirm Deletion",
+        "privacy_policy": "Privacy Policy",
+        "privacy_policy_description": "We are committed to protecting your privacy. All your data is confidential and will never be shared without your consent.",
+        "save": "Save",
+        "overlay_title": "Overlay Position",
+        "left": "Left",
+        "bottom": "Bottom"
+    },
+    "customization": {
+        "title": "What look for this trip?",
+        "next_button": "Next",
+        "confirm_button": "Finish"
+    },
+    "introduction": {
+        "text_1": "It all started with a simple desire: to get back into sports.",
+        "text_2": "To do that, the player chose a short hike in the forest, not suspecting it would mark the beginning of a long journey.",
+        "text_3": "Originally from Rome, he walks and walks… until he gets completely lost.",
+        "text_4": "While taking a break to catch his breath, a hamster suddenly appears in front of him.",
+        "text_5": "Not an ordinary hamster: this one talks! Intrigued, they strike up a conversation.",
+        "text_6": "Wait a minute… You're from Rome, right? Well buddy… you're closer to Paris than to your bed!",
+        "text_7": "Oh, that face you're making. I know, it's surprising. But hey, you've walked a lot! Gotta say, you've got a good stride.",
+        "text_8": "Listen, you're lucky you ran into me. I'm a great explorer! Europe? I know it like the back of my paw. Well, I don't have paws—pockets, I mean—but you get the idea.",
+        "text_9": "If you want, I can take you back to Rome. And while we're at it, we might as well teach you a few things. You like historical fun facts, right?"
+    },
+    "anecdotes": {
+        "sacre_coeur": "Ah, the Panthéon in Paris! Nothing to do with Roman gods — this one's for great humans. Voltaire, Rousseau, Marie Curie… they're all chilling in the crypt. A real roommate setup of geniuses.",
+        "notre_dame": "Ah, Notre-Dame de Paris! Started in 1163, finished 200 years later. Here, Napoleon was crowned, the Revolution damaged it badly, and Victor Hugo made it famous with his Quasimodo. Even the 2019 fire didn't bring it down. This cathedral's a true survivor!",
+        "louvre": "The Louvre! Originally a 12th-century fortress to protect Paris. Then the kings turned it into a palace, especially François I and Louis XIV — until the latter preferred Versailles. Since the Revolution, it's been a museum, and not just any: the biggest in the world!",
+        "obelisk": "The Obelisk at Place de la Concorde! A true piece of Egypt planted right in Paris. Gifted by the viceroy of Egypt in 1830, it's over 3,000 years old and comes from the Luxor Temple. It even has hieroglyphs telling the feats of Ramses II.",
+        "opera_paris": "The Opéra Garnier, no less! Built under Napoleon III, inaugurated in 1875… A real gem of the Second Empire style. Marble staircases, painted ceilings, gold everywhere — you feel like you're stepping into a luxury cake.",
+        "triumph_arc": "The Arc de Triomphe! Commissioned by Napoleon in 1806 to celebrate his victories… but he didn't live to see it finished. It stands in the middle of Paris' biggest roundabout, like a final boss of traffic.",
+        "eiffel_tower": "The Eiffel Tower! Built for the 1889 World's Fair, and originally… it was supposed to be dismantled after 20 years! In the end, it became the symbol of Paris. Back then, some thought it was ugly — now, everyone wants a photo with it.",
+        "la_serre_du_parc_de_la_tete_or": "Parc de la Tête d'Or is a true nature escape right in the city! Opened in 1857, it's one of the biggest urban parks in France. And the greenhouse? A real tropical jungle in the heart of Lyon! Built in 1890, it houses rare and exotic plants. Perfect for feeling elsewhere without leaving town.",
+        "opera_lyon": "The Lyon Opera is a blend of classical and modern! The main building dates back to 1831, but the grand hall was renovated in the '90s with a super contemporary design.",
+        "cathedrale_st_jean": "Saint-Jean Cathedral is the star of Old Lyon! Built between the 12th and 15th centuries, it mixes many styles: Romanesque, Gothic. And check out that 14th-century astronomical clock — a real marvel! It doesn't just show time, but also moon phases, religious feasts… a medieval high-tech gadget.",
+        "statue_équestre_de_louis_XIV": "Place Bellecour is the heart of Lyon, the second largest pedestrian square in Europe! It's been there since the 17th century — a true meeting spot for the people of Lyon.",
+        "fontaine_bartholdi": "The Bartholdi Fountain is an incredible piece of art in the heart of Lyon! Created by Frédéric Bartholdi — yes, the guy behind the Statue of Liberty. It represents the city of Lyon carried by four powerful horses. Each horse symbolizes a major regional river.",
+        "theatre_antique": "The Ancient Theatre of Lyon is a heavyweight! Built in the 1st century, it's one of the oldest Roman theatres still standing. It could seat up to 10,000 spectators — theatre was a big deal!",
+        "basilique_notre-dame_de_fourviere": "The Basilica of Fourvière is the symbol of Lyon perched on its hill. Built between 1872 and 1884, it was erected after the Franco-Prussian War. Its architecture mixes Romanesque and Byzantine styles, with magnificent mosaics and colorful stained glass windows.",
+        "galerie_victor_emmanuel_2": "The Galleria Vittorio Emanuele II? It's Milan's grand salon! Inaugurated in 1877, it's named after the first king of a unified Italy. A real source of national pride.",
+        "chateau_des_sforza": "The Sforza Castle is solid stuff! Built in the 15th century by the powerful Sforza family, it was a fortress, a palace… and a symbol of power in Milan. Leonardo da Vinci even worked there! Today, it's packed with museums, including works by Michelangelo, among others. It's basically a treasure castle.",
+        "plazza_del_duomo": "The Piazza del Duomo is Milan's beating heart! For centuries, everything has started here. The Duomo? Begun in 1386, it took nearly 500 years to complete. 135 spires, thousands of statues, and the golden Madonnina at the top watching over the city. It's not just a square — it's a history lesson in the open air!",
+        "santa_maria_delle_grazie": "Santa Maria delle Grazie isn't just a classy Gothic church — it's a UNESCO treasure! Built between 1463 and 1497, it was entrusted to the Dominican order, and it was Duke Ludovico Sforza who commissioned the renovation of its cloister. And most importantly… in the refectory, there's *The Last Supper* by Leonardo da Vinci, painted right on the wall between 1495 and 1498.",
+        "arco_della_pace": "The Arco della Pace is Milan's grand gate to peace. Built in the early 19th century, it celebrates the end of the Napoleonic wars and the return of peace in Europe.",
+        "basilique_saint_pierre": "Saint Peter's Basilica is THE heart of the Vatican and one of the largest churches in the world. Built over the tomb of Saint Peter, one of Jesus' apostles, it was constructed between the 16th and 17th centuries.",
+        "pantheon_rome": "The Pantheon in Rome is an ancient masterpiece that has survived the ages. Built nearly 2,000 years ago under Emperor Hadrian, it was a temple dedicated to all Roman gods. Its massive dome, with that famous oculus in the center, is an architectural feat — the largest unreinforced concrete dome in the world!",
+        "chateau_saint_ange": "Castel Sant'Angelo is a fortress that has seen a lot! Originally, it was a mausoleum built for Emperor Hadrian nearly 2,000 years ago. Over the centuries, it became a fortress, a papal residence, and even a prison.",
+        "collisee": "The Colosseum is the ultimate ancient stadium! Built between 70 and 80 AD, it could hold up to 50,000 spectators ready to cheer for gladiator fights and other spectacles. This thing was a real thrill machine: chariot races, wild animal hunts, epic reenactments...",
+        "fontaine_de_trevi": "The Trevi Fountain is Rome's fountain superstar! Built in the 18th century, it marks the end of the aqueduct that brought water to the city since Antiquity. Tradition says if you toss a coin over your shoulder into the fountain, you're guaranteed to return to Rome."
+    },
+    "mission": {
+        "title": "Mission"
+    },
+    "shop": {
+        "title": "Shop"
+    },
+    "workout": {
+        "difficulty": "Difficulty:",
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+    }
+}

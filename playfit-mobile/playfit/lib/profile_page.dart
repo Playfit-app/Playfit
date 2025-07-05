@@ -5,10 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:playfit/settings_page.dart';
+import 'package:playfit/components/profile/edit_character_button.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/experience_circle.dart';
 import 'package:playfit/components/success.dart';
 import 'package:playfit/components/historic_chart.dart';
 import 'package:playfit/components/level_progression_dialog.dart';
+import 'package:playfit/components/profile_icon.dart';
 
 class ProfilePage extends StatefulWidget {
   final int? userId;
@@ -26,13 +30,27 @@ class _ProfilePageState extends State<ProfilePage> {
   final FlutterSecureStorage storage = const FlutterSecureStorage();
   bool _isFollowing = false;
   int _followerCount = 0;
+  late Future<Map<String, dynamic>> _futureUserData;
 
+  /// Formats the date from the API to a more readable format.
+  ///
+  /// For example, "2023-10-01T00:00:00Z" becomes "October 2023".
+  ///
+  /// `rawDate` The date string from the API.
+  ///
+  /// Return a formatted date string.
   String _formatDate(String rawDate) {
     final DateTime dateTime = DateTime.parse(rawDate);
     final DateFormat formatter = DateFormat('MMMM yyyy');
     return formatter.format(dateTime);
   }
 
+  /// Fetches user data from the API.
+  ///
+  /// If `widget.userId` is provided, it fetches data for that user.
+  /// If not, it fetches data for the current user ('me').
+  ///
+  /// Return a Future that resolves to a Map containing user data.
   Future<Map<String, dynamic>> fetchUserData() async {
     final String userId =
         widget.userId != null ? widget.userId.toString() : 'me';
@@ -55,8 +73,17 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  /// Follows the user with the given `widget.userId`.
+  ///
+  /// Updates the state to reflect that the user is now followed,
+  /// and increments the follower count.
   void _follow() async {
     if (widget.userId == null) return;
+
+    setState(() {
+        _isFollowing = true;
+        _followerCount += 1;
+      });
 
     final String url = '${dotenv.env['SERVER_BASE_URL']}/api/social/follow/';
     final String? token = await storage.read(key: 'token');
@@ -72,17 +99,25 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (response.statusCode == 201) {
-      setState(() {
-        _isFollowing = true;
-        _followerCount += 1;
-      });
     } else {
-      debugPrint("Failed to follow user: ${response.statusCode}");
+      setState(() {
+        _isFollowing = false;
+        _followerCount -= 1;
+      });
     }
   }
 
+  /// Unfollows the user with the given `widget.userId`.
+  ///
+  /// Updates the state to reflect that the user is no longer followed,
+  /// and decrements the follower count.
   void _unfollow() async {
     if (widget.userId == null) return;
+
+    setState(() {
+        _isFollowing = false;
+        _followerCount -= 1;
+      });
 
     final String url =
         '${dotenv.env['SERVER_BASE_URL']}/api/social/unfollow/${widget.userId}/';
@@ -95,20 +130,28 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (response.statusCode == 204) {
-      setState(() {
-        _isFollowing = false;
-        _followerCount -= 1;
-      });
     } else {
-      // Handle error
-      debugPrint("Failed to unfollow user: ${response.statusCode}");
+      setState(() {
+        _isFollowing = true;
+        _followerCount += 1;
+      });
     }
   }
 
   @override
+  void initState() {
+    super.initState();
+    _futureUserData = fetchUserData();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    /// Builds the profile page UI using a FutureBuilder to fetch user data.
+    ///
+    /// Displays a loading indicator while fetching data,
+    /// and once data is available, it constructs the profile layout.
     return FutureBuilder(
-      future: fetchUserData(),
+      future: _futureUserData,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -124,21 +167,32 @@ class _ProfilePageState extends State<ProfilePage> {
         if (userData['followers'] != null) {
           _followerCount = userData['followers'];
         }
-        debugPrint(userData['decorations']['mountains'].toString());
+
         return Scaffold(
           extendBodyBehindAppBar: true,
+          // Transparent app bar with settings icon to go to settings page
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             actions: <Widget>[
               IconButton(
                 icon: const Icon(Icons.settings_outlined),
                 color: Colors.black,
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsPage(),
+                    ),
+                  );
+                },
               ),
             ],
           ),
           body: Stack(
             children: <Widget>[
+              // Container over the top half of the screen with a background image
+              // The image is a mountain image based on the user's level
+              // In the center of the image, there is a profile icon with the user's base character
               Positioned(
                 left: 0,
                 top: 0,
@@ -155,24 +209,36 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   child: Align(
                     alignment: const Alignment(0, -0.3),
-                    child: Container(
-                      height: 100,
-                      width: 100,
-                      decoration: const BoxDecoration(
-                        color: Color.fromARGB(255, 204, 255, 178),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Transform(
-                        alignment: Alignment.center,
-                        transform: Matrix4.rotationY(3.14),
-                        child: Image.network(
-                          '${dotenv.env['SERVER_BASE_URL']}${userData['customization']['base_character']}',
+                    child: Stack(
+                      children: [
+                        ProfileIcon(
+                          imageUrl: userData['customization']['base_character'],
+                          size: 100,
                         ),
-                      ),
+                        if (widget.userId == null)
+                          // Edit character button that appears only if the user is viewing their own profile
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: EditCharacterButton(
+                              backgroundImageUrl:
+                                  '${dotenv.env['SERVER_BASE_URL']}${userData['decorations']['mountains'][userData['progress']['level'] - 1]}',
+                              onClosed: () {
+                                setState(() {
+                                  _futureUserData = fetchUserData();
+                                });
+                              },
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ),
               ),
+              // White container that covers the bottom half of the screen
+              // It contains the user's information, achievements, and other details
+              // The container has a rounded top with a border radius
+              // It also has a scrollbar and a single child scroll view to allow scrolling
               Positioned(
                 left: 0,
                 top: screenHeight * 0.3,
@@ -192,6 +258,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.all(28.0),
                         child: Column(
                           children: [
+                            // User's name and username
+                            // Follow/unfollow button if viewing another user's profile
                             Row(
                               children: [
                                 userData['user']['first_name'] != null
@@ -245,8 +313,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ),
                                       child: Text(
                                         !_isFollowing
-                                            ? "Suivre"
-                                            : "Ne plus suivre",
+                                            ? t.profile.follow
+                                            : t.profile.unfollow,
                                         style: TextStyle(
                                           fontSize: 14,
                                           color: Colors.white,
@@ -260,13 +328,16 @@ class _ProfilePageState extends State<ProfilePage> {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 // "Membre depuis ${userData['user']['date_joined'].substring(0, 7)}",
-                                "Membre depuis ${_formatDate(userData['user']['date_joined'])}",
+                                t.profile.member_since(
+                                    date: _formatDate(
+                                        userData['user']['date_joined'])),
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Color.fromARGB(255, 120, 119, 111),
                                 ),
                               ),
                             ),
+                            // Follower and following count
                             Row(
                               children: [
                                 Text(
@@ -276,7 +347,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Padding(
                                   padding: EdgeInsets.only(left: 4.0),
                                   child: Text(
-                                    "abonnés",
+                                    t.profile.followers,
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Color.fromARGB(255, 120, 119, 111),
@@ -293,7 +364,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Padding(
                                   padding: EdgeInsets.only(left: 4.0),
                                   child: Text(
-                                    "abonnements",
+                                    t.profile.following,
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Color.fromARGB(255, 120, 119, 111),
@@ -303,12 +374,14 @@ class _ProfilePageState extends State<ProfilePage> {
                               ],
                             ),
                             const SizedBox(height: 20),
+                            // Row with the user's level, day streak, and cities finished
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    showLevelProgressionPopup(context, userData['decorations']['mountains']);
+                                    showLevelProgressionPopup(context,
+                                        userData['decorations']['mountains']);
                                   },
                                   child: ExperienceCircle(
                                     currentXP: (userData['progress']
@@ -343,11 +416,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                 _buildDivider(),
                                 _buildInfoSection(
                                   const Icon(Icons.flag_rounded, size: 24),
-                                  "${userData['progress']['cities_finished']}\nVilles finies",
+                                  "${userData['progress']['cities_finished']}\n${t.profile.cities_finished}",
                                 ),
                               ],
                             ),
                             const SizedBox(height: 30),
+                            // Graph showing the last 7 days of exercises
                             Container(
                               height: screenHeight * 0.2,
                               decoration: const BoxDecoration(
@@ -365,6 +439,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                             ),
                             const SizedBox(height: 10),
+                            // Legend for the graph
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -383,9 +458,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          const Flexible(
+                                          Flexible(
                                             child: Text(
-                                              "Nombre d'exercices faits",
+                                              t.profile.nb_exercises_done_title,
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 color: Color(0XFF1D1B20),
@@ -409,9 +484,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          const Flexible(
+                                          Flexible(
                                             child: Text(
-                                              "BPM (Battements par minute)",
+                                              t.profile.bpm_title,
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 color: Color(0XFF1D1B20),
@@ -456,14 +531,17 @@ class _ProfilePageState extends State<ProfilePage> {
                               ],
                             ),
                             const SizedBox(height: 20),
+                            // Achievements section
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                "Succès",
+                                t.profile.achievements,
                                 style: GoogleFonts.amaranth(fontSize: 36),
                               ),
                             ),
                             const SizedBox(height: 20),
+                            // Wrap widget to display achievements in a grid-like layout
+                            // Each achievement is displayed as a Success widget
                             Wrap(
                               spacing: 20,
                               runSpacing: 20,

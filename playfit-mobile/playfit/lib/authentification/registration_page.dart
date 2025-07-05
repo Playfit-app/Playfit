@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/services/auth_service.dart';
 import 'package:playfit/authentification/registration_step1.dart';
 import 'package:playfit/authentification/registration_step2.dart';
 import 'package:playfit/authentification/registration_step3.dart';
-import 'package:playfit/home_page.dart';
+import 'package:playfit/authentification/introduction_page.dart';
 import 'package:playfit/authentification/login_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -28,7 +29,8 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   final TextEditingController _weightController = TextEditingController();
   bool isConsentGiven = false;
   bool isMarketingConsentGiven = false;
-  int selectedCharacter = 0;
+  String? selectedCharacter;
+  List<String>? introductionCharacters;
   final AuthService authService = AuthService();
   int _currentStep = 0;
   bool _isStep1Valid = false;
@@ -64,6 +66,10 @@ class CreateAccountPageState extends State<CreateAccountPage> {
     });
   }
 
+  /// Handles the account creation process by calling the `register` method of `authService`
+  /// with the user's input data. If registration is successful, navigates to the
+  /// `IntroductionPage` with the selected introduction characters. Otherwise, displays
+  /// an error message using a `SnackBar`.
   void _createAccount() async {
     var result = await authService.register(
       context,
@@ -82,7 +88,9 @@ class CreateAccountPageState extends State<CreateAccountPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => HomePage(firstLogin: true)),
+            builder: (context) => IntroductionPage(
+              images: introductionCharacters ?? [],
+            )),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -110,6 +118,16 @@ class CreateAccountPageState extends State<CreateAccountPage> {
     });
   }
 
+  /// Builds the registration page UI with a multi-step registration form.
+  ///
+  /// The page consists of a background image with a mascot, and an animated
+  /// container that slides up when the keyboard is visible. The registration
+  /// process is divided into three steps:
+  ///
+  /// A progress indicator and navigation buttons are provided to guide the user
+  /// through the steps. The "Next" or "Create Account" button is only enabled
+  /// when the current step's form is valid. The user can also navigate back to
+  /// the previous step or to the login page.
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -157,7 +175,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                 child: Column(
                   children: [
                     Text(
-                      'Créer un compte',
+                      t.register.title,
                       style: GoogleFonts.amaranth(
                         fontSize: 36,
                         color: Colors.black,
@@ -208,45 +226,48 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                       Form(
                         key: _step3FormKey,
                         child: RegistrationStep3(
-                          onPageChanged: (value) {
+                          onPageChanged: (character, introductionCharacters) {
                             setState(() {
-                              selectedCharacter = value;
+                              selectedCharacter = character;
+                              this.introductionCharacters = introductionCharacters;
                             });
                           },
                         ),
                         onChanged: () => _validateStep(_step3FormKey),
                       ),
                     SizedBox(height: screenHeight * 0.02),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_currentStep == 0 && _isStep1Valid) {
-                          _nextStep();
-                        } else if (_currentStep == 1 && _isStep2Valid) {
-                          _nextStep(); // Move to Step 3 instead of creating an account
-                        } else if (_currentStep == 2) {
-                          _createAccount(); // Create account on Step 3 submission
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 248, 135, 31),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100.0),
+                    // Hide the button below if the _currentStep is 2 and selectedCharacter is null
+                    if (_currentStep != 2 || selectedCharacter != null)
+                      ElevatedButton(
+                        onPressed: () {
+                          if (_currentStep == 0 && _isStep1Valid) {
+                            _nextStep();
+                          } else if (_currentStep == 1 && _isStep2Valid) {
+                            _nextStep(); // Move to Step 3 instead of creating an account
+                          } else if (_currentStep == 2) {
+                            _createAccount(); // Create account on Step 3 submission
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(255, 248, 135, 31),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100.0),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 50, vertical: 15),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 50, vertical: 15),
+                        child: Text(
+                          _currentStep < 2 ? t.register.next : t.register.create_account,
+                          style:
+                              const TextStyle(fontSize: 14, color: Colors.white),
+                        ),
                       ),
-                      child: Text(
-                        _currentStep < 2 ? 'Suivant' : 'Créer mon compte',
-                        style:
-                            const TextStyle(fontSize: 14, color: Colors.white),
-                      ),
-                    ),
                     if (_currentStep > 0)
                       TextButton(
                         onPressed: _previousStep,
-                        child: const Text(
-                          'Précédent',
+                        child: Text(
+                          t.register.previous,
                           style: TextStyle(color: Colors.blueAccent),
                         ),
                       ),
@@ -256,8 +277,8 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                         MaterialPageRoute(
                             builder: (context) => const LoginPage()),
                       ),
-                      child: const Text(
-                        'Déjà un compte ? Connectez-vous !',
+                      child: Text(
+                        t.register.already_have_account,
                         style: TextStyle(color: Colors.blueAccent),
                       ),
                     ),

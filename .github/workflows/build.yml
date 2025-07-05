@@ -1,46 +1,89 @@
 name: Build
 
 on:
-  workflow_run:
-    workflows: ["Integration tests"]
-    types:
-      - completed
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The git reference to build'
+        required: true
+        type: string
+    secrets:
+      FLUTTER_GOOGLE_SERVICES:
+        description: 'Base64 encoded Google Services credentials JSON'
+        required: true
+      FLUTTER_GOOGLE_CLIENT_ID:
+        description: 'Google Client ID for Flutter'
+        required: true
+      KEYSTORE_BASE64:
+        description: 'Base64 encoded keystore file'
+        required: true
+      KEYSTORE_PASSWORD:
+        description: 'Password for the keystore'
+        required: true
+      KEY_PASSWORD:
+        description: 'Password for the key in the keystore'
+        required: true
+      KEY_ALIAS:
+        description: 'Alias for the key in the keystore'
+        required: true
+      GH_PAT:
+        description: 'GitHub Personal Access Token for creating releases'
+        required: true
 
 jobs:
-    build_flutter_android:
-        name: Build Flutter Android
-        runs-on: ubuntu-latest
-        if: github.event.workflow_run.conclusion == 'success'
-        steps:
-            - uses: actions/checkout@v4
-            - name: Set up Flutter
-              uses: subosito/flutter-action@v2
-              with:
-                flutter-version: 3.19.0
-                # optional parameters follow
-                cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
-                cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-                pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
-                pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-            - run: flutter pub get
-            - run: flutter build apk
-            - run: flutter build appbundle
-        
-    # build_flutter_ios:
-    #     name: Build Flutter iOS
-    #     runs-on: macos-latest
-    #     if: github.event.workflow_run.conclusion == 'success'
-    #     steps:
-    #         - uses: actions/checkout@v4
-    #         - name: Set up Flutter
-    #           uses: subosito/flutter-action@v2
-    #           with:
-    #             channel: stable
-    #             cache: true
-    #             # optional parameters follow
-    #             cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
-    #             cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-    #             pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
-    #             pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
-    #         - run: flutter pub get
-    #         - run: flutter build ios --release --no-codesign
+  android:
+    uses: ./.github/workflows/build_android.yml
+    with:
+      ref: ${{ inputs.ref }}
+    secrets:
+      FLUTTER_GOOGLE_SERVICES: ${{ secrets.FLUTTER_GOOGLE_SERVICES }}
+      FLUTTER_GOOGLE_CLIENT_ID: ${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      GH_PAT: ${{ secrets.GH_PAT }}
+
+  # ios:
+  #   uses: ./.github/workflows/build_ios.yml
+
+  release:
+    name: Create GitHub Release
+    # needs: [android, ios]
+    needs: android
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+      - name: Generate Tag
+        id: tag
+        run: |
+          # Récupérer le dernier tag du type vX.Y
+          LAST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+$' | head -n 1)
+          echo "Dernier tag trouvé: $LAST_TAG"
+
+          if [ -z "$LAST_TAG" ]; then
+            MAJOR=1
+            MINOR=0
+          else
+            MAJOR=$(echo "$LAST_TAG" | cut -d'.' -f1 | tr -d 'v')
+            MINOR=$(echo "$LAST_TAG" | cut -d'.' -f2)
+            MINOR=$((MINOR + 1))
+          fi
+
+          NEW_TAG="v$MAJOR.$MINOR"
+          echo "Nouveau tag: $NEW_TAG"
+          echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
+          echo "name=Release $NEW_TAG" >> $GITHUB_OUTPUT
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.name }}
+          token: ${{ secrets.GH_PAT }}
+          artifacts: |
+            ./artifacts/android-build/**/*.apk,
+            ./artifacts/android-build/**/*.aab
+          # ./artifacts/ios-build/ios_build.tar.gz

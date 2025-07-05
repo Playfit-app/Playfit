@@ -11,7 +11,8 @@ from social.models import (
     CityDecorationImage,
     MountainDecorationImage,
     BaseCharacter,
-    CustomizationItem,
+    IntroductionCharacter,
+    # CustomizationItem,
 )
 from workout.models import Exercise
 
@@ -65,9 +66,10 @@ def get_sorted_files(path: str, sort_order: list[str] = []) -> list[str]:
     The sorting is done based on the labels extracted from the file names.
     """
     files = [
-        os.path.join(path, f)
-        for f in os.listdir(path)
-        if is_valid_file(os.path.join(path, f))
+        os.path.join(root, filename)
+        for root, _, filenames in os.walk(path)
+        for filename in filenames
+        if is_valid_file(os.path.join(root, filename))
     ]
     return sorted(files, key=lambda f: sort_order.index(f) if f in sort_order else float("inf"))
 
@@ -99,6 +101,7 @@ class Command(BaseCommand):
         self.create_cities()
         self.stdout.write(self.style.NOTICE("Setting up images..."))
         self.create_base_characters(path)
+        self.create_introduction_characters(path)
         self.create_mountain_decorations(path)
         self.create_exercises(path)
         self.create_city_decorations(path)
@@ -134,13 +137,18 @@ class Command(BaseCommand):
         Create countries in the database.
         """
         countries = [
-            ("France", "Europe"),
+            ("France", "Europe", "#C5DEFA"),
+            ("Italy", "Europe", "#FFE9CA"),
         ]
 
         self.stdout.write(self.style.NOTICE("Creating countries..."))
-        for country_name, continent_name in countries:
+        for country_name, continent_name, country_color in countries:
             continent = Continent.objects.get(name=continent_name)
-            country_obj, created = Country.objects.get_or_create(name=country_name, continent=continent)
+            country_obj, created = Country.objects.get_or_create(
+                name=country_name,
+                color=country_color,
+                continent=continent
+            )
             if created:
                 self.stdout.write(self.style.SUCCESS(f"Created country: {country_obj.name}"))
             else:
@@ -152,14 +160,16 @@ class Command(BaseCommand):
         Create cities in the database.
         """
         cities = [
-            ("Paris", "France", 1),
-            ("Lyon", "France", 2),
+            ("Paris", "France", 1, 6),
+            ("Lyon", "France", 2, 6),
+            ("Milan", "Italy", 1, 5),
+            ("Rome", "Italy", 2, 5),
         ]
 
         self.stdout.write(self.style.NOTICE("Creating cities..."))
-        for city_name, country_name, order in cities:
+        for city_name, country_name, order, max_level in cities:
             country = Country.objects.get(name=country_name)
-            city_obj, created = City.objects.get_or_create(name=city_name, country=country, order=order)
+            city_obj, created = City.objects.get_or_create(name=city_name, country=country, order=order, max_level=max_level)
             if created:
                 self.stdout.write(self.style.SUCCESS(f"Created city: {city_obj.name}"))
             else:
@@ -197,6 +207,33 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.SUCCESS(f"Created decoration image: {decoration_image.label}"))
                 else:
                     self.stdout.write(self.style.WARNING(f"Decoration image already exists: {decoration_image.label}"))
+
+            elif os.path.isdir(full_path) and "countries" in full_path:
+                for country_name in os.listdir(full_path):
+                    country_path = os.path.join(full_path, country_name)
+                    if not is_valid_directory(country_path):
+                        continue
+
+                    for image_file in os.listdir(country_path):
+                        image_path = os.path.join(country_path, image_file)
+                        if is_valid_file(image_path):
+                            label = get_label_from_path(image_file)
+                            label_with_extension = get_label_from_path(image_file, extension=True)
+
+                            try:
+                                decoration_image = DecorationImage.objects.get(label=label)
+                                created = False
+                            except DecorationImage.DoesNotExist:
+                                decoration_image = DecorationImage(label=label)
+                                decoration_image.image.save(label_with_extension, File(open(image_path, "rb")))
+                                decoration_image.save()
+                                created = True
+
+                            if created:
+                                self.stdout.write(self.style.SUCCESS(f"Created decoration image: {decoration_image.label}"))
+                            else:
+                                self.stdout.write(self.style.WARNING(f"Decoration image already exists: {decoration_image.label}"))
+
         self.stdout.write(self.style.SUCCESS("All decoration images created."))
 
     def create_mountain_decorations(self, base_path: str) -> None:
@@ -255,7 +292,6 @@ class Command(BaseCommand):
                 created = False
             except BaseCharacter.DoesNotExist:
                 base_character_image = BaseCharacter(name=name)
-                print(f"Creating base character image: {name} at {image_path}")
                 base_character_image.image.save(name_with_extension, File(open(image_path, "rb")))
                 base_character_image.save()
                 created = True
@@ -265,6 +301,46 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING(f"Base character image already exists: {base_character_image.name}"))
         self.stdout.write(self.style.SUCCESS("All base character images created."))
+
+    def create_introduction_characters(self, base_path: str) -> None:
+        """
+        Create introduction character images in the database.
+        """
+        self.stdout.write(self.style.NOTICE("Creating introduction character images..."))
+        introduction_characters_path = os.path.join(base_path, "introduction_characters")
+
+        if not is_valid_directory(introduction_characters_path):
+            self.stderr.write(self.style.ERROR(f"Introduction characters path {introduction_characters_path} does not exist or is not a directory."))
+            return
+
+        sort_order = read_sort_order(os.path.join(introduction_characters_path, "sort_order.txt"))
+        sorted_files = get_sorted_files(introduction_characters_path, sort_order=sort_order)
+
+        for image_path in sorted_files:
+            name = get_label_from_path(image_path)
+            name_with_extension = get_label_from_path(image_path, extension=True)
+
+            # Get BaseCharacter by name. Create an IntroductionCharacter if it does not exist.
+            try:
+                name_for_base_character = name if "-sit" not in name else name.replace("-sit", "")
+                base_character = BaseCharacter.objects.get(name=name_for_base_character)
+                introduction_character = IntroductionCharacter.objects.get(base_character=base_character, name=name)
+                created = False
+            except BaseCharacter.DoesNotExist:
+                # Print an error if the base character does not exist and skip the image.
+                self.stderr.write(self.style.ERROR(f"Base character {name} does not exist. Skipping introduction character image."))
+                continue
+            except IntroductionCharacter.DoesNotExist:
+                introduction_character = IntroductionCharacter(base_character=base_character, name=name)
+                introduction_character.image.save(name_with_extension, File(open(image_path, "rb")))
+                introduction_character.save()
+                created = True
+
+            if created:
+                self.stdout.write(self.style.SUCCESS(f"Created introduction character image: {introduction_character.name}"))
+            else:
+                self.stdout.write(self.style.WARNING(f"Introduction character image already exists: {introduction_character.name}"))
+        self.stdout.write(self.style.SUCCESS("All introduction character images created."))
 
     def create_exercises(self, base_path: str) -> None:
         """

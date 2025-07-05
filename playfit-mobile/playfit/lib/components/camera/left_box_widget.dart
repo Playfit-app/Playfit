@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/// A widget that displays a left-aligned information box containing:
+/// - The elapsed time with a timer icon.
+/// - The current count and target count with a fitness icon.
+/// - A mascot image at the bottom.
 class LeftBoxWidget extends StatelessWidget {
   final Duration elapsedTime;
   final int count;

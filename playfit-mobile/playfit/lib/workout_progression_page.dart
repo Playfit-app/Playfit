@@ -1,5 +1,8 @@
 import 'dart:ui' as ui;
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:playfit/camera_page.dart';
 import 'package:playfit/components/level_cinematic/character.dart';
 import 'package:playfit/components/level_cinematic/difficulty.dart';
@@ -15,6 +18,10 @@ class WorkoutProgressionPage extends StatefulWidget {
   final Map<String, List<dynamic>> workoutSessionExercises;
   final int currentExerciseIndex;
   final Map<String, String?> characterImages;
+  final String city;
+  final int level;
+  final BoxType boxType;
+
 
   const WorkoutProgressionPage({
     super.key,
@@ -24,6 +31,9 @@ class WorkoutProgressionPage extends StatefulWidget {
     required this.workoutSessionExercises,
     required this.currentExerciseIndex,
     required this.characterImages,
+    required this.boxType,
+    required this.city,
+    required this.level,
     this.transition = false,
   });
 
@@ -33,6 +43,7 @@ class WorkoutProgressionPage extends StatefulWidget {
 
 class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
     with SingleTickerProviderStateMixin {
+  final FlutterSecureStorage storage = const FlutterSecureStorage();
   late AnimationController _controller;
   late Animation<double> _animation;
   late List<Offset> points;
@@ -58,7 +69,34 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
     ];
   }
 
-  void _onAnimationComplete() {
+  /// Completes the workout session by sending a PATCH request to the server with the difficulty level.
+  ///
+  /// `difficulty` is a string representing the difficulty level of the workout session.
+  ///
+  /// Returns a [Future] that completes when the request is done.
+  Future<void> completeWorkoutSession(String difficulty) async {
+    final String baseUrl = '${dotenv.env['SERVER_BASE_URL']}/api/workout';
+    final String? token = await storage.read(key: 'token');
+
+    final response = await http
+        .patch(Uri.parse('$baseUrl/update_workout_session/'), headers: {
+      'Authorization': 'Token $token',
+    }, body: {
+      'difficulty': difficulty,
+    });
+
+    if (response.statusCode == 200) {
+    } else {
+      print("Can't update workout session");
+    }
+  }
+
+  /// Handles the completion of the animation by checking if the user has reached the last exercise.
+  /// If so, it completes the workout session and navigates to the home page.
+  ///
+  /// If the user has not reached the last exercise, it navigates to the CameraView page
+  /// with the appropriate parameters.
+  void _onAnimationComplete() async {
     String difficulty = "";
     switch (widget.difficulty) {
       case Difficulty.easy:
@@ -73,13 +111,18 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
     }
     if (widget.startingPoint ==
         widget.workoutSessionExercises[difficulty]!.length - 1) {
-      Navigator.of(context).pushReplacement(
+      await completeWorkoutSession(difficulty);
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context) => HomePage(
-            completedDifficulty: difficulty,
+          builder: (_) => HomePage(
+
+            // completedDifficulty: difficulty,
             workoutDone: true,
+            landmarkUrl: widget.images[3],
           ),
         ),
+        (Route<dynamic> route) => false,
       );
       return;
     }
@@ -87,7 +130,7 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
 
     imageUrl = "/media${imageUrl.split('/media').last}";
 
-    Navigator.of(context).pushReplacement(
+    Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => CameraView(
           difficulty: difficulty,
@@ -95,6 +138,9 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
           landmarkImageUrl: imageUrl,
           workoutSessionExercises: widget.workoutSessionExercises,
           characterImages: widget.characterImages,
+          boxType: widget.boxType,
+          city: widget.city,
+          level: widget.level,
         ),
       ),
     );
@@ -108,11 +154,7 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
 
   @override
   Widget build(BuildContext context) {
-    final scale = Offset(
-      MediaQuery.of(context).size.width / 411,
-      MediaQuery.of(context).size.height / 831,
-    );
-
+    // Ensure that the images are loaded before proceeding
     return FutureBuilder(
       future: Future.wait(
         widget.images.map((image) {
@@ -148,14 +190,11 @@ class _WorkoutProgressionPageState extends State<WorkoutProgressionPage>
             children: [
               RepaintBoundary(
                 child: CustomPaint(
-                  size: Size(
-                    MediaQuery.of(context).size.width,
-                    MediaQuery.of(context).size.height,
-                  ),
+                  size: MediaQuery.of(context).size,
                   painter: WorkoutProgressionPainter(
                     widget.difficulty,
                     images,
-                    scale,
+                    MediaQuery.of(context).size,
                     widget.transition,
                   ),
                 ),

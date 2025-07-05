@@ -1,0 +1,55 @@
+name: Integration tests
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The git reference to run integration tests on'
+        required: true
+        type: string
+    secrets:
+      DJANGO_SECRET_KEY:
+        description: 'Django secret key'
+        required: true
+      DJANGO_CRYPTOGRAPHY_KEY:
+        description: 'Django cryptography key'
+        required: true
+      DJANGO_EMAIL_HOST_USER:
+        description: 'Django email host user'
+        required: true
+      DJANGO_EMAIL_HOST_PASSWORD:
+        description: 'Django email host password'
+        required: true
+      DJANGO_FCM_API_KEY:
+        description: 'Django FCM API key'
+        required: true
+      DJANGO_GOOGLE_APPLICATION_CREDENTIALS:
+        description: 'Base64 encoded Google application credentials JSON'
+        required: true
+      FLUTTER_GOOGLE_SERVICES:
+        description: 'Base64 encoded Google Services credentials JSON for Flutter'
+        required: true
+      FLUTTER_GOOGLE_CLIENT_ID:
+        description: 'Google Client ID for Flutter'
+        required: true
+
+jobs:
+  django_tests:
+    uses: ./.github/workflows/django_test.yml
+    with:
+      ref: ${{ inputs.ref }}
+    secrets:
+      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      DJANGO_CRYPTOGRAPHY_KEY: ${{ secrets.DJANGO_CRYPTOGRAPHY_KEY }}
+      DJANGO_EMAIL_HOST_USER: ${{ secrets.DJANGO_EMAIL_HOST_USER }}
+      DJANGO_EMAIL_HOST_PASSWORD: ${{ secrets.DJANGO_EMAIL_HOST_PASSWORD }}
+      DJANGO_FCM_API_KEY: ${{ secrets.DJANGO_FCM_API_KEY }}
+      DJANGO_GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.DJANGO_GOOGLE_APPLICATION_CREDENTIALS }}
+
+  flutter_tests:
+    uses: ./.github/workflows/flutter_test.yml
+    with:
+      ref: ${{ inputs.ref }}
+    secrets:
+      FLUTTER_GOOGLE_SERVICES: ${{ secrets.FLUTTER_GOOGLE_SERVICES }}
+      FLUTTER_GOOGLE_CLIENT_ID: ${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}

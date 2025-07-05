@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:playfit/i18n/strings.g.dart';
 
 class CustomTabBar extends StatefulWidget {
   final Map<String, List<dynamic>> workoutSessionExercises;
@@ -29,6 +30,12 @@ class _CustomTabBarState extends State<CustomTabBar>
     _exercises.addAll(_groupExercises());
   }
 
+  /// Groups workout session exercises by difficulty and arranges them into rows.
+  ///
+  /// For each difficulty level ('beginner', 'intermediate', 'advanced'), this method:
+  /// - Iterates through the exercises.
+  /// - Places each "jumpingJack" exercise in its own row.
+  /// - Groups other exercises into rows of up to two exercises each.
   Map<String, List<List<Map<String, dynamic>>>> _groupExercises() {
     Map<String, List<List<Map<String, dynamic>>>> groupedExercises = {
       'beginner': [],
@@ -66,6 +73,8 @@ class _CustomTabBarState extends State<CustomTabBar>
     }
   }
 
+  /// Builds a custom dialog widget containing a tab bar with three tabs ("Facile", "Moyen", "Difficile").
+  /// Each tab displays a different set of exercises based on the selected difficulty level.
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -77,18 +86,18 @@ class _CustomTabBarState extends State<CustomTabBar>
             children: [
               _buildTab(
                 0,
-                'Facile',
+                t.workout.easy,
                 const Color.fromARGB(255, 187, 255, 137),
                 isFirst: true,
               ),
               _buildTab(
                 1,
-                'Moyen',
+                t.workout.medium,
                 const Color.fromARGB(255, 255, 214, 110),
               ),
               _buildTab(
                 2,
-                'Difficile',
+                t.workout.hard,
                 const Color.fromARGB(255, 255, 124, 124),
                 isLast: true,
               ),

@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from authentification.models import UserAchievement, UserProgress
-from social.models import WorldPosition
+from social.models import WorldPosition, Notification, Post
+from social.utils import send_notification
 from .models import WorkoutSession, Exercise, WorkoutSessionExercise
 from .serializers import (
     WorkoutSessionSerializer,
@@ -43,9 +44,7 @@ class ExerciseView(APIView):
 
         return Response([{
             "name": exercise.name,
-            "description": exercise.description,
-            "video_url": exercise.video_url,
-            "difficulty": exercise.difficulty
+            "image": exercise.image.url if exercise.image else None,
         } for exercise in exercises], status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -54,16 +53,12 @@ class ExerciseView(APIView):
 
         exercise = Exercise.objects.create(
             name=request.data["name"],
-            description=request.data["description"],
-            video_url=request.data.get("video_url"),
-            difficulty=request.data["difficulty"]
+            image=request.data["image"],
         )
 
         return Response({
             "name": exercise.name,
-            "description": exercise.description,
-            "video_url": exercise.video_url,
-            "difficulty": exercise.difficulty
+            "image": exercise.image.url if exercise.image else None,
         }, status=status.HTTP_201_CREATED)
 
 class WorkoutSessionsView(APIView):
@@ -104,7 +99,7 @@ class WorkoutSessionsView(APIView):
                     "difficulty": workout_session_exercise.difficulty,
                 })
             data.append({
-                "date": workout_session.date,
+                "date": workout_session.creation_date,
                 "duration": workout_session.duration,
                 "exercises": exercises
             })
@@ -165,6 +160,34 @@ class WorkoutSessionsView(APIView):
             for achievement in user_achievements:
                 achievement.update_progress(workout_session)
 
+        # Create a post for the workout session
+        post = Post.objects.create(
+            user=request.user,
+            content=f"I just completed level {wp.city_level} workout session in {wp.city.name if wp.is_in_city() else f'transition from {wp.transition_from.name} to {wp.transition_to.name}'} with difficulty {difficulty}!",
+        )
+
+        # Send notification to the followers of the user
+        followers = list(request.user.get_followers())
+        notifications = [
+            Notification(
+                user=follower,
+                sender=request.user,
+                notification_type="post",
+                post=post,
+            )
+            for follower in followers
+        ]
+        Notification.objects.bulk_create(notifications)
+        for follower in followers:
+            send_notification(follower, {
+                'id': notifications[followers.index(follower)].id,
+                'sender': request.user.username,
+                'notification_type': notifications[followers.index(follower)].notification_type,
+                'created_at': notifications[followers.index(follower)].created_at.isoformat(),
+                'post': post.id,
+                'seen': notifications[followers.index(follower)].seen,
+            })
+
         return Response("Workout session updated successfully", status=status.HTTP_200_OK)
 
 class WorkoutSessionExerciseView(APIView):
@@ -205,7 +228,7 @@ class WorkoutSessionExerciseView(APIView):
                 for exercise in exercises:
                     WorkoutSessionExercise.objects.create(
                         workout_session=workout_session,
-                        exercise=Exercise.objects.get(name=exercise),
+                        exercise=Exercise.objects.get(name__iexact=exercise),
                         sets=1,
                         repetitions=3 if exercise == 'pushUp' else 10 if exercise == 'squat' else 15,
                         weight=0,
@@ -213,7 +236,7 @@ class WorkoutSessionExerciseView(APIView):
                     )
                     WorkoutSessionExercise.objects.create(
                         workout_session=workout_session,
-                        exercise=Exercise.objects.get(name=exercise),
+                        exercise=Exercise.objects.get(name__iexact=exercise),
                         sets=1,
                         repetitions=7 if exercise == 'pushUp' else 15 if exercise == 'squat' else 25,
                         weight=0,
@@ -221,7 +244,7 @@ class WorkoutSessionExerciseView(APIView):
                     )
                     WorkoutSessionExercise.objects.create(
                         workout_session=workout_session,
-                        exercise=Exercise.objects.get(name=exercise),
+                        exercise=Exercise.objects.get(name__iexact=exercise),
                         sets=1,
                         repetitions=15 if exercise == 'pushUp' else 30 if exercise == 'squat' else 50,
                         weight=0,

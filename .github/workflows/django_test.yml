@@ -1,0 +1,63 @@
+name: Django Test Pipeline
+
+on:
+    workflow_call:
+        inputs:
+            ref:
+                description: 'The git reference to run Django tests on'
+                required: true
+                type: string
+        secrets:
+            DJANGO_SECRET_KEY:
+                description: 'Django secret key'
+                required: true
+            DJANGO_CRYPTOGRAPHY_KEY:
+                description: 'Django cryptography key'
+                required: true
+            DJANGO_EMAIL_HOST_USER:
+                description: 'Django email host user'
+                required: true
+            DJANGO_EMAIL_HOST_PASSWORD:
+                description: 'Django email host password'
+                required: true
+            DJANGO_FCM_API_KEY:
+                description: 'Django FCM API key'
+                required: true
+            DJANGO_GOOGLE_APPLICATION_CREDENTIALS:
+                description: 'Base64 encoded Google application credentials JSON'
+                required: true
+
+jobs:
+    django_tests:
+        name: Run Django tests
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                ref: ${{ inputs.ref }}
+            - name: Set up Python
+              uses: actions/setup-python@v2
+              with:
+                python-version: 3.11
+            - name: Install dependencies
+              run: pip install -r requirements.txt
+              working-directory: ./backend
+            - name: Decode Google credentials
+              run: echo "${{ secrets.DJANGO_GOOGLE_APPLICATION_JSON }}" | base64 --decode > serviceAccountKey.json
+              working-directory: ./backend/playfit
+            - name: Set environment variables
+              run: |
+                echo "SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> .env
+                echo "DEBUG=${{ vars.DJANGO_DEBUG }}" >> .env
+                echo "CRYPTOGRAPHY_KEY=${{ secrets.DJANGO_CRYPTOGRAPHY_KEY }}" >> .env
+                echo "EMAIL_HOST_USER=${{ secrets.DJANGO_EMAIL_HOST_USER }}" >> .env
+                echo "EMAIL_HOST_PASSWORD=${{ secrets.DJANGO_EMAIL_HOST_PASSWORD }}" >> .env
+                echo "REDIS_HOST=${{ vars.DJANGO_REDIS_HOST }}" >> .env
+                echo "REDIS_PORT=${{ vars.DJANGO_REDIS_PORT }}" >> .env
+                echo "REDIS_DB=${{ vars.DJANGO_REDIS_DB }}" >> .env
+                echo "FCM_API_KEY=${{ secrets.DJANGO_FCM_API_KEY }}" >> .env
+                echo "GOOGLE_APPLICATION_CREDENTIALS=serviceAccountKey.json" >> .env
+              working-directory: ./backend/playfit
+            - name: Run tests
+              run: python manage.py test
+              working-directory: ./backend/playfit

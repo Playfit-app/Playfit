@@ -26,6 +26,7 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
   int _selectedSkinIndex = 0;
   int _selectedOutfitIndex = 0;
   final _totalSteps = 3;
+  Future<Map<String, dynamic>>? _imagesFuture;
 
   /// Fetches character images from the server for the registration process.
   Future<Map<String, dynamic>> fetchImages() async {
@@ -127,11 +128,18 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
     return introductionImages;
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _imagesFuture = fetchImages();
+  }
+
+
   /// Builds the widget tree for the registration step 3 screen.
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: fetchImages(),
+        future: _imagesFuture,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());

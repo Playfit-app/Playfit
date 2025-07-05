@@ -2,10 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/level_cinematic/difficulty.dart';
+import 'package:playfit/services/tts_service.dart';
+import 'package:playfit/services/workout_timer_service.dart';
 import 'package:playfit/workout_analyzer.dart';
 import 'package:playfit/image_converter.dart';
 import 'package:playfit/components/camera/left_box_widget.dart';
@@ -45,10 +46,10 @@ class _CameraViewState extends State<CameraView> {
   CameraController? _controller;
   bool _isDetecting = false;
   final WorkoutAnalyzer _workoutAnalyzer = WorkoutAnalyzer();
-  Timer? _timer;
-  Duration _elapsedTime = Duration.zero;
+  WorkoutTimerService _workoutTimerService = WorkoutTimerService();
   late WorkoutType _workoutType;
   late String _exerciseName;
+  late Duration _elapsedTime;
 
   int _count = 0;
   late int _targetCount;
@@ -57,7 +58,7 @@ class _CameraViewState extends State<CameraView> {
   int _celebrationCountdown = 5;
   Timer? _celebrationTimer;
   bool _celebrationStarted = false;
-  late FlutterTts flutterTts;
+  late FlutterTts _flutterTts;
 
   /// Converts a workout name to a [WorkoutType].
   /// This method maps the name of the workout to its corresponding enum value.
@@ -85,13 +86,21 @@ class _CameraViewState extends State<CameraView> {
   void initState() {
     super.initState();
 
+    _elapsedTime = _workoutTimerService.elapsed;
+    _workoutTimerService.onTick = (elapsed) {
+      if (mounted) {
+        setState(() {
+          _elapsedTime = elapsed;
+        });
+      }
+    };
     final exercise = widget.workoutSessionExercises[widget.difficulty]![
         widget.currentExerciseIndex];
     _workoutType = workoutTypeFromName(exercise['name']);
     _targetCount = exercise['repetitions'];
     _exerciseName = exercise['name'];
-    flutterTts = FlutterTts();
-    _configureTts();
+    _flutterTts = FlutterTts();
+    configureTtsLanguage(_flutterTts);
 
     initCamera();
     // Listen for changes in workout counts to update the count and trigger announcements
@@ -111,38 +120,18 @@ class _CameraViewState extends State<CameraView> {
     });
   }
 
-  /// Configures the Text-to-Speech (TTS) settings.
-  /// This method sets the language, pitch, and speech rate for the TTS engine.
-  ///
-  /// It reads the selected locale from secure storage and applies it.
-  /// If no locale is found, it defaults to French (fr-FR).
-  ///
-  /// Returns a [Future] that completes when the configuration is done.
-  Future<void> _configureTts() async {
-    final storage = const FlutterSecureStorage();
-    final selectedLocale = await storage.read(key: 'selected_locale');
-
-    if (selectedLocale != null) {
-      await flutterTts.setLanguage(selectedLocale);
-    } else {
-      await flutterTts.setLanguage('fr-FR');
-    }
-    await flutterTts.setPitch(1.0);
-    await flutterTts.setSpeechRate(0.5);
-  }
-
   /// Announces the current count or target count using Text-to-Speech (TTS).
   /// This method stops any ongoing speech and speaks the current count.
   /// If the count matches the target count, it announces a congratulatory message.
   ///
   /// Returns a [Future] that completes when the speech is done.
   Future<void> _announceCount() async {
-    await flutterTts.stop();
+    await _flutterTts.stop();
     if (_count == _targetCount) {
-      await flutterTts
+      await _flutterTts
           .speak("Bravo ! Tu as atteint $_targetCount répétitions.");
     } else {
-      await flutterTts.speak("$_count");
+      await _flutterTts.speak("$_count");
     }
   }
 
@@ -152,15 +141,7 @@ class _CameraViewState extends State<CameraView> {
   ///
   /// Returns a [void] that completes when the timer is started.
   void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      setState(() {
-        _elapsedTime += const Duration(seconds: 1);
-
-        if (_count == _targetCount) {
-          _showCelebration = true;
-        }
-      });
-    });
+    _workoutTimerService.start();
   }
 
   /// Initializes the camera and sets up the camera controller.
@@ -245,7 +226,8 @@ class _CameraViewState extends State<CameraView> {
   /// Returns a [void] that completes when the detection is stopped.
   void _stopDetecting() async {
     if (_controller != null && _controller!.value.isStreamingImages) {
-      _timer?.cancel();
+      // Stop the workout timer
+      _workoutTimerService.stop();
       await _controller!.stopImageStream();
       _isDetecting = false;
     }
@@ -344,9 +326,12 @@ class _CameraViewState extends State<CameraView> {
                 // Overlay when count hits the target
                 if (_showCelebration)
                   CelebrationOverlay(
-                      finalTime: _elapsedTime,
-                      city: widget.city,
-                      level: widget.level),
+                    finalTime: _workoutTimerService.elapsed,
+                    city: widget.city,
+                    level: widget.level,
+                    characterImages: widget.characterImages,
+                    difficulty: widget.difficulty,
+                  ),
                 if (_showCelebration && _celebrationCountdown > 0)
                   Positioned(
                     bottom: 40,
@@ -401,7 +386,8 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _workoutTimerService.onTick = null;
+    _workoutTimerService.stop();
     _celebrationTimer?.cancel();
     _workoutAnalyzer.dispose();
     if (_controller != null) {
@@ -410,7 +396,7 @@ class _CameraViewState extends State<CameraView> {
       }
       _controller!.dispose();
     }
-    flutterTts.stop();
+    _flutterTts.stop();
     super.dispose();
   }
 }

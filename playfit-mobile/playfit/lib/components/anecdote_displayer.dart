@@ -94,9 +94,7 @@ class AnecdoteDisplayer extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {
                     if (onClose != null) {
-                      print("ICIIIIIIIIIIIIIII onClose called");
                       onClose!();
-
                     }
                   },
                   style: ElevatedButton.styleFrom(

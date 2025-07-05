@@ -51,7 +51,6 @@ class _PostCardCommentInputState extends State<PostCardCommentInput> {
 
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
-      debugPrint("Comment added: $data");
       final newComment = {
         "id": data['id'],
         "content": content,

@@ -34,9 +34,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
-  late List<Widget> _pages;
   late int currentStreak;
   late Future<void> _userProgressFuture;
+  bool _anecdoteSeen = false;
 
   /// Fetches the user's progress from the server.
   /// This method retrieves the current streak of the user
@@ -74,24 +74,6 @@ class _HomePageState extends State<HomePage> {
     currentStreak = 0;
     _userProgressFuture = _fetchUserProgress();
 
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   if (widget.workoutDone) {
-    //     refreshStreakAfterWorkout();
-    //   }
-    // });
-
-    _pages = [
-      AdventurePage(
-        workoutDone: widget.workoutDone,
-        landmarkUrl: widget.landmarkUrl,
-        // moveCharacter: widget.workoutDone,
-        // completedDifficulty: widget.completedDifficulty,
-      ),
-      // const MissionsPage(),
-      // const BoutiquePage(),
-      const SocialPage(),
-      const ProfilePage(),
-    ];
     // Request notification permissions if it's the user's first login
     // and get the notification token.
     // This is useful for sending notifications about new missions or updates.
@@ -129,6 +111,25 @@ class _HomePageState extends State<HomePage> {
     final double paddingExtra    = 10;
     final double bottomInset     = MediaQuery.of(context).padding.bottom;
     final double clipHeight      = navBaseHeight + curvedClipExtra;
+
+    // Move _pages creation here so it always uses the latest _anecdoteSeen
+    final List<Widget> _pages = [
+      AdventurePage(
+        workoutDone: widget.workoutDone && !_anecdoteSeen,
+        landmarkUrl: widget.landmarkUrl,
+        onAnecdoteClosed: () {
+          setState(() {
+            _anecdoteSeen = true;
+          });
+        },
+        // moveCharacter: widget.workoutDone,
+        // completedDifficulty: widget.completedDifficulty,
+      ),
+      // const MissionsPage(),
+      // const BoutiquePage(),
+      const SocialPage(),
+      const ProfilePage(),
+    ];
 
     return Scaffold(
       extendBodyBehindAppBar: true,

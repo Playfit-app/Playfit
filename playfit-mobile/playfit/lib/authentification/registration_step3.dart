@@ -31,14 +31,7 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
   Future<Map<String, dynamic>> fetchImages() async {
     final String url =
         '${dotenv.env['SERVER_BASE_URL']}/api/social/get-character-images/?registration=true';
-    final String? token = await storage.read(key: 'token');
-
-    final response = await http.get(
-      Uri.parse(url),
-      // headers: {
-      //   'Authorization': 'Token $token',
-      // },
-    );
+    final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
       return json.decode(response.body);

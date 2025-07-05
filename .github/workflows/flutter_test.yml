@@ -1,7 +1,19 @@
 name: Flutter Test Pipeline
 
 on:
-    workflow_call: {}
+    workflow_call:
+        inputs:
+            ref:
+                description: 'The git reference to run Flutter tests on'
+                required: true
+                type: string
+        secrets:
+            FLUTTER_GOOGLE_SERVICES:
+                description: 'Base64 encoded Google Services credentials JSON for Flutter'
+                required: true
+            FLUTTER_GOOGLE_CLIENT_ID:
+                description: 'Google Client ID for Flutter'
+                required: true
 
 jobs:
     flutter_tests:

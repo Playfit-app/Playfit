@@ -33,6 +33,17 @@ on:
 jobs:
   android:
     uses: ./.github/workflows/build_android.yml
+    with:
+      ref: ${{ inputs.ref }}
+    secrets:
+      FLUTTER_GOOGLE_SERVICES: ${{ secrets.FLUTTER_GOOGLE_SERVICES }}
+      FLUTTER_GOOGLE_CLIENT_ID: ${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      GH_PAT: ${{ secrets.GH_PAT }}
+
   # ios:
   #   uses: ./.github/workflows/build_ios.yml
 

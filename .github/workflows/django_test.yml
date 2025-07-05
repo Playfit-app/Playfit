@@ -1,7 +1,31 @@
 name: Django Test Pipeline
 
 on:
-    workflow_call: {}
+    workflow_call:
+        inputs:
+            ref:
+                description: 'The git reference to run Django tests on'
+                required: true
+                type: string
+        secrets:
+            DJANGO_SECRET_KEY:
+                description: 'Django secret key'
+                required: true
+            DJANGO_CRYPTOGRAPHY_KEY:
+                description: 'Django cryptography key'
+                required: true
+            DJANGO_EMAIL_HOST_USER:
+                description: 'Django email host user'
+                required: true
+            DJANGO_EMAIL_HOST_PASSWORD:
+                description: 'Django email host password'
+                required: true
+            DJANGO_FCM_API_KEY:
+                description: 'Django FCM API key'
+                required: true
+            DJANGO_GOOGLE_APPLICATION_CREDENTIALS:
+                description: 'Base64 encoded Google application credentials JSON'
+                required: true
 
 jobs:
     django_tests:

@@ -364,25 +364,6 @@ class _AdventurePageState extends State<AdventurePage>
                   ),
                 ),
               ),
-              // White gradient at the top of the screen
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  height: MediaQuery.of(context).size.height * 0.3,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.white,
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
               if (workoutDone && widget.landmarkUrl != null)
                 Positioned(
                   child: AnecdoteDisplayer(
@@ -408,6 +389,20 @@ class _RoadPainter extends CustomPainter {
 
   _RoadPainter(this.roads);
 
+  void drawWhiteTopGradient(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomLeft,
+        colors: [
+          Colors.white,
+          Colors.white.withAlpha(0),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, 292));
+
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, 292), paint);
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     for (Road road in roads) {
@@ -417,6 +412,8 @@ class _RoadPainter extends CustomPainter {
     for (Road road in roads) {
       road.paint(canvas, size);
     }
+
+    drawWhiteTopGradient(canvas, size);
   }
 
   @override

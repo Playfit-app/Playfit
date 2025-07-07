@@ -326,7 +326,7 @@ class _CameraViewState extends State<CameraView> {
                 // Overlay when count hits the target
                 if (_showCelebration)
                   CelebrationOverlay(
-                    finalTime: _workoutTimerService.elapsed,
+                    finalTime: _elapsedTime,
                     city: widget.city,
                     level: widget.level,
                     characterImages: widget.characterImages,

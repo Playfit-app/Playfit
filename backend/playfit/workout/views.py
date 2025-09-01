@@ -82,7 +82,7 @@ class WorkoutSessionsView(APIView):
         workout_sessions: list[WorkoutSession] = []
 
         if "date" in request.GET:
-            workout_sessions = WorkoutSession.objects.filter(date=request.GET["date"])
+            workout_sessions = WorkoutSession.objects.filter(creation_date=request.GET["date"])
         else:
             workout_sessions = WorkoutSession.objects.all()
 
@@ -124,7 +124,7 @@ class WorkoutSessionsView(APIView):
             if wp.is_in_city():
                 workout_session = WorkoutSession.objects.get(user=request.user, city=wp.city, city_level=wp.city_level)
             elif wp.is_in_transition():
-                workout_session = WorkoutSession.objects.get(user=request.user, transition_from=wp.transition_from, transition_to=wp.transition_to, transition_level=wp.transition_level)
+                workout_session = WorkoutSession.objects.get(user=request.user, transition_from=wp.transition_from, transition_to=wp.transition_to)
 
         except WorkoutSession.DoesNotExist:
             return Response("Workout session not found", status=status.HTTP_404_NOT_FOUND)
@@ -207,7 +207,7 @@ class WorkoutSessionExerciseView(APIView):
             if wp.is_in_city():
                 workout_session = WorkoutSession.objects.get(user=request.user, city=wp.city, city_level=wp.city_level)
             elif wp.is_in_transition():
-                workout_session = WorkoutSession.objects.get(user=request.user, transition_from=wp.transition_from, transition_to=wp.transition_to, transition_level=wp.transition_level)
+                workout_session = WorkoutSession.objects.get(user=request.user, transition_from=wp.transition_from, transition_to=wp.transition_to)
 
         except WorkoutSession.DoesNotExist:
             pass
@@ -266,7 +266,7 @@ class WorkoutSessionExerciseView(APIView):
             exercise = workout_session_exercise.exercise
             data[workout_session_exercise.difficulty].append({
                 "name": exercise.name,
-                "image": exercise.image.url,
+                "image": exercise.image.url if exercise.image else None,
                 "sets": workout_session_exercise.sets,
                 "repetitions": workout_session_exercise.repetitions,
                 "weight": workout_session_exercise.weight,

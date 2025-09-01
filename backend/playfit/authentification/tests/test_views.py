@@ -5,8 +5,9 @@ from django.utils import timezone as Timezone
 from authentification.models import CustomUser, GameAchievement, UserAchievement, UserProgress
 from social.models import City, Country, Continent, BaseCharacter, WorldPosition, Customization
 from utilities.images import create_test_image
+from tests.base import BaseAPITestCase
 
-class RegisterViewTests(APITestCase):
+class RegisterViewTests(BaseAPITestCase):
     def setUp(self):
         self.user = CustomUser.objects.create_user(
             email="test@test.com",
@@ -144,7 +145,7 @@ class RegisterViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(CustomUser.objects.count(), 1)
 
-class LoginViewTests(APITestCase):
+class LoginViewTests(BaseAPITestCase):
     def setUp(self):
         self.user = CustomUser.objects.create_user(
             email="test@test.com",
@@ -211,7 +212,7 @@ class LoginViewTests(APITestCase):
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-class LogoutViewTests(APITestCase):
+class LogoutViewTests(BaseAPITestCase):
     def setUp(self):
         self.user = CustomUser.objects.create_user(
             email="test@test.com",
@@ -235,7 +236,7 @@ class LogoutViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Token.objects.count(), 0)
 
-class UserViewTests(APITestCase):
+class UserViewTests(BaseAPITestCase):
     def setUp(self):
         self.user = CustomUser.objects.create_user(
             email="test@test.com",
@@ -276,7 +277,7 @@ class UserViewTests(APITestCase):
         response = self.client.delete(self.delete_url, data={'confirm': True}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)        
 
-class UserAchievementTests(APITestCase):
+class UserAchievementTests(BaseAPITestCase):
     def setUp(self):
         self.user = CustomUser.objects.create_user(
             email="test@test.com",

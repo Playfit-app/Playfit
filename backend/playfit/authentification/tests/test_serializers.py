@@ -1,9 +1,9 @@
-from django.test import TestCase
 from authentification.models import CustomUser, UserConsent
 from authentification.serializers import CustomUserSerializer, UserConsentSerializer, CustomUserRetrieveSerializer, CustomUserUpdateSerializer,\
                                         CustomUserDeleteSerializer, AccountRecoveryRequestSerializer
+from tests.base import BaseAPITestCase
 
-class CustomUserSerializerTest(TestCase):
+class CustomUserSerializerTest(BaseAPITestCase):
     def test_serialization(self):
         user = CustomUser.objects.create_user(
             email="test@test.com",
@@ -76,7 +76,40 @@ class CustomUserSerializerTest(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("privacy_policy", serializer.errors)
 
-class UserConsentSerializerTest(TestCase):
+    def test_validation_invalid_password(self):
+        data = {
+            "email": "test@test.com",
+            "username": "test",
+            "password": "short",
+            "date_of_birth": "1990-01-01",
+            "height": 180,
+            "weight": 80,
+            "terms_and_conditions": True,
+            "privacy_policy": True,
+            "marketing": False,
+            'character_image': "charcter_image.png",
+        }
+        serializer = CustomUserSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("non_field_errors", serializer.errors)
+
+    def test_validation_invalid_character_image(self):
+        data = {
+            "email": "test@test.com",
+            "username": "test",
+            "password": "test12345",
+            "date_of_birth": "1990-01-01",
+            "height": 180,
+            "weight": 80,
+            "terms_and_conditions": True,
+            "privacy_policy": True,
+            "marketing": False,
+        }
+        serializer = CustomUserSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("character_image", serializer.errors)
+
+class UserConsentSerializerTest(BaseAPITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = CustomUser.objects.create(
@@ -114,7 +147,7 @@ class UserConsentSerializerTest(TestCase):
         self.assertEqual(consent.privacy_policy, True)
         self.assertEqual(consent.marketing, False)
 
-class CustomUserRetrieveSerializerTest(TestCase):
+class CustomUserRetrieveSerializerTest(BaseAPITestCase):
     def test_serialization(self):
         user = CustomUser.objects.create_user(
             email="test@test.com",
@@ -131,7 +164,7 @@ class CustomUserRetrieveSerializerTest(TestCase):
         self.assertEqual(serializer.data["height"], "180.00")
         self.assertEqual(serializer.data["weight"], "80.00")
 
-class CustomUserUpdateSerializerTest(TestCase):
+class CustomUserUpdateSerializerTest(BaseAPITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = CustomUser.objects.create_user(
@@ -180,7 +213,7 @@ class CustomUserUpdateSerializerTest(TestCase):
         self.assertEqual(user.gender, "other")
         self.assertEqual(user.fitness_level, "beginner")
 
-class CustomUserDeleteSerializerTest(TestCase):
+class CustomUserDeleteSerializerTest(BaseAPITestCase):
     def test_deserialization(self):
         data = {
             "confirm": True,
@@ -189,7 +222,7 @@ class CustomUserDeleteSerializerTest(TestCase):
         self.assertTrue(serializer.is_valid(), serializer.errors)
         self.assertTrue(serializer.validated_data["confirm"])
 
-class AccountRecoveryRequestSerializerTest(TestCase):
+class AccountRecoveryRequestSerializerTest(BaseAPITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = CustomUser.objects.create_user(

@@ -36,9 +36,10 @@ jobs:
               with:
                 ref: ${{ inputs.ref }}
             - name: Set up Python
-              uses: actions/setup-python@v2
+              uses: actions/setup-python@v5
               with:
                 python-version: 3.11
+                cache: 'pip'
             - name: Install dependencies
               run: pip install -r requirements.txt
               working-directory: ./backend
@@ -59,5 +60,7 @@ jobs:
                 echo "GOOGLE_APPLICATION_CREDENTIALS=serviceAccountKey.json" >> .env
               working-directory: ./backend/playfit
             - name: Run tests
-              run: python manage.py test
+              run: |
+                coverage run manage.py test
+                coverage report
               working-directory: ./backend/playfit

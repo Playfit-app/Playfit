@@ -2,10 +2,7 @@ import datetime
 from decimal import Decimal
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
-from rest_framework import serializers as drf_serializers
-from unittest.mock import Mock
 from authentification.models import CustomUser
-from social.models import City, Country, Continent
 from workout.models import Exercise, WorkoutSession, WorkoutSessionExercise
 from workout.serializers import (
     ExerciseSerializer, 

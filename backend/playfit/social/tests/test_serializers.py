@@ -2,7 +2,6 @@ import tempfile
 import shutil
 from django.test import TestCase, override_settings, RequestFactory
 from django.contrib.auth.hashers import make_password
-from rest_framework.request import Request
 from push_notifications.models import GCMDevice
 from social.serializers import (
     CustomizationItemSerializer,

@@ -1,12 +1,12 @@
 import datetime
 from decimal import Decimal
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
-from authentification.models import CustomUser, UserProgress, UserAchievement, GameAchievement
-from social.models import WorldPosition, City, Country, Continent, Post, Notification
+from authentification.models import CustomUser, UserProgress
+from social.models import WorldPosition, City, Country, Continent, Post
 from workout.models import Exercise, WorkoutSession, WorkoutSessionExercise
 
 

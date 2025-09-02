@@ -4,8 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from django.test import override_settings
 from django.utils import timezone
-from unittest.mock import patch, MagicMock
-from push_notifications.models import GCMDevice
+from unittest.mock import patch
 from social.models import (
     CustomizationItem, Customization, BaseCharacter, Follow, Post, Like, Comment, 
     Notification, WorldPosition, Country, City, DecorationImage, CityDecorationImage,

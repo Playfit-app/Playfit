@@ -1,7 +1,6 @@
 import asyncio
 from unittest.mock import patch, MagicMock, AsyncMock
 from django.test import TestCase
-from push_notifications.models import GCMDevice
 from authentification.models import CustomUser
 from social.utils import send_push_notification, send_notification, send_notification_async
 

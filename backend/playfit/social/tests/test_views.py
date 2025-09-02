@@ -3,7 +3,6 @@ import shutil
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.test import override_settings
-from django.utils import timezone
 from unittest.mock import patch
 from social.models import (
     CustomizationItem, Customization, BaseCharacter, Follow, Post, Like, Comment, 
@@ -369,7 +368,7 @@ class CommentViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_comment_delete_success(self):
-        comment = Comment.objects.create(user=self.user2, post=self.post, content="Test comment")
+        comment = Comment.objects.create(user=self.user2, post=self.post, content="Test comment")  # noqa: F841
         self.client.force_authenticate(user=self.user2)
         response = self.client.delete(f"/api/social/comments/{self.post.id}/delete/")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -768,7 +767,7 @@ class SimplePostViewTests(APITestCase):
 
     def test_post_list_view_with_recent_posts(self):
         Follow.objects.create(follower=self.user1, following=self.user2)
-        post = Post.objects.create(user=self.user2, content="Test content")
+        post = Post.objects.create(user=self.user2, content="Test content")  # noqa: F841
         self.client.force_authenticate(user=self.user1)
         response = self.client.get("/api/social/posts/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)

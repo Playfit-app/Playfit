@@ -344,7 +344,7 @@ class WorkoutSessionExerciseTest(TestCase):
             repetitions=10
         )
         
-        workout_session_id = self.workout_session.id
+        workout_session_id = self.workout_session.id  # noqa: F841
         wse_id = wse.id
         
         # Delete the workout session

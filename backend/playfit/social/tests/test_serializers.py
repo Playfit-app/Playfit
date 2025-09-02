@@ -104,7 +104,7 @@ class UserSerializerTest(TestCase):
             name="Test Character",
             image=create_test_image()
         )
-        customization = Customization.objects.create(
+        customization = Customization.objects.create(  # noqa: F841
             user=user,
             base_character=base_character
         )
@@ -141,7 +141,6 @@ class UserSerializerTest(TestCase):
             weight=80,
             email_hash="testhash3"
         )
-        customization = Customization.objects.create(user=user)
         
         serializer = UserSerializer(user)
         self.assertEqual(serializer.data["id"], user.id)
@@ -227,8 +226,9 @@ class PostSerializerTest(TestCase):
     def test_post_list_serializer_with_authenticated_user(self):
         # Create likes and comments
         Like.objects.create(user=self.user2, post=self.post)
-        comment1 = Comment.objects.create(user=self.user2, post=self.post, content="Comment 1")
-        comment2 = Comment.objects.create(user=self.user1, post=self.post, content="Comment 2")
+        # Comments are created for the post to be liked and tested
+        comment1 = Comment.objects.create(user=self.user2, post=self.post, content="Comment 1")  # noqa: F841
+        comment2 = Comment.objects.create(user=self.user1, post=self.post, content="Comment 2")  # noqa: F841
         
         # Create request with authenticated user
         request = self.factory.get('/test/')
@@ -513,7 +513,7 @@ class UserSearchSerializerTest(TestCase):
             name="Test Character",
             image=create_test_image()
         )
-        customization = Customization.objects.create(
+        customization = Customization.objects.create(  # noqa: F841
             user=user,
             base_character=base_character
         )

@@ -5,7 +5,7 @@ from .encrypted_fields import get_fernet, hash
 
 class ExpiringPasswordResetTokenGenerator(PasswordResetTokenGenerator):
     def _make_hash_value(self, user, timestamp):
-        return f"{user.pk}{timestamp}{user.is_active}"
+        return f"{user.id}{timestamp}"
 
     def make_signed_token(self, user):
         signer = TimestampSigner()

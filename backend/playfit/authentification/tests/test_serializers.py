@@ -1,3 +1,4 @@
+from rest_framework.exceptions import ValidationError
 from authentification.models import CustomUser, UserConsent
 from authentification.serializers import CustomUserSerializer, UserConsentSerializer, CustomUserRetrieveSerializer, CustomUserUpdateSerializer,\
                                         CustomUserDeleteSerializer, AccountRecoveryRequestSerializer
@@ -213,6 +214,127 @@ class CustomUserUpdateSerializerTest(BaseAPITestCase):
         self.assertEqual(user.gender, "other")
         self.assertEqual(user.fitness_level, "beginner")
 
+    def test_invalid_username(self):
+        # Create a user
+        user = CustomUser.objects.create_user(
+            email="test2@test.com",
+            username="test2",
+            password="test12345",
+            date_of_birth="1990-01-01",
+            height=170,
+            weight=70,
+        )
+        data = {
+            "username": "test",
+            "first_name": "Test",
+            "last_name": "Test",
+            "height": 170,
+            "weight": 70,
+            "goals": CustomUser.BODYWEIGHT_STRENGTH,
+            "gender": "other",
+            "fitness_level": "beginner",
+            "physical_particularities": None,
+        }
+        with self.assertRaises(ValidationError):
+            serializer = CustomUserUpdateSerializer(user, data=data)
+            serializer.is_valid(raise_exception=True)
+
+    def test_invalid_height(self):
+        data = {
+            "username": "test",
+            "first_name": "Test",
+            "last_name": "Test",
+            "height": -170,
+            "weight": 70,
+            "goals": CustomUser.BODYWEIGHT_STRENGTH,
+            "gender": "other",
+            "fitness_level": "beginner",
+            "physical_particularities": None,
+        }
+        with self.assertRaises(ValidationError):
+            serializer = CustomUserUpdateSerializer(self.user, data=data)
+            serializer.is_valid(raise_exception=True)
+
+    def test_invalid_weight(self):
+        data = {
+            "username": "test",
+            "first_name": "Test",
+            "last_name": "Test",
+            "height": 170,
+            "weight": -70,
+            "goals": CustomUser.BODYWEIGHT_STRENGTH,
+            "gender": "other",
+            "fitness_level": "beginner",
+            "physical_particularities": None,
+        }
+        with self.assertRaises(ValidationError):
+            serializer = CustomUserUpdateSerializer(self.user, data=data)
+            serializer.is_valid(raise_exception=True)
+
+    def test_invalid_goals(self):
+        data = {
+            "username": "test",
+            "first_name": "Test",
+            "last_name": "Test",
+            "height": 170,
+            "weight": 70,
+            "goals": "invalid_goal",
+            "gender": "other",
+            "fitness_level": "beginner",
+            "physical_particularities": None,
+        }
+        with self.assertRaises(ValidationError):
+            serializer = CustomUserUpdateSerializer(self.user, data=data)
+            serializer.is_valid(raise_exception=True)
+
+    def test_invalid_gender(self):
+        data = {
+            "username": "test",
+            "first_name": "Test",
+            "last_name": "Test",
+            "height": 170,
+            "weight": 70,
+            "goals": CustomUser.BODYWEIGHT_STRENGTH,
+            "gender": "prout",
+            "fitness_level": "beginner",
+            "physical_particularities": None,
+        }
+        with self.assertRaises(ValidationError):
+            serializer = CustomUserUpdateSerializer(self.user, data=data)
+            serializer.is_valid(raise_exception=True)
+
+    def test_invalid_fitness_level(self):
+        data = {
+            "username": "test",
+            "first_name": "Test",
+            "last_name": "Test",
+            "height": 170,
+            "weight": 70,
+            "goals": CustomUser.BODYWEIGHT_STRENGTH,
+            "gender": "other",
+            "fitness_level": "invalid",
+            "physical_particularities": None,
+        }
+        with self.assertRaises(ValidationError):
+            serializer = CustomUserUpdateSerializer(self.user, data=data)
+            serializer.is_valid(raise_exception=True)
+
+    def test_invalid_physical_particularities(self):
+        data = {
+            "username": "test",
+            "first_name": "Test",
+            "last_name": "Test",
+            "height": 170,
+            "weight": 70,
+            "goals": CustomUser.BODYWEIGHT_STRENGTH,
+            "gender": "other",
+            "fitness_level": "beginner",
+            "physical_particularities": "x" * 1001,
+        }
+        with self.assertRaises(ValidationError):
+            serializer = CustomUserUpdateSerializer(self.user, data=data)
+            serializer.is_valid(raise_exception=True)
+
 class CustomUserDeleteSerializerTest(BaseAPITestCase):
     def test_deserialization(self):
         data = {
@@ -221,6 +343,14 @@ class CustomUserDeleteSerializerTest(BaseAPITestCase):
         serializer = CustomUserDeleteSerializer(data=data)
         self.assertTrue(serializer.is_valid(), serializer.errors)
         self.assertTrue(serializer.validated_data["confirm"])
+
+    def test_validate_confirm_not_provided(self):
+        data = {
+            "confirm": False,
+        }
+        with self.assertRaises(ValidationError):
+            serializer = CustomUserDeleteSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
 
 class AccountRecoveryRequestSerializerTest(BaseAPITestCase):
     @classmethod
@@ -241,3 +371,11 @@ class AccountRecoveryRequestSerializerTest(BaseAPITestCase):
         serializer = AccountRecoveryRequestSerializer(data=data)
         self.assertTrue(serializer.is_valid(), serializer.errors)
         self.assertEqual(serializer.data["email"], "test@test.com")
+
+    def test_validate_email_not_found(self):
+        data = {
+            "email": "notfound@test.com",
+        }
+        with self.assertRaises(ValidationError):
+            serializer = AccountRecoveryRequestSerializer(data=data)
+            serializer.is_valid(raise_exception=True)

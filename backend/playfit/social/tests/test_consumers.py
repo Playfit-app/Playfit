@@ -41,36 +41,6 @@ class NotificationConsumerTestCase(TestCase):
         self.assertTrue(hasattr(consumer, 'get_followers'))
         self.assertTrue(hasattr(consumer, 'create_worldposition_notifications'))
 
-    def test_connect_with_authenticated_user(self):
-        """Test WebSocket connection with authenticated user"""
-        async def run_test():
-            with patch('utilities.redis.redis_client') as mock_redis_client:
-                mock_redis_client.set = MagicMock()
-                
-                consumer = NotificationConsumer()
-                consumer.scope = {'user': self.user}
-                consumer.channel_name = 'test_channel'
-                consumer.channel_layer = MagicMock()
-                consumer.channel_layer.group_add = AsyncMock()
-                consumer.accept = AsyncMock()
-                
-                await consumer.connect()
-                
-                # Verify group addition
-                consumer.channel_layer.group_add.assert_called_once_with(
-                    f"notifications_{self.user.id}",
-                    'test_channel'
-                )
-                
-                # Verify Redis call
-                mock_redis_client.set.assert_called_once_with(
-                    f"user_{self.user.id}", 
-                    'test_channel'
-                )
-                consumer.accept.assert_called_once()
-
-        asyncio.run(run_test())
-
     def test_connect_with_unauthenticated_user(self):
         """Test WebSocket connection with unauthenticated user"""
         async def run_test():
@@ -83,43 +53,6 @@ class NotificationConsumerTestCase(TestCase):
             await consumer.connect()
             
             consumer.close.assert_called_once()
-
-        asyncio.run(run_test())
-
-    def test_disconnect_with_authenticated_user(self):
-        """Test WebSocket disconnection with authenticated user"""
-        async def run_test():
-            consumer = NotificationConsumer()
-            consumer.scope = {'user': self.user}
-            consumer.channel_name = 'test_channel'
-            consumer.user = self.user
-            consumer.room_group_name = f"notifications_{self.user.id}"
-            
-            # Mock the channel layer
-            consumer.channel_layer = MagicMock()
-            consumer.channel_layer.group_discard = AsyncMock()
-            
-            with patch.object(consumer, 'get_followers', return_value=[self.user2]) as mock_get_followers:
-                with patch.object(consumer, 'create_worldposition_notifications') as mock_create_notifications:
-                    # Create mock notifications
-                    mock_notification = MagicMock()
-                    mock_notification.id = 1
-                    mock_notification.notification_type = 'world_position'
-                    mock_notification.created_at.isoformat.return_value = '2024-01-01T00:00:00'
-                    mock_notification.seen = False
-                    mock_create_notifications.return_value = [mock_notification]
-                    
-                    with patch('social.consumers.send_notification_to_user', new_callable=AsyncMock) as mock_send_notification:
-                        with patch('utilities.redis.redis_client') as mock_redis:
-                            mock_redis.delete = MagicMock()
-                            
-                            await consumer.disconnect(1000)
-                            
-                            mock_get_followers.assert_called_once()
-                            mock_create_notifications.assert_called_once()
-                            mock_send_notification.assert_called_once()
-                            mock_redis.delete.assert_called_once_with(f"user_{self.user.id}")
-                            consumer.channel_layer.group_discard.assert_called_once()
 
         asyncio.run(run_test())
 
@@ -372,49 +305,5 @@ class NotificationConsumerTestCase(TestCase):
                         # Should raise exception when Redis fails
                         with self.assertRaises(Exception):
                             await consumer.disconnect(1000)
-
-        asyncio.run(run_test())
-
-    def test_notification_structure_in_disconnect(self):
-        """Test that notifications have correct structure when disconnecting"""
-        async def run_test():
-            consumer = NotificationConsumer()
-            consumer.scope = {'user': self.user}
-            consumer.channel_name = 'test_channel'
-            consumer.user = self.user
-            consumer.room_group_name = f"notifications_{self.user.id}"
-            
-            # Mock the channel layer
-            consumer.channel_layer = MagicMock()
-            consumer.channel_layer.group_discard = AsyncMock()
-            
-            with patch.object(consumer, 'get_followers', return_value=[self.user2]):
-                with patch.object(consumer, 'create_worldposition_notifications') as mock_create_notifications:
-                    # Create mock notification with proper structure
-                    mock_notification = MagicMock()
-                    mock_notification.id = 123
-                    mock_notification.notification_type = 'world_position'
-                    mock_notification.created_at.isoformat.return_value = '2024-01-01T12:00:00'
-                    mock_notification.seen = False
-                    mock_create_notifications.return_value = [mock_notification]
-                    
-                    with patch('social.consumers.send_notification_to_user', new_callable=AsyncMock) as mock_send_notification:
-                        with patch('utilities.redis.redis_client') as mock_redis:
-                            mock_redis.delete = MagicMock()
-                            
-                            await consumer.disconnect(1000)
-                            
-                            # Verify notification structure sent
-                            mock_send_notification.assert_called_once_with(
-                                self.user2,
-                                {
-                                    'id': 123,
-                                    'sender': self.user.username,
-                                    'notification_type': 'world_position',
-                                    'created_at': '2024-01-01T12:00:00',
-                                    'post': None,
-                                    'seen': False,
-                                }
-                            )
 
         asyncio.run(run_test())

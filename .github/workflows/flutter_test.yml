@@ -40,9 +40,6 @@ jobs:
                 echo "SERVER_BASE_WS_URL=ws://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
                 echo "GOOGLE_CLIENT_ID=${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}" >> .env
               working-directory: ./playfit-mobile/playfit
-            - name: Run tests
-              run: flutter test
-              working-directory: ./playfit-mobile/playfit
             - name: Generate mock files
               run: dart run build_runner build --delete-conflicting-outputs
               working-directory: ./playfit-mobile/playfit

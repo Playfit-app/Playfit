@@ -1,0 +1,25 @@
+[run]
+branch = True
+source =
+    authentification
+    social
+    utilities
+    workout
+omit =
+    */migrations/*
+    */settings/*
+    */asgi.py
+    */wsgi.py
+    manage.py
+    */__init__.py
+    */apps.py
+    */admin.py
+    */tests/*
+    */management/*
+    */routing.py
+
+[report]
+show_missing = True
+skip_covered = False
+fail_under = 85
+

@@ -43,3 +43,9 @@ jobs:
             - name: Run tests
               run: flutter test
               working-directory: ./playfit-mobile/playfit
+            - name: Generate mock files
+              run: dart run build_runner build --delete-conflicting-outputs
+              working-directory: ./playfit-mobile/playfit
+            - name: Run tests
+              run: flutter test
+              working-directory: ./playfit-mobile/playfit

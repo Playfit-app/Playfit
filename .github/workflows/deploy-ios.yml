@@ -1,7 +1,7 @@
 name: Deploy iOS (Fastlane)
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       ref:
         description: 'The git reference to deploy'

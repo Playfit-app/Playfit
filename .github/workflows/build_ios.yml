@@ -60,10 +60,15 @@ jobs:
       - name: Import codesigning assets
         uses: apple-actions/import-codesign-certs@v3
         with:
-          keychain: build.keychain
+          keychain: build
+          create-keychain: true
           p12-file-base64: ${{ secrets.IOS_CERT_P12_BASE64 }}
           p12-password: ${{ secrets.IOS_CERT_PASSWORD }}
-          mobileprovision-file-base64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+          keychain-password: ${{ secrets.IOS_CERT_PASSWORD }}
+      - name: Import provisioning profile
+        uses: apple-actions/import-provisioning-profile@v1
+        with:
+          profile-base64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
       - name: Create ExportOptions.plist
         run: |
           cat > ExportOptions.plist <<'PLIST'

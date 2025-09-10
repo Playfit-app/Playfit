@@ -66,9 +66,9 @@ jobs:
           p12-password: ${{ secrets.IOS_CERT_PASSWORD }}
           keychain-password: ${{ secrets.IOS_CERT_PASSWORD }}
       - name: Import provisioning profile
-        uses: apple-actions/import-provisioning-profile@v1
+        uses: apple-actions/import-provisioning-profiles@v1
         with:
-          profile-base64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+          profiles-base64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
       - name: Create ExportOptions.plist
         run: |
           cat > ExportOptions.plist <<'PLIST'

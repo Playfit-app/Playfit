@@ -1,3 +1,5 @@
+require 'base64'
+
 default_platform(:ios)
 
 platform :ios do
@@ -10,7 +12,8 @@ platform :ios do
     )
     pilot(
       api_key: api_key,
-      ipa: Dir["./playfit-mobile/playfit/build/ios/ipa/*.ipa"].first,
+      # From ios/ dir, the ipa is at ../build/ios/ipa
+      ipa: Dir["../build/ios/ipa/*.ipa"].first,
       skip_waiting_for_build_processing: false
     )
   end
@@ -24,7 +27,8 @@ platform :ios do
     )
     deliver(
       api_key: api_key,
-      ipa: Dir["./playfit-mobile/playfit/build/ios/ipa/*.ipa"].first,
+      # From ios/ dir, the ipa is at ../build/ios/ipa
+      ipa: Dir["../build/ios/ipa/*.ipa"].first,
       submit_for_review: false, # set true if you want auto-submit
       automatic_release: false   # set true to auto release on approval
     )

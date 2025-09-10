@@ -124,7 +124,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               if (value.length < 8) {
                 return t.register.invalid_password;
               }
-              if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$')
+              if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).+$')
                   .hasMatch(value)) {
                 return t.register.invalid_password;
               }

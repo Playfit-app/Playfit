@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -67,10 +68,22 @@ class NotificationService {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     // Configure local notifications
-    var androidSettings =
-        const AndroidInitializationSettings('@mipmap/ic_launcher');
-    var initializationSettings =
-        InitializationSettings(android: androidSettings);
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    
+    InitializationSettings initializationSettings;
+    if (Platform.isIOS) {
+      // For iOS, use minimal settings to avoid crashes
+      initializationSettings = const InitializationSettings(
+        android: androidSettings,
+        iOS: DarwinInitializationSettings(),
+      );
+    } else {
+      // For Android only
+      initializationSettings = const InitializationSettings(
+        android: androidSettings,
+      );
+    }
+    
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
@@ -142,13 +155,23 @@ class NotificationService {
   /// 
   /// Returns a [Future] that completes when the notification is shown.
   Future<void> _showNotification(String title, String body) async {
-    var androidDetails = const AndroidNotificationDetails(
+    const androidDetails = AndroidNotificationDetails(
       'high_importance_channel',
       'High Importance Notifications',
       importance: Importance.max,
       priority: Priority.high,
     );
-    var notificationDetails = NotificationDetails(android: androidDetails);
+    
+    NotificationDetails notificationDetails;
+    if (Platform.isIOS) {
+      const iOSDetails = DarwinNotificationDetails();
+      notificationDetails = const NotificationDetails(
+        android: androidDetails,
+        iOS: iOSDetails,
+      );
+    } else {
+      notificationDetails = const NotificationDetails(android: androidDetails);
+    }
 
     await _flutterLocalNotificationsPlugin.show(
         0, title, body, notificationDetails);

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,6 +14,7 @@ import 'package:playfit/components/success.dart';
 import 'package:playfit/components/historic_chart.dart';
 import 'package:playfit/components/level_progression_dialog.dart';
 import 'package:playfit/components/profile_icon.dart';
+import 'package:playfit/providers/language_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   final int? userId;
@@ -146,27 +148,29 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    /// Builds the profile page UI using a FutureBuilder to fetch user data.
-    ///
-    /// Displays a loading indicator while fetching data,
-    /// and once data is available, it constructs the profile layout.
-    return FutureBuilder(
-      future: _futureUserData,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    return Consumer<LanguageProvider>(
+      builder: (context, languageProvider, child) {
+        /// Builds the profile page UI using a FutureBuilder to fetch user data.
+        ///
+        /// Displays a loading indicator while fetching data,
+        /// and once data is available, it constructs the profile layout.
+        return FutureBuilder(
+          future: _futureUserData,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-        final userData = snapshot.data as Map<String, dynamic>;
-        final double screenWidth = MediaQuery.of(context).size.width;
-        final double screenHeight = MediaQuery.of(context).size.height;
+            final userData = snapshot.data as Map<String, dynamic>;
+            final double screenWidth = MediaQuery.of(context).size.width;
+            final double screenHeight = MediaQuery.of(context).size.height;
 
-        if (userData['is_following'] != null) {
-          _isFollowing = userData['is_following'];
-        }
-        if (userData['followers'] != null) {
-          _followerCount = userData['followers'];
-        }
+            if (userData['is_following'] != null) {
+              _isFollowing = userData['is_following'];
+            }
+            if (userData['followers'] != null) {
+              _followerCount = userData['followers'];
+            }
 
         return Scaffold(
           extendBodyBehindAppBar: true,
@@ -571,6 +575,8 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
           ),
         );
+      },
+    );
       },
     );
   }

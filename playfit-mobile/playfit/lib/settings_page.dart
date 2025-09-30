@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:provider/provider.dart';
 import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/settings/dropdown_parameter.dart';
-import 'package:playfit/providers/language_provider.dart';
+import 'package:playfit/services/language_service.dart';
 import 'package:playfit/services/push_notification_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -22,6 +21,18 @@ extension UserBoxTypeExtension on UserBoxType {
   }
 }
 
+class _Settings {
+  final AppLocale locale;
+  final bool notificationsEnabled;
+  // final String overlayPosition;
+
+  _Settings({
+    required this.locale,
+    required this.notificationsEnabled,
+    // required this.overlayPosition,
+  });
+}
+
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
 
@@ -33,30 +44,26 @@ class _SettingsPageState extends State<SettingsPage> {
   final Color orange = const Color(0xFFE07C27);
   final FlutterSecureStorage storage = const FlutterSecureStorage();
   final _notificationService = NotificationService();
-  bool _notificationsEnabled = false; // Initialize with default value
-  UserBoxType _selectedBoxType = UserBoxType.left; // Initialize with default value
+  late AppLocale _selectedLanguage;
+  late bool _notificationsEnabled;
+  late UserBoxType _selectedBoxType;
   bool _showAccountOptions = false;
   bool _showPrivacyPolicy = false;
-  bool _isLoading = true; // Add loading state
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    _loadSettings();
-  }
-
-  Future<void> _loadSettings() async {
+  Future<_Settings> _loadSettings() async {
     String? boxTypeStr = await storage.read(key: 'boxType');
     _selectedBoxType =
         boxTypeStr == 'bottom' ? UserBoxType.bottom : UserBoxType.left;
-    _notificationsEnabled =
-        await _notificationService.loadNotificationSettings();
-    setState(() {
-      _isLoading = false;
-    });
+    return _Settings(
+      locale:
+          await LanguageService.loadLocale() ?? LocaleSettings.currentLocale,
+      notificationsEnabled:
+          await _notificationService.loadNotificationSettings(),
+    );
   }
 
   void _showConfirmationDialog(
@@ -158,17 +165,18 @@ void _showDeleteConfirmationDialog() {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LanguageProvider>(
-      builder: (context, languageProvider, child) {
-        if (_isLoading) {
-          return const Scaffold(
-            backgroundColor: Colors.white,
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
+    final Size screenSize = MediaQuery.of(context).size;
+
+    return FutureBuilder<_Settings>(
+      future: _loadSettings(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
         }
-        
+        final settings = snapshot.data!;
+        _selectedLanguage = settings.locale;
+        _notificationsEnabled = settings.notificationsEnabled;
+
         return Scaffold(
           backgroundColor: Colors.white,
           body: SafeArea(
@@ -197,14 +205,18 @@ void _showDeleteConfirmationDialog() {
                           Divider(color: orange, thickness: 1),
                           DropdownParameter(
                             title: t.settings.language,
-                            currentValue: languageProvider.currentLocale,
+                            currentValue: _selectedLanguage,
                             items: AppLocale.values,
-                            onChanged: (value) async {
-                              if (value != null) {
-                                await languageProvider.changeLanguage(value);
-                              }
+                            onChanged: (value) {
+                              setState(() async {
+                                if (value != null) {
+                                  _selectedLanguage = value;
+                                  await LanguageService.saveLocale(value);
+                                  await LocaleSettings.setLocale(value);
+                                }
+                              });
                             },
-                            itemLabelBuilder: languageProvider.getLanguageName,
+                            itemLabelBuilder: LanguageService.getLocaleName,
                           ),
                           Divider(color: orange, thickness: 1),
                           SwitchListTile(
@@ -371,6 +383,22 @@ void _showDeleteConfirmationDialog() {
       style: TextStyle(
         fontSize: size,
         fontFamily: 'family',
+      ),
+    );
+  }
+
+  Widget _buildDropdownTile(String title, String currentValue,
+      List<String> options, ValueChanged<String?> onChanged) {
+    return ListTile(
+      leading: Icon(Icons.circle, size: 10, color: orange),
+      title: _buildText(title),
+      trailing: DropdownButton<String>(
+        value: currentValue,
+        underline: Container(),
+        items: options
+            .map((lang) => DropdownMenuItem(value: lang, child: Text(lang)))
+            .toList(),
+        onChanged: onChanged,
       ),
     );
   }

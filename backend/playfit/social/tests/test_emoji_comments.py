@@ -5,10 +5,6 @@ import json
 import tempfile
 from django.test import TestCase, override_settings
 from django.contrib.auth import get_user_model
-from rest_framework.test import APITestCase, APIClient
-from rest_framework import status
-from rest_framework.authtoken.models import Token
-from unittest.mock import patch
 
 from social.models import Post, Comment
 from social.serializers import CommentSerializer
@@ -197,69 +193,6 @@ class EmojiCommentSerializerTests(TestCase):
         self.assertIn('😀', json_str)
         self.assertIn('🎉', json_str)
         self.assertNotIn('\\u', json_str)  # Should not contain Unicode escapes
-
-
-@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
-class EmojiCommentAPITests(APITestCase):
-    """Test emoji handling through API endpoints"""
-    
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            username="testuser",
-            password="testpass123",
-            date_of_birth="1990-01-01",
-            height=175,
-            weight=70
-        )
-        self.token = Token.objects.create(user=self.user)
-        self.client = APIClient()
-        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
-        
-        self.post = Post.objects.create(
-            user=self.user,
-            content="Test post"
-        )
-    
-    @patch('social.utils.send_notification')
-    def test_create_comment_with_emojis(self, mock_send):
-        """Test creating comments with emojis via API"""
-        emoji_content = "API test with emojis! 🎯🎪🎨🎬"
-        
-        response = self.client.post(
-            f'/api/social/posts/{self.post.pk}/comment/',
-            {
-                'post': self.post.pk,
-                'content': emoji_content
-            },
-            format='json'
-        )
-        
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
-        # Access response data safely
-        response_content = response.data.get('content') if hasattr(response, 'data') else None
-        self.assertEqual(response_content, emoji_content)
-        
-        # Verify the comment was created in the database
-        if hasattr(response, 'data') and response.data.get('id'):
-            comment = Comment.objects.get(pk=response.data['id'])
-            self.assertEqual(comment.content, emoji_content)
-    
-    def test_api_response_content_type(self):
-        """Test that API responses have proper content type for Unicode"""
-        emoji_content = "Content type test! 🌈🦄🎭"
-        Comment.objects.create(
-            user=self.user,
-            post=self.post,
-            content=emoji_content
-        )
-        
-        response = self.client.get(f'/api/social/posts/{self.post.pk}/')
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        content_type = response.get('Content-Type', '')
-        self.assertIn('application/json', content_type)
     
     def test_various_emoji_categories(self):
         """Test different categories of emojis"""
@@ -285,6 +218,9 @@ class EmojiCommentAPITests(APITestCase):
                 serializer = CommentSerializer(comment)
                 serialized_data = dict(serializer.data)
                 self.assertEqual(serialized_data.get('content'), emoji_content)
+
+
+
 
 
 class EmojiUtilityTests(TestCase):

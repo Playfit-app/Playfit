@@ -28,9 +28,16 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final FlutterSecureStorage storage = const FlutterSecureStorage();
-  bool _isFollowing = false;
-  int _followerCount = 0;
-  late Future<Map<String, dynamic>> _futureUserData;
+
+  bool _loading = true;
+  Map<String, dynamic>? _profile;
+  bool get _isMe => widget.userId == null;
+
+  bool get _isFollowing =>
+      (_profile?['is_following'] as bool?) ?? false;
+
+  int get _followerCount =>
+      (_profile?['followers'] as int?) ?? 0;
 
   /// Formats the date from the API to a more readable format.
   ///
@@ -78,31 +85,31 @@ class _ProfilePageState extends State<ProfilePage> {
   /// Updates the state to reflect that the user is now followed,
   /// and increments the follower count.
   void _follow() async {
-    if (widget.userId == null) return;
+    if (_isMe || widget.userId == null || _profile == null) return;
 
+    // optimistic
     setState(() {
-        _isFollowing = true;
-        _followerCount += 1;
-      });
+      _profile!['is_following'] = true;
+      _profile!['followers'] = _followerCount + 1;
+    });
 
-    final String url = '${dotenv.env['SERVER_BASE_URL']}/api/social/follow/';
-    final String? token = await storage.read(key: 'token');
-    final response = await http.post(
+    final url = '${dotenv.env['SERVER_BASE_URL']}/api/social/follow/';
+    final token = await storage.read(key: 'token');
+    final res = await http.post(
       Uri.parse(url),
       headers: {
         'Authorization': 'Token $token',
         'Content-Type': 'application/json',
       },
-      body: json.encode({
-        'id': widget.userId,
-      }),
+      body: json.encode({'id': widget.userId}),
     );
 
-    if (response.statusCode == 201) {
-    } else {
+    if (res.statusCode != 201) {
+      // revert
+      if (!mounted) return;
       setState(() {
-        _isFollowing = false;
-        _followerCount -= 1;
+        _profile!['is_following'] = false;
+        _profile!['followers'] = (_followerCount - 1).clamp(0, 1 << 31);
       });
     }
   }
@@ -112,28 +119,28 @@ class _ProfilePageState extends State<ProfilePage> {
   /// Updates the state to reflect that the user is no longer followed,
   /// and decrements the follower count.
   void _unfollow() async {
-    if (widget.userId == null) return;
+    if (_isMe || widget.userId == null || _profile == null) return;
 
+    // optimistic
     setState(() {
-        _isFollowing = false;
-        _followerCount -= 1;
-      });
+      _profile!['is_following'] = false;
+      _profile!['followers'] = (_followerCount - 1).clamp(0, 1 << 31);
+    });
 
-    final String url =
+    final url =
         '${dotenv.env['SERVER_BASE_URL']}/api/social/unfollow/${widget.userId}/';
-    final String? token = await storage.read(key: 'token');
-    final response = await http.delete(
+    final token = await storage.read(key: 'token');
+    final res = await http.delete(
       Uri.parse(url),
-      headers: {
-        'Authorization': 'Token $token',
-      },
+      headers: {'Authorization': 'Token $token'},
     );
 
-    if (response.statusCode == 204) {
-    } else {
+    if (res.statusCode != 204) {
+      // revert
+      if (!mounted) return;
       setState(() {
-        _isFollowing = true;
-        _followerCount += 1;
+        _profile!['is_following'] = true;
+        _profile!['followers'] = _followerCount + 1;
       });
     }
   }
@@ -141,54 +148,60 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _futureUserData = fetchUserData();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      final data = await fetchUserData();
+      setState(() {
+        _profile = data;
+        _loading = false;
+      });
+    } catch (_) {
+      setState(() => _loading = false);
+      // handle error UI if you want
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    /// Builds the profile page UI using a FutureBuilder to fetch user data.
-    ///
-    /// Displays a loading indicator while fetching data,
-    /// and once data is available, it constructs the profile layout.
-    return FutureBuilder(
-      future: _futureUserData,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    if (_loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_profile == null) {
+      return const Scaffold(
+        body: Center(child: Text('Failed to load profile')),
+      );
+    }
 
-        final userData = snapshot.data as Map<String, dynamic>;
-        final double screenWidth = MediaQuery.of(context).size.width;
-        final double screenHeight = MediaQuery.of(context).size.height;
+    final userData = _profile!; // local, stable
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
 
-        if (userData['is_following'] != null) {
-          _isFollowing = userData['is_following'];
-        }
-        if (userData['followers'] != null) {
-          _followerCount = userData['followers'];
-        }
-
-        return Scaffold(
-          extendBodyBehindAppBar: true,
-          // Transparent app bar with settings icon to go to settings page
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            actions: <Widget>[
-              IconButton(
-                icon: const Icon(Icons.settings_outlined),
-                color: Colors.black,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SettingsPage(),
-                    ),
-                  );
-                },
-              ),
-            ],
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            color: Colors.black,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsPage()),
+              );
+            },
           ),
-          body: Stack(
+        ],
+      ),
+      body: RefreshIndicator(          // manual sync when the user pulls to refresh
+        onRefresh: _load,
+        child: Stack(
             children: <Widget>[
               // Container over the top half of the screen with a background image
               // The image is a mountain image based on the user's level
@@ -224,9 +237,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               backgroundImageUrl:
                                   '${dotenv.env['SERVER_BASE_URL']}${userData['decorations']['mountains'][userData['progress']['level'] - 1]}',
                               onClosed: () {
-                                setState(() {
-                                  _futureUserData = fetchUserData();
-                                });
+                                _load();
                               },
                             ),
                           ),
@@ -570,9 +581,51 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ],
           ),
-        );
-      },
+      ),
     );
+
+    // return FutureBuilder(
+    //   future: _futureUserData,
+    //   builder: (context, snapshot) {
+    //     if (!snapshot.hasData) {
+    //       return const Center(child: CircularProgressIndicator());
+    //     }
+
+    //     final userData = snapshot.data as Map<String, dynamic>;
+    //     final double screenWidth = MediaQuery.of(context).size.width;
+    //     final double screenHeight = MediaQuery.of(context).size.height;
+
+    //     if (userData['is_following'] != null) {
+    //       _isFollowing = userData['is_following'];
+    //     }
+    //     if (userData['followers'] != null) {
+    //       _followerCount = userData['followers'];
+    //     }
+
+    //     return Scaffold(
+    //       extendBodyBehindAppBar: true,
+    //       // Transparent app bar with settings icon to go to settings page
+    //       appBar: AppBar(
+    //         backgroundColor: Colors.transparent,
+    //         actions: <Widget>[
+    //           IconButton(
+    //             icon: const Icon(Icons.settings_outlined),
+    //             color: Colors.black,
+    //             onPressed: () {
+    //               Navigator.push(
+    //                 context,
+    //                 MaterialPageRoute(
+    //                   builder: (context) => const SettingsPage(),
+    //                 ),
+    //               );
+    //             },
+    //           ),
+    //         ],
+    //       ),
+          
+    //     );
+    //   },
+    // );
   }
 
   Widget _buildDivider() {

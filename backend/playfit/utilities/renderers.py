@@ -26,11 +26,7 @@ class UnicodeJSONRenderer(JSONRenderer):
             separators=(',', ':') if indent is None else (',', ': ')
         )
 
-        # On python 2.x json.dumps() returns bytestrings if ensure_ascii=True,
-        # but if ensure_ascii=False, the return type is underspecified,
-        # and may (or may not) be unicode.
         # On python 3.x json.dumps() returns unicode strings.
         if isinstance(ret, str):
-            # We always fully encode the response on Python 3.x
             return ret.encode('utf-8')
         return ret

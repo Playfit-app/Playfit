@@ -240,7 +240,7 @@ class EmojiUtilityTests(TestCase):
         
         # Test data with various Unicode characters
         test_data = {
-            'emojis': '�🎉❤️',
+            'emojis': '😀🎉❤️',
             'accents': 'café naïve résumé',
             'symbols': '™®©',
             'currency': '€£¥₹',
@@ -260,7 +260,7 @@ class EmojiUtilityTests(TestCase):
     def test_emoji_preservation_in_json(self):
         """Test that emojis are preserved correctly in JSON serialization"""
         test_cases = [
-            "�",  # Simple emoji
+            "😀",  # Simple emoji
             "👨‍👩‍👧‍👦",  # Compound emoji (family)
             "🏳️‍🌈",  # Flag with modifier
             "👋🏽",  # Emoji with skin tone

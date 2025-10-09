@@ -105,6 +105,8 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               labelText: t.register.password,
               filled: true,
               fillColor: const Color.fromARGB(255, 255, 233, 202),
+              // Allow the validation error text to wrap to multiple lines so it's fully visible
+              errorMaxLines: 3,
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: widget.passwordController.text.isNotEmpty
                   ? IconButton(
@@ -124,7 +126,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               if (value.length < 8) {
                 return t.register.invalid_password;
               }
-              if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).+$')
+              if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
                   .hasMatch(value)) {
                 return t.register.invalid_password;
               }
@@ -142,6 +144,8 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
               labelText: t.register.confirm_password,
               filled: true,
               fillColor: const Color.fromARGB(255, 255, 233, 202),
+              // Allow the validation error text to wrap to multiple lines so it's fully visible
+              errorMaxLines: 3,
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: widget.confirmPasswordController.text.isNotEmpty
                   ? IconButton(

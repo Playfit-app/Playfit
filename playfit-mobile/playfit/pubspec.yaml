@@ -58,7 +58,6 @@ dependencies:
   flutter_tts: ^4.2.2
   slang: ^4.7.1
   slang_flutter: ^4.7.0
-  device_preview: ^1.2.0
   animations: ^2.0.11
   permission_handler: ^12.0.0+1
 
@@ -69,6 +68,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.13.1 #
   build_runner: ^2.4.15
   slang_build_runner: ^4.7.0
+  mockito: ^5.4.2
 
 flutter_launcher_icons:
   android: true

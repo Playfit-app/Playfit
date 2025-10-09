@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' show max;
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -109,7 +110,7 @@ class _ProfilePageState extends State<ProfilePage> {
       if (!mounted) return;
       setState(() {
         _profile!['is_following'] = false;
-        _profile!['followers'] = (_followerCount - 1).clamp(0, 1 << 31);
+        _profile!['followers'] = max(_followerCount - 1, 0);
       });
     }
   }
@@ -124,7 +125,7 @@ class _ProfilePageState extends State<ProfilePage> {
     // optimistic
     setState(() {
       _profile!['is_following'] = false;
-      _profile!['followers'] = (_followerCount - 1).clamp(0, 1 << 31);
+      _profile!['followers'] = max(_followerCount - 1, 0);
     });
 
     final url =
@@ -583,49 +584,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
       ),
     );
-
-    // return FutureBuilder(
-    //   future: _futureUserData,
-    //   builder: (context, snapshot) {
-    //     if (!snapshot.hasData) {
-    //       return const Center(child: CircularProgressIndicator());
-    //     }
-
-    //     final userData = snapshot.data as Map<String, dynamic>;
-    //     final double screenWidth = MediaQuery.of(context).size.width;
-    //     final double screenHeight = MediaQuery.of(context).size.height;
-
-    //     if (userData['is_following'] != null) {
-    //       _isFollowing = userData['is_following'];
-    //     }
-    //     if (userData['followers'] != null) {
-    //       _followerCount = userData['followers'];
-    //     }
-
-    //     return Scaffold(
-    //       extendBodyBehindAppBar: true,
-    //       // Transparent app bar with settings icon to go to settings page
-    //       appBar: AppBar(
-    //         backgroundColor: Colors.transparent,
-    //         actions: <Widget>[
-    //           IconButton(
-    //             icon: const Icon(Icons.settings_outlined),
-    //             color: Colors.black,
-    //             onPressed: () {
-    //               Navigator.push(
-    //                 context,
-    //                 MaterialPageRoute(
-    //                   builder: (context) => const SettingsPage(),
-    //                 ),
-    //               );
-    //             },
-    //           ),
-    //         ],
-    //       ),
-          
-    //     );
-    //   },
-    // );
   }
 
   Widget _buildDivider() {

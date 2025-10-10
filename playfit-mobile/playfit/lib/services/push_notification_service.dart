@@ -53,11 +53,14 @@ class NotificationService {
     // await getToken();
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
+      final RemoteNotification? notification = message.notification;
+      final AndroidNotification? android = notification?.android;
+      final AppleNotification? apple = notification?.apple;
 
-      if (notification != null && android != null) {
-        _showNotification(notification.title!, notification.body!);
+      if (notification != null &&
+          (android != null || apple != null) &&
+          (notification.title != null || notification.body != null)) {
+        _showNotification(notification.title ?? '', notification.body ?? '');
       }
     });
 
@@ -68,22 +71,15 @@ class NotificationService {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     // Configure local notifications
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    
-    InitializationSettings initializationSettings;
-    if (Platform.isIOS) {
-      // For iOS, use minimal settings to avoid crashes
-      initializationSettings = const InitializationSettings(
-        android: androidSettings,
-        iOS: DarwinInitializationSettings(),
-      );
-    } else {
-      // For Android only
-      initializationSettings = const InitializationSettings(
-        android: androidSettings,
-      );
-    }
-    
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const darwinSettings = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
+    const initializationSettings =
+        InitializationSettings(android: androidSettings, iOS: darwinSettings);
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
@@ -161,17 +157,13 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.high,
     );
-    
-    NotificationDetails notificationDetails;
-    if (Platform.isIOS) {
-      const iOSDetails = DarwinNotificationDetails();
-      notificationDetails = const NotificationDetails(
-        android: androidDetails,
-        iOS: iOSDetails,
-      );
-    } else {
-      notificationDetails = const NotificationDetails(android: androidDetails);
-    }
+    const darwinDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+    const notificationDetails =
+        NotificationDetails(android: androidDetails, iOS: darwinDetails);
 
     await _flutterLocalNotificationsPlugin.show(
         0, title, body, notificationDetails);

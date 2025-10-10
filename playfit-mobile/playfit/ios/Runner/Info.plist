@@ -35,6 +35,12 @@
 	<string>Nous avons besoin d'accéder à la caméra pour capturer des photos et vidéos.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Nous avons besoin d'accéder au microphone pour enregistrer l'audio.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Nous avons besoin d'accéder au réseau local pour détecter et communiquer avec les appareils à proximité.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_http._tcp</string>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

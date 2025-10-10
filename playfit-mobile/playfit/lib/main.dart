@@ -28,15 +28,12 @@ void main() async {
   runApp(
     // DevicesPreview is only enabled in debug mode
     // It allows you to preview your app on different devices and screen sizes
-    DevicePreview(
-      enabled: !bool.fromEnvironment('dart.vm.product'),
-      builder: (context) => MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (context) => NotificationProvider()),
-          ChangeNotifierProvider(create: (context) => LanguageProvider()),
-        ],
-        child: const MyApp(),
-      ),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => NotificationProvider()),
+        ChangeNotifierProvider(create: (context) => LanguageProvider()),
+      ],
+      child: const MyApp(),
     ),
   );
 }
@@ -50,8 +47,7 @@ class MyApp extends StatelessWidget {
       builder: (context, languageProvider, child) {
         return TranslationProvider(
           child: MaterialApp(
-            builder: DevicePreview.appBuilder,
-            title: 'Flutter App',
+            title: 'Playfit',
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
               useMaterial3: true,

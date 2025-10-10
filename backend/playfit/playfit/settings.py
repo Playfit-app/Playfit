@@ -65,6 +65,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'utilities.renderers.UnicodeJSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
 }
 
 MIDDLEWARE = [
@@ -138,6 +142,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+# Default charset for all responses
+DEFAULT_CHARSET = 'utf-8'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/

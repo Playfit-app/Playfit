@@ -1,15 +1,20 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
+import 'package:playfit/services/log_service.dart';
 
 enum WorkoutType {
   squat,
   jumpingJack,
   pushUp,
   pullUp,
+  goodMorning,
 }
 
+enum BodySide { left, right }
+
 class WorkoutAnalyzer {
+  final LogService _logService = LogService.instance;
   final PoseDetector _poseDetector = PoseDetector(
     options: PoseDetectorOptions(
       mode: PoseDetectionMode.stream,
@@ -22,14 +27,12 @@ class WorkoutAnalyzer {
     WorkoutType.jumpingJack: 0,
     WorkoutType.pushUp: 0,
     WorkoutType.pullUp: 0,
+    WorkoutType.goodMorning: 0,
   });
   // A map to keep track of the status of each workout type
   // This is used to determine if the user has completed a workout
   final Map<WorkoutType, bool> _workoutStatus = {
-    WorkoutType.squat: false,
-    WorkoutType.jumpingJack: false,
-    WorkoutType.pushUp: false,
-    WorkoutType.pullUp: false,
+    for (var type in WorkoutType.values) type: false,
   };
   Map<PoseLandmarkType, PoseLandmark> _lastLandmarks = {};
 
@@ -51,23 +54,13 @@ class WorkoutAnalyzer {
       final pose = poses.first;
 
       switch (workout) {
-        case WorkoutType.squat:
-          detectSquat(pose);
-          break;
-        case WorkoutType.jumpingJack:
-          detectJumpingJack(pose);
-          break;
-        case WorkoutType.pushUp:
-          detectPushUp(pose);
-          break;
-        case WorkoutType.pullUp:
-          detectPullUp(pose);
-          break;
-        default:
-          break;
+        case WorkoutType.squat: detectSquat(pose); break;
+        case WorkoutType.jumpingJack: detectJumpingJack(pose); break;
+        case WorkoutType.pushUp: detectPushUp(pose); break;
+        case WorkoutType.pullUp: detectPullUp(pose); break;
+        case WorkoutType.goodMorning: detectGoodMorning(pose); break;
       }
     } catch (e) {
-      debugPrint('Error detection pose: $e');
     }
   }
 
@@ -237,6 +230,15 @@ class WorkoutAnalyzer {
     const double upThreshold = 60.0;
     const double downThreshold = 160.0;
     const double shoulderYMovementThreshold = 100;
+    final previousLeftShoulder =
+        _lastLandmarks[PoseLandmarkType.leftShoulder];
+    final previousRightShoulder =
+        _lastLandmarks[PoseLandmarkType.rightShoulder];
+
+    if (previousLeftShoulder == null || previousRightShoulder == null) {
+      _lastLandmarks = pose.landmarks;
+      return;
+    }
 
     // Check if both elbows are bent below the upThreshold
     // and if both shoulders have moved up significantly
@@ -244,11 +246,9 @@ class WorkoutAnalyzer {
     // If elbows are straight, it indicates the end of a pull-up
     if (leftElbowAngle <= upThreshold &&
         rightElbowAngle <= upThreshold &&
-        (leftShoulder.y - _lastLandmarks[PoseLandmarkType.leftShoulder]!.y)
-                .abs() >
+        (leftShoulder.y - previousLeftShoulder.y).abs() >
             shoulderYMovementThreshold &&
-        (rightShoulder.y - _lastLandmarks[PoseLandmarkType.rightShoulder]!.y)
-                .abs() >
+        (rightShoulder.y - previousRightShoulder.y).abs() >
             shoulderYMovementThreshold) {
       if (!_workoutStatus[WorkoutType.pullUp]!) {
         _workoutStatus[WorkoutType.pullUp] = true;
@@ -259,6 +259,53 @@ class WorkoutAnalyzer {
       if (_workoutStatus[WorkoutType.pullUp]!) {
         incrementWorkoutCount(WorkoutType.pullUp);
         _workoutStatus[WorkoutType.pullUp] = false;
+      }
+    }
+  }
+
+  /// Detects the good morning exercise pose
+  /// `pose` is the detected pose containing landmarks of the body.
+  /// Returns nothing.
+  void detectGoodMorning(Pose pose) {
+    final la = pose.landmarks[PoseLandmarkType.leftAnkle];
+    final ra = pose.landmarks[PoseLandmarkType.rightAnkle];
+    final lk = pose.landmarks[PoseLandmarkType.leftKnee];
+    final rk = pose.landmarks[PoseLandmarkType.rightKnee];
+    final lh = pose.landmarks[PoseLandmarkType.leftHip];
+    final rh = pose.landmarks[PoseLandmarkType.rightHip];
+    final ls = pose.landmarks[PoseLandmarkType.leftShoulder];
+    final rs = pose.landmarks[PoseLandmarkType.rightShoulder];
+
+    if (la == null ||
+        ra == null ||
+        lk == null ||
+        rk == null ||
+        lh == null ||
+        rh == null ||
+        ls == null ||
+        rs == null) {
+      return;
+    }
+    final leftHipAngle = calculateAngle(lk, lh, ls);
+    final rightHipAngle = calculateAngle(rk, rh, rs);
+    final leftKneeAngle = calculateAngle(la, lk, lh);
+    final rightKneeAngle = calculateAngle(ra, rk, rh);
+    const double downThreshold = 130;
+    const double upThreshold = 160;
+    const double kneeStraightThreshold = 160;
+
+    // Check if both hips are bent below the downThreshold. Legs should remain relatively straight.
+    // If both conditions are met, it indicates a good morning exercise.
+    if (leftHipAngle <= downThreshold && rightHipAngle <= downThreshold &&
+        leftKneeAngle >= kneeStraightThreshold &&
+        rightKneeAngle >= kneeStraightThreshold) {
+      if (!_workoutStatus[WorkoutType.goodMorning]!) {
+        _workoutStatus[WorkoutType.goodMorning] = true;
+      }
+    } else if (leftHipAngle >= upThreshold && rightHipAngle >= upThreshold) {
+      if (_workoutStatus[WorkoutType.goodMorning]!) {
+        incrementWorkoutCount(WorkoutType.goodMorning);
+        _workoutStatus[WorkoutType.goodMorning] = false;
       }
     }
   }
@@ -288,15 +335,18 @@ class WorkoutAnalyzer {
     return angle;
   }
 
+  bool _visible(PoseLandmark? landmark) => landmark != null && landmark.likelihood > 0.5;
+
   /// Increments the count for the specified workout type
   ///
   /// `workoutType` is the type of workout for which the count should be incremented.
   ///
   /// Returns nothing.
   void incrementWorkoutCount(WorkoutType workoutType) {
+    final newCount = workoutCounts.value[workoutType]! + 1;
     workoutCounts.value = {
       ...workoutCounts.value,
-      workoutType: workoutCounts.value[workoutType]! + 1,
+      workoutType: newCount,
     };
     // notifyListeners();
   }

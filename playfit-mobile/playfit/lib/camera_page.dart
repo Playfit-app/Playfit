@@ -70,13 +70,17 @@ class _CameraViewState extends State<CameraView> {
   WorkoutType workoutTypeFromName(String name) {
     switch (name.toLowerCase().replaceAll('-', '')) {
       case 'squat':
-        return WorkoutType.squat;
+        // return WorkoutType.squat;
+        return WorkoutType.goodMorning;
       case 'jumpingjack':
-        return WorkoutType.jumpingJack;
+        // return WorkoutType.jumpingJack;
+        return WorkoutType.goodMorning;
       case 'pushup':
-        return WorkoutType.pushUp;
+        // return WorkoutType.pushUp;
+        return WorkoutType.goodMorning;
       case 'pullup':
-        return WorkoutType.pullUp;
+        // return WorkoutType.pullUp;
+        return WorkoutType.goodMorning;
       default:
         throw Exception('Workout type not recognized: $name');
     }
@@ -154,14 +158,15 @@ class _CameraViewState extends State<CameraView> {
   /// Returns a [Future] that completes when the camera is initialized.
   Future<void> initCamera() async {
     final cameras = await availableCameras();
+    final frontCamera = cameras.firstWhere(
+      (camera) => camera.lensDirection == CameraLensDirection.front,
+    );
     _controller = CameraController(
-      cameras.firstWhere(
-        (camera) => camera.lensDirection == CameraLensDirection.front,
-      ),
+      frontCamera,
       ResolutionPreset.high,
+      enableAudio: false,
     );
     await _controller?.initialize();
-
     // Listen for changes in workout counts to update the count and trigger announcements
     _workoutAnalyzer.workoutCounts.addListener(() {
       final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
@@ -191,18 +196,23 @@ class _CameraViewState extends State<CameraView> {
   ///
   /// Returns a [void] that completes when the detection starts.
   void _startDetecting() async {
-    if (_controller != null) {
-      if (_controller!.value.isStreamingImages) return;
-      setState(() {
-        _showStartButton = false;
-      });
+    if (_controller == null) {
+      return;
+    }
+    if (!_controller!.value.isInitialized) {
+      return;
+    }
+    if (_controller!.value.isStreamingImages) {
+      return;
+    }
 
-      _startTimer();
-      // Start the camera image stream
-      // This will call the detectWorkout method in WorkoutAnalyzer
-      // with the input image from the camera
-      _controller!.startImageStream((image) async {
-        // Check if we are already detecting to avoid multiple detections
+    setState(() {
+      _showStartButton = false;
+    });
+    _startTimer();
+
+    try {
+      await _controller!.startImageStream((image) async {
         if (_isDetecting) return;
         _isDetecting = true;
 
@@ -210,10 +220,13 @@ class _CameraViewState extends State<CameraView> {
           final inputImage = ImageUtils.getInputImage(image, _controller);
           await _workoutAnalyzer.detectWorkout(inputImage, _workoutType);
         } catch (e) {
+          // Handle any errors that occur during image processing
         } finally {
           _isDetecting = false;
         }
       });
+    } on CameraException catch (e) {
+    } catch (e, st) {
     }
   }
 
@@ -230,6 +243,7 @@ class _CameraViewState extends State<CameraView> {
       _workoutTimerService.stop();
       await _controller!.stopImageStream();
       _isDetecting = false;
+    } else {
     }
 
     // Démarrer le compte à rebours

@@ -42,30 +42,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LanguageProvider>(
-      builder: (context, languageProvider, child) {
-        return TranslationProvider(
-          child: MaterialApp(
-            title: 'Playfit',
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-              useMaterial3: true,
-            ),
-            home: const LoginPage(),
-            routes: {
-              '/register': (context) =>
-                  const CreateAccountPage(), // Route to registration page
-              '/login': (context) => const LoginPage(), // Route to login page
-              '/home': (context) => HomePage(), // Route to home page
-              '/profile': (context) => const ProfilePage(), // Route to profile page
-              '/notifications': (context) => const NotificationPage(),
-            },
-            // Use the locale from LanguageProvider for automatic rebuilds
-            locale: languageProvider.currentLocale.flutterLocale,
-            supportedLocales: AppLocaleUtils.instance.supportedLocales,
-            localizationsDelegates: GlobalMaterialLocalizations.delegates,
-          ),
-        );
+    return MaterialApp(
+      title: 'Playfit',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      home: const LoginPage(),
+      routes: {
+        '/register': (context) =>
+            const CreateAccountPage(), // Route to registration page
+        '/login': (context) => const LoginPage(), // Route to login page
+        '/home': (context) => HomePage(), // Route to home page
+        '/profile': (context) => const ProfilePage(), // Route to profile page
+        '/notifications': (context) => const NotificationPage(),
       },
     );
   }

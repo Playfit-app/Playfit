@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -8,8 +7,8 @@ import 'package:playfit/i18n/strings.g.dart';
 import 'package:provider/provider.dart';
 import 'package:playfit/firebase_options.dart';
 import 'package:playfit/providers/notification_provider.dart';
+import 'package:playfit/providers/language_provider.dart';
 import 'package:playfit/services/push_notification_service.dart';
-import 'package:playfit/services/language_service.dart';
 import 'package:playfit/authentification/login_page.dart';
 import 'package:playfit/authentification/registration_page.dart';
 import 'package:playfit/home_page.dart';
@@ -24,22 +23,16 @@ void main() async {
   );
   NotificationService().initFirebaseMessaging();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  // Load the selected language in local storage and use it to set app language. Default to english if not set.
-  var locale = await LanguageService.loadLocale();
-
-  if (locale != null) {
-    await LocaleSettings.setLocale(locale);
-  } else {
-    locale = await LocaleSettings.useDeviceLocale();
-    await LanguageService.saveLocale(locale);
-  }
 
   runApp(
+    // DevicesPreview is only enabled in debug mode
+    // It allows you to preview your app on different devices and screen sizes
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => NotificationProvider()),
+        ChangeNotifierProvider(create: (context) => LanguageProvider()),
       ],
-      child: TranslationProvider(child: const MyApp()),
+      child: const MyApp(),
     ),
   );
 }
@@ -64,10 +57,6 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => const ProfilePage(), // Route to profile page
         '/notifications': (context) => const NotificationPage(),
       },
-      // Use the locale from the TranslationProvider
-      locale: TranslationProvider.of(context).flutterLocale,
-      supportedLocales: AppLocaleUtils.instance.supportedLocales,
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
     );
   }
 }

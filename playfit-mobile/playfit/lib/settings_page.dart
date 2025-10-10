@@ -1,12 +1,14 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:playfit/i18n/strings.g.dart';
+import 'package:http/http.dart' as http;
 import 'package:playfit/components/settings/dropdown_parameter.dart';
+import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/services/language_service.dart';
 import 'package:playfit/services/push_notification_service.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:convert';
 
 enum UserBoxType { left, bottom }
 
@@ -64,6 +66,52 @@ class _SettingsPageState extends State<SettingsPage> {
       notificationsEnabled:
           await _notificationService.loadNotificationSettings(),
     );
+  }
+
+  void _handleLanguageChanged(AppLocale? value) {
+    if (value == null) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _selectedLanguage = value;
+    });
+    unawaited(_persistSelectedLanguage(value));
+  }
+
+  Future<void> _persistSelectedLanguage(AppLocale value) async {
+    await LanguageService.saveLocale(value);
+    await LocaleSettings.setLocale(value);
+  }
+
+  Future<void> _handleNotificationToggle(bool requestedValue) async {
+    if (requestedValue) {
+      await _notificationService.handleNotificationPermissionFromSettings();
+    } else {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.t.settings.disable_notifications_info,
+          ),
+        ),
+      );
+      await _notificationService.saveNotificationSettings(false);
+    }
+
+    final bool storedValue =
+        await _notificationService.loadNotificationSettings();
+
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _notificationsEnabled = storedValue;
+    });
   }
 
   void _showConfirmationDialog(
@@ -207,15 +255,7 @@ void _showDeleteConfirmationDialog() {
                             title: t.settings.language,
                             currentValue: _selectedLanguage,
                             items: AppLocale.values,
-                            onChanged: (value) {
-                              setState(() async {
-                                if (value != null) {
-                                  _selectedLanguage = value;
-                                  await LanguageService.saveLocale(value);
-                                  await LocaleSettings.setLocale(value);
-                                }
-                              });
-                            },
+                            onChanged: _handleLanguageChanged,
                             itemLabelBuilder: LanguageService.getLocaleName,
                           ),
                           Divider(color: orange, thickness: 1),
@@ -223,29 +263,8 @@ void _showDeleteConfirmationDialog() {
                             activeColor: orange,
                             title: _buildText(t.settings.notifications),
                             value: _notificationsEnabled,
-                            onChanged: (value) async {
-                              if (value) {
-                                await _notificationService
-                                    .handleNotificationPermissionFromSettings();
-                              } else {
-                                // User wants to disable notifications (manually)
-                                // On Android: You can disable locally (but not system level)
-                                // On iOS: You can't programmatically disable, just inform the user
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      context.t.settings
-                                          .disable_notifications_info,
-                                    ),
-                                  ),
-                                );
-                              }
-                              setState(() {
-                                _notificationsEnabled = value;
-                                _notificationService
-                                    .saveNotificationSettings(value);
-                              });
-                            },
+                            onChanged: (value) =>
+                                unawaited(_handleNotificationToggle(value)),
                           ),
                           Divider(color: orange, thickness: 1),
                           DropdownParameter(

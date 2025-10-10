@@ -177,13 +177,16 @@ class _ProfilePageState extends State<ProfilePage> {
               IconButton(
                 icon: const Icon(Icons.settings_outlined),
                 color: Colors.black,
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const SettingsPage(),
                     ),
                   );
+                  if (mounted) {
+                    setState(() {});
+                  }
                 },
               ),
             ],

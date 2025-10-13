@@ -13,6 +13,7 @@ import 'package:playfit/components/camera/left_box_widget.dart';
 import 'package:playfit/components/camera/bottom_box_widget.dart';
 import 'package:playfit/components/camera/celebration_overlay.dart';
 import 'package:playfit/workout_progression_page.dart';
+import 'package:playfit/services/log_service.dart';
 
 enum BoxType { left, bottom }
 
@@ -47,6 +48,7 @@ class _CameraViewState extends State<CameraView> {
   bool _isDetecting = false;
   final WorkoutAnalyzer _workoutAnalyzer = WorkoutAnalyzer();
   WorkoutTimerService _workoutTimerService = WorkoutTimerService();
+  final LogService _logService = LogService.instance;
   late WorkoutType _workoutType;
   late String _exerciseName;
   late Duration _elapsedTime;
@@ -70,17 +72,13 @@ class _CameraViewState extends State<CameraView> {
   WorkoutType workoutTypeFromName(String name) {
     switch (name.toLowerCase().replaceAll('-', '')) {
       case 'squat':
-        // return WorkoutType.squat;
-        return WorkoutType.goodMorning;
+        return WorkoutType.squat;
       case 'jumpingjack':
-        // return WorkoutType.jumpingJack;
-        return WorkoutType.goodMorning;
+        return WorkoutType.jumpingJack;
       case 'pushup':
-        // return WorkoutType.pushUp;
-        return WorkoutType.goodMorning;
+        return WorkoutType.pushUp;
       case 'pullup':
-        // return WorkoutType.pullUp;
-        return WorkoutType.goodMorning;
+        return WorkoutType.pullUp;
       default:
         throw Exception('Workout type not recognized: $name');
     }
@@ -219,14 +217,30 @@ class _CameraViewState extends State<CameraView> {
         try {
           final inputImage = ImageUtils.getInputImage(image, _controller);
           await _workoutAnalyzer.detectWorkout(inputImage, _workoutType);
-        } catch (e) {
-          // Handle any errors that occur during image processing
+        } catch (e, st) {
+          _logService.log(
+            'Error while processing camera frame for ${_workoutType.name}',
+            level: LogLevel.error,
+            error: e,
+            stackTrace: st,
+          );
         } finally {
           _isDetecting = false;
         }
       });
     } on CameraException catch (e) {
+      _logService.log(
+        'Camera exception on StartImageStream: ${e.code} - ${e.description}',
+        level: LogLevel.error,
+        error: e,
+      );
     } catch (e, st) {
+      _logService.log(
+        'Unexpected error starting image stream',
+        level: LogLevel.error,
+        error: e,
+        stackTrace: st,
+      );
     }
   }
 
@@ -243,7 +257,10 @@ class _CameraViewState extends State<CameraView> {
       _workoutTimerService.stop();
       await _controller!.stopImageStream();
       _isDetecting = false;
-    } else {
+      _logService.log(
+        'Workout detection stream stopped',
+        level: LogLevel.info,
+      );
     }
 
     // Démarrer le compte à rebours

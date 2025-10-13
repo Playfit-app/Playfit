@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/level_cinematic/difficulty.dart';
 import 'package:playfit/services/tts_service.dart';
@@ -59,6 +62,11 @@ class _CameraViewState extends State<CameraView> {
   Timer? _celebrationTimer;
   bool _celebrationStarted = false;
   late FlutterTts _flutterTts;
+  late final SpeechToText _speechToText;
+  bool _speechAvailable = false;
+  bool _isListeningForGo = false;
+  bool _goTriggered = false;
+  Timer? _speechRestartTimer;
 
   /// Converts a workout name to a [WorkoutType].
   /// This method maps the name of the workout to its corresponding enum value.
@@ -101,8 +109,10 @@ class _CameraViewState extends State<CameraView> {
     _exerciseName = exercise['name'];
     _flutterTts = FlutterTts();
     configureTtsLanguage(_flutterTts);
+  _speechToText = SpeechToText();
 
     initCamera();
+  _initializeSpeechRecognition();
     // Listen for changes in workout counts to update the count and trigger announcements
     _workoutAnalyzer.workoutCounts.addListener(() {
       final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
@@ -185,6 +195,90 @@ class _CameraViewState extends State<CameraView> {
   }
   //end function after help
 
+  Future<void> _initializeSpeechRecognition() async {
+    final status = await Permission.microphone.request();
+    if (!status.isGranted) {
+      return;
+    }
+
+    _speechAvailable = await _speechToText.initialize(
+      onStatus: _onSpeechStatus,
+      onError: (error) {
+        _scheduleGoListeningRestart();
+      },
+    );
+
+    if (_speechAvailable && mounted && _showStartButton) {
+      await _startListeningForGo();
+    }
+  }
+
+  Future<void> _startListeningForGo() async {
+    if (!_speechAvailable || _goTriggered || !_showStartButton) return;
+    if (_speechToText.isListening) return;
+
+    final locale = await _speechToText.systemLocale();
+    _isListeningForGo = await _speechToText.listen(
+      onResult: _onSpeechResult,
+      listenFor: const Duration(seconds: 8),
+      pauseFor: const Duration(seconds: 3),
+      partialResults: true,
+      localeId: locale?.localeId,
+    );
+
+    if (!_isListeningForGo) {
+      _scheduleGoListeningRestart();
+    }
+  }
+
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    final text = result.recognizedWords.toLowerCase();
+    if (RegExp(r'\bgo\b').hasMatch(text) && !_goTriggered) {
+      _goTriggered = true;
+      _handleWorkoutStartTrigger();
+    }
+  }
+
+  void _onSpeechStatus(String status) {
+    if (status == 'notListening') {
+      _isListeningForGo = false;
+      _scheduleGoListeningRestart();
+    }
+  }
+
+  Future<void> _stopListeningForGo() async {
+    _speechRestartTimer?.cancel();
+    if (_speechToText.isListening) {
+      await _speechToText.stop();
+    }
+    _isListeningForGo = false;
+  }
+
+  void _scheduleGoListeningRestart() {
+    if (_goTriggered || !_showStartButton || !_speechAvailable) {
+      return;
+    }
+    _speechRestartTimer?.cancel();
+    _speechRestartTimer = Timer(const Duration(milliseconds: 700), () {
+      if (mounted) {
+        unawaited(_startListeningForGo());
+      }
+    });
+  }
+
+  void _handleWorkoutStartTrigger() {
+    if (!_showStartButton) return;
+    setState(() {
+      _showStartButton = false;
+    });
+    unawaited(_stopListeningForGo());
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        _startDetecting();
+      }
+    });
+  }
+
   /// Starts the workout detection process.
   /// This method checks if the camera controller is initialized and not already streaming images.
   /// If the conditions are met, it starts the image stream and begins detecting workouts.
@@ -193,9 +287,11 @@ class _CameraViewState extends State<CameraView> {
   void _startDetecting() async {
     if (_controller != null) {
       if (_controller!.value.isStreamingImages) return;
-      setState(() {
-        _showStartButton = false;
-      });
+      if (mounted) {
+        setState(() {
+          _showStartButton = false;
+        });
+      }
 
       _startTimer();
       // Start the camera image stream
@@ -358,24 +454,43 @@ class _CameraViewState extends State<CameraView> {
 
                 if (_showStartButton)
                   Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Future.delayed(const Duration(seconds: 3), () {
-                          _startDetecting();
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ElevatedButton(
+                          onPressed: _handleWorkoutStartTrigger,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          child: Text(
+                            t.camera.start_workout,
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.white),
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        t.camera.start_workout,
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Dites "GO" ou appuyez sur le bouton pour commencer',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 5.0,
+                                color: Colors.black54,
+                                offset: Offset(1, 1),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
               ],
@@ -397,6 +512,10 @@ class _CameraViewState extends State<CameraView> {
       _controller!.dispose();
     }
     _flutterTts.stop();
+    _speechRestartTimer?.cancel();
+    if (_speechAvailable) {
+      _speechToText.stop();
+    }
     super.dispose();
   }
 }

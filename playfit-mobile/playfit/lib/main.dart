@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -11,10 +10,10 @@ import 'package:playfit/providers/notification_provider.dart';
 import 'package:playfit/services/push_notification_service.dart';
 import 'package:playfit/services/language_service.dart';
 import 'package:playfit/authentification/login_page.dart';
+import 'package:playfit/authentification/auth_gate.dart';
 import 'package:playfit/authentification/registration_page.dart';
 import 'package:playfit/home_page.dart';
 import 'package:playfit/profile_page.dart';
-import 'package:playfit/camera_page.dart';
 import 'package:playfit/notification_page.dart';
 
 void main() async {
@@ -56,7 +55,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const LoginPage(),
+      home: const AuthGate(),
       routes: {
         '/register': (context) =>
             const CreateAccountPage(), // Route to registration page

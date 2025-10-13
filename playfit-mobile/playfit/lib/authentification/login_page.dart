@@ -21,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   String _errorMessage = '';
   bool _isGoogleSignInLoading = false;
   bool _isKeyboardVisible = false;
+  bool _stayConnected = false;
 
   /// Initializes the state of the widget and sets up a post-frame callback to determine
   /// if the keyboard is visible by checking the bottom inset of the current MediaQuery.
@@ -28,8 +29,19 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    _loadStayConnectedPreference();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+    });
+  }
+
+  Future<void> _loadStayConnectedPreference() async {
+    final storedValue = await authService.storage.read(key: 'stayConnected');
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _stayConnected = storedValue == 'true';
     });
   }
 
@@ -53,6 +65,7 @@ class _LoginPageState extends State<LoginPage> {
         context,
         _loginController.text,
         _passwordController.text,
+        stayConnected: _stayConnected,
       );
       if (!mounted) return;
       if (result["status"] == 'success') {
@@ -76,7 +89,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _handleGoogleSignIn() async {
-    var result = await authService.loginWithGoogle(context);
+    var result =
+        await authService.loginWithGoogle(context, stayConnected: _stayConnected);
     if (!mounted) return;
     if (result["status"] == 'success') {
       Navigator.pushReplacement(
@@ -255,6 +269,28 @@ class _LoginPageState extends State<LoginPage> {
                                 }
                                 return null;
                               },
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: screenWidth * 0.17),
+                            child: CheckboxListTile(
+                              value: _stayConnected,
+                              onChanged: (value) {
+                                setState(() {
+                                  _stayConnected = value ?? false;
+                                });
+                              },
+                              title: Text(
+                                t.login.stay_connected,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              controlAffinity:
+                                  ListTileControlAffinity.leading,
+                              contentPadding: EdgeInsets.zero,
+                              dense: true,
+                              activeColor:
+                                  const Color.fromARGB(255, 248, 135, 31),
                             ),
                           ),
                           SizedBox(height: screenHeight * 0.04),

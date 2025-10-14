@@ -35,8 +35,6 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   int _currentStep = 0;
   bool _isStep1Valid = false;
   bool _isStep2Valid = false;
-  bool _isStep3Valid = false;
-  bool _isKeyboardVisible = false;
 
   void _validateStep(GlobalKey<FormState> formKey) {
     setState(() {
@@ -44,8 +42,6 @@ class CreateAccountPageState extends State<CreateAccountPage> {
         _isStep1Valid = _step1FormKey.currentState!.validate();
       } else if (formKey == _step2FormKey) {
         _isStep2Valid = _step2FormKey.currentState!.validate();
-      } else {
-        _isStep3Valid = _step3FormKey.currentState!.validate();
       }
     });
   }
@@ -102,22 +98,6 @@ class CreateAccountPageState extends State<CreateAccountPage> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
-    });
-  }
-
-  void _hideKeyboard() {
-    FocusScope.of(context).unfocus();
-
-    setState(() {
-      _isKeyboardVisible = false;
-    });
-  }
-
   /// Builds the registration page UI with a multi-step registration form.
   ///
   /// The page consists of a background image with a mascot, and an animated
@@ -130,8 +110,10 @@ class CreateAccountPageState extends State<CreateAccountPage> {
   /// the previous step or to the login page.
   @override
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
+  double screenHeight = MediaQuery.of(context).size.height;
+  double screenWidth = MediaQuery.of(context).size.width;
+  double bottomInset = MediaQuery.of(context).viewInsets.bottom;
+  bool isKeyboardVisible = bottomInset > 0;
 
     return Scaffold(
       // resizeToAvoidBottomInset: true, // Add this line
@@ -156,7 +138,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
             ),
           ),
           AnimatedPositioned(
-            top: _isKeyboardVisible ? screenHeight * 0.15 : screenHeight * 0.35,
+            top: isKeyboardVisible ? screenHeight * 0.15 : screenHeight * 0.35,
             left: 0,
             bottom: 0,
             duration: const Duration(milliseconds: 300),
@@ -171,7 +153,7 @@ class CreateAccountPageState extends State<CreateAccountPage> {
                 ),
               ),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(top: 15),
+                padding: EdgeInsets.only(top: 15, bottom: bottomInset + 20),
                 child: Column(
                   children: [
                     Text(

@@ -45,12 +45,17 @@ class _PostFeedState extends State<PostFeed> {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
+      if (!mounted) return;
       setState(() {
         _posts = List<Map<String, dynamic>>.from(data);
         _loading = false;
       });
     } else {
       // Handle error
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+      });
       print("Failed to load posts: ${response.statusCode}");
     }
   }

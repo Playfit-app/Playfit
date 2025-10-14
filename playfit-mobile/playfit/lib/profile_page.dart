@@ -3,6 +3,7 @@ import 'dart:math' show max;
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,6 +15,7 @@ import 'package:playfit/components/success.dart';
 import 'package:playfit/components/historic_chart.dart';
 import 'package:playfit/components/level_progression_dialog.dart';
 import 'package:playfit/components/profile_icon.dart';
+import 'package:playfit/providers/language_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   final int? userId;
@@ -182,6 +184,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final userData = _profile!; // local, stable
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
+
+    return Consumer<LanguageProvider>(
+      builder: (context, languageProvider, child) {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -583,6 +588,8 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
           ),
       ),
+    );
+      },
     );
   }
 

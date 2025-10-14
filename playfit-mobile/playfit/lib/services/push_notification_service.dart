@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -52,11 +53,14 @@ class NotificationService {
     // await getToken();
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
+      final RemoteNotification? notification = message.notification;
+      final AndroidNotification? android = notification?.android;
+      final AppleNotification? apple = notification?.apple;
 
-      if (notification != null && android != null) {
-        _showNotification(notification.title!, notification.body!);
+      if (notification != null &&
+          (android != null || apple != null) &&
+          (notification.title != null || notification.body != null)) {
+        _showNotification(notification.title ?? '', notification.body ?? '');
       }
     });
 
@@ -67,10 +71,15 @@ class NotificationService {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     // Configure local notifications
-    var androidSettings =
-        const AndroidInitializationSettings('@mipmap/ic_launcher');
-    var initializationSettings =
-        InitializationSettings(android: androidSettings);
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const darwinSettings = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
+    const initializationSettings =
+        InitializationSettings(android: androidSettings, iOS: darwinSettings);
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
@@ -142,13 +151,19 @@ class NotificationService {
   /// 
   /// Returns a [Future] that completes when the notification is shown.
   Future<void> _showNotification(String title, String body) async {
-    var androidDetails = const AndroidNotificationDetails(
+    const androidDetails = AndroidNotificationDetails(
       'high_importance_channel',
       'High Importance Notifications',
       importance: Importance.max,
       priority: Priority.high,
     );
-    var notificationDetails = NotificationDetails(android: androidDetails);
+    const darwinDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+    const notificationDetails =
+        NotificationDetails(android: androidDetails, iOS: darwinDetails);
 
     await _flutterLocalNotificationsPlugin.show(
         0, title, body, notificationDetails);

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -13,6 +14,7 @@ import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/level_cinematic/difficulty.dart';
 import 'package:playfit/services/tts_service.dart';
 import 'package:playfit/services/workout_timer_service.dart';
+import 'package:playfit/styles/styles.dart';
 import 'package:playfit/workout_analyzer.dart';
 import 'package:playfit/image_converter.dart';
 import 'package:playfit/components/camera/left_box_widget.dart';
@@ -581,11 +583,10 @@ class _CameraViewState extends State<CameraView> {
 
                 if (_showStartButton)
                   Align(
-                    alignment: Alignment.bottomCenter,
+                    alignment: Alignment.center,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
-                        vertical: 48,
                       ),
                       child: _VoiceStartCard(
                         onPressed: _handleWorkoutStartTrigger,
@@ -637,42 +638,37 @@ class _CameraViewState extends State<CameraView> {
       return false;
     }
 
-    print('🔍 Vérification du mot "go" dans: "$text"');
+    print('🔍 Vérification de la commande dans: "$text"');
 
-    // Normaliser le texte
+    // Normaliser le texte (minuscules, suppression accents et ponctuation)
     final normalized = text
         .toLowerCase()
-        .replaceAll("'", '')
+        .replaceAll("'", ' ')
         .replaceAll('-', ' ')
+        .replaceAll('é', 'e')
+        .replaceAll('è', 'e')
+        .replaceAll('ê', 'e')
         .trim();
 
     print('🧹 Normalisé: "$normalized"');
 
-    // Liste de toutes les variantes possibles
+    // Commandes acceptées (2 par langue)
+    // Français: "GO" ou "C'est parti"
+    // Anglais: "GO" ou "Let's go"
     final goCommands = [
-      'go',
-      'gau',
-      'guo',
-      'go ',
-      ' go',
-      'lets go',
-      'let go',
-      'allez',
-      'allez go',
-      'vas y',
-      'vas-y',
-      'vasy',
+      // Français
       'cest parti',
       'c est parti',
-      'parti',
-      'top',
-      'top depart',
-      'depart',
-      'allons y',
-      'on y va',
+      'ces parti',
+      'se parti',
+      
+      // Anglais
+      'lets go',
+      'let go',
+      'letsgo',
     ];
 
-    // Vérifier si le texte contient une des commandes
+    // Vérifier les phrases complètes
     for (final cmd in goCommands) {
       if (normalized.contains(cmd)) {
         print('✅ Commande "$cmd" détectée !');
@@ -680,11 +676,11 @@ class _CameraViewState extends State<CameraView> {
       }
     }
 
-    // Vérifier les mots individuels
+    // Vérifier le mot "GO" seul ou dans le texte
     final words = normalized.split(' ');
     for (final word in words) {
-      if (word == 'go' || word == 'gau' || word == 'allez' || word == 'parti') {
-        print('✅ Mot "$word" détecté !');
+      if (word == 'go' || word == 'gau' || word == 'guo') {
+        print('✅ Mot "GO" détecté !');
         return true;
       }
     }
@@ -723,275 +719,247 @@ class _VoiceStartCard extends StatelessWidget {
                 ? cameraStrings.voice_hint_listening
                 : cameraStrings.voice_hint_tap;
 
-    final statusColor = !speechAvailable || permissionDenied
-        ? const Color(0xFFE57207)
-        : errorMessage != null
-            ? const Color(0xFFE57207)
-            : const Color(0xFFF8871F);
+    // Couleurs Playfit
+    const playfitOrange = Color(0xFFF8871F);
+    const playfitOrangeDark = Color(0xFFE57207);
+    const playfitBeige = Color(0xFFFFE9CA);
 
     return Container(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFF8871F), Color(0xFFE57207)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        color: playfitBeige,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: playfitOrangeDark.withOpacity(0.3),
+          width: 2,
         ),
-        borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF8871F).withOpacity(0.4),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-            spreadRadius: 0,
+            color: playfitOrange.withOpacity(0.2),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(32),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.3),
-            width: 1.5,
-          ),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(32),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withOpacity(0.15),
-                    Colors.white.withOpacity(0.05),
-                  ],
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header avec icône
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: playfitOrange.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: playfitOrange.withOpacity(0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Icon(
+                    isListening ? Icons.graphic_eq_rounded : Icons.mic_rounded,
+                    color: playfitOrangeDark,
+                    size: 28,
+                  ),
                 ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        cameraStrings.voice_hint_title,
+                        style: GoogleFonts.amaranth(
+                          color: AppStyles.grey,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        cameraStrings.voice_hint_body,
+                        style: GoogleFonts.amaranth(
+                          color: AppStyles.grey.withOpacity(0.85),
+                          fontSize: 14,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            
+            // Bouton principal
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: playfitOrange.withOpacity(0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(28),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: ElevatedButton(
+                onPressed: onPressed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: playfitOrange,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(isListening ? 0.3 : 0.2),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: isListening
-                                ? [
-                                    BoxShadow(
-                                      color: Colors.white.withOpacity(0.4),
-                                      blurRadius: 12,
-                                      spreadRadius: 2,
-                                    )
-                                  ]
-                                : [],
-                          ),
-                          child: Icon(
-                            isListening ? Icons.graphic_eq_rounded : Icons.mic_rounded,
-                            color: Colors.white,
-                            size: 32,
-                          ),
-                        ),
-                        const SizedBox(width: 18),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                cameraStrings.voice_hint_title,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -0.5,
-                                  shadows: [
-                                    Shadow(
-                                      color: Color(0x40000000),
-                                      offset: Offset(0, 2),
-                                      blurRadius: 4,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                cameraStrings.voice_hint_body,
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.95),
-                                  fontSize: 15,
-                                  height: 1.5,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton(
-                        onPressed: onPressed,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFFE57207),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.play_arrow_rounded, size: 24),
-                            const SizedBox(width: 8),
-                            Text(cameraStrings.start_workout),
-                          ],
-                        ),
+                    const Icon(Icons.play_arrow_rounded, size: 24),
+                    const SizedBox(width: 8),
+                    Text(
+                      cameraStrings.start_workout,
+                      style: GoogleFonts.amaranth(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (permissionDenied)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: TextButton.icon(
-                            onPressed: () async {
-                              await openAppSettings();
-                            },
-                            icon: const Icon(Icons.settings_rounded, color: Colors.white, size: 20),
-                            label: const Text(
-                              'Ouvrir les Réglages',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                              backgroundColor: Colors.white.withOpacity(0.15),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    const SizedBox(height: 18),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeInOut,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.25),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: statusColor.withOpacity(0.4),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              isListening ? Icons.hearing_rounded : Icons.mic_off_rounded,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              statusText,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (lastRecognizedPhrase != null && lastRecognizedPhrase!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 14),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFE9CA).withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: const Color(0xFFFFE9CA).withOpacity(0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.chat_bubble_outline_rounded,
-                                color: Color(0xFFFFE9CA),
-                                size: 16,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  cameraStrings.voice_hint_last_heard(
-                                    phrase: lastRecognizedPhrase!,
-                                  ),
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.95),
-                                    fontSize: 13,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                   ],
                 ),
               ),
             ),
-          ),
+
+            // Bouton des réglages si permission refusée
+            if (permissionDenied)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: TextButton.icon(
+                  onPressed: () async {
+                    await openAppSettings();
+                  },
+                  icon: const Icon(
+                    Icons.settings_rounded,
+                    color: playfitOrangeDark,
+                    size: 20,
+                  ),
+                  label: Text(
+                    'Ouvrir les Réglages',
+                    style: GoogleFonts.amaranth(
+                      color: playfitOrangeDark,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 16,
+                    ),
+                    backgroundColor: playfitOrange.withOpacity(0.1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: playfitOrange.withOpacity(0.3),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            
+            const SizedBox(height: 16),
+
+            // Statut d'écoute
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: isListening
+                    ? playfitOrange.withOpacity(0.15)
+                    : AppStyles.grey.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isListening
+                      ? playfitOrange.withOpacity(0.4)
+                      : AppStyles.grey.withOpacity(0.15),
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: isListening
+                          ? playfitOrange.withOpacity(0.2)
+                          : AppStyles.grey.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isListening ? Icons.hearing_rounded : Icons.mic_off_rounded,
+                      color: isListening ? playfitOrangeDark : AppStyles.grey,
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      statusText,
+                      style: GoogleFonts.amaranth(
+                        color: AppStyles.grey,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Dernière phrase reconnue
+            if (lastRecognizedPhrase != null && lastRecognizedPhrase!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: playfitOrange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: playfitOrange.withOpacity(0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        color: playfitOrangeDark,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          cameraStrings.voice_hint_last_heard(
+                            phrase: lastRecognizedPhrase!,
+                          ),
+                          style: GoogleFonts.amaranth(
+                            color: AppStyles.grey.withOpacity(0.85),
+                            fontSize: 13,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

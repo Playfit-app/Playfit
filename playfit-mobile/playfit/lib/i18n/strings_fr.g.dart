@@ -158,7 +158,7 @@ class _TranslationsCameraFr extends TranslationsCameraEn {
 	@override String next_step_countdown({required Object seconds}) => 'Prochaine étape dans ${seconds} secondes...';
 	@override String get start_workout => 'Démarrer';
 	@override String get voice_hint_title => 'Prêt à bouger ?';
-	@override String get voice_hint_body => 'Dis "GO" à voix haute ou appuie sur le bouton ci-dessous pour lancer ta séance.';
+	@override String get voice_hint_body => 'Dis "GO" ou "C\'est parti" à voix haute, ou appuie sur le bouton ci-dessous pour lancer ta séance.';
 	@override String get voice_hint_listening => 'À l\'écoute...';
 	@override String get voice_hint_permission => 'Active ton micro pour utiliser le démarrage vocal.';
 	@override String get voice_hint_tap => 'Tu préfères cliquer ? Appuie sur Démarrer.';
@@ -439,7 +439,7 @@ extension on TranslationsFr {
 			case 'camera.next_step_countdown': return ({required Object seconds}) => 'Prochaine étape dans ${seconds} secondes...';
 			case 'camera.start_workout': return 'Démarrer';
 			case 'camera.voice_hint_title': return 'Prêt à bouger ?';
-			case 'camera.voice_hint_body': return 'Dis "GO" à voix haute ou appuie sur le bouton ci-dessous pour lancer ta séance.';
+			case 'camera.voice_hint_body': return 'Dis "GO" ou "C\'est parti" à voix haute, ou appuie sur le bouton ci-dessous pour lancer ta séance.';
 			case 'camera.voice_hint_listening': return 'À l\'écoute...';
 			case 'camera.voice_hint_permission': return 'Active ton micro pour utiliser le démarrage vocal.';
 			case 'camera.voice_hint_tap': return 'Tu préfères cliquer ? Appuie sur Démarrer.';

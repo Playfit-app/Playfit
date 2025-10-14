@@ -49,7 +49,7 @@
         "next_step_countdown": "Next step in $seconds seconds...",
         "start_workout": "Start",
         "voice_hint_title": "Ready to move?",
-        "voice_hint_body": "Say \"GO\" loudly or tap the button below to launch your session.",
+        "voice_hint_body": "Say \"GO\" or \"Let's go\" loudly, or tap the button below to launch your session.",
         "voice_hint_listening": "Listening...",
         "voice_hint_permission": "Enable your microphone to use voice start.",
         "voice_hint_tap": "Prefer tapping? Press Start.",

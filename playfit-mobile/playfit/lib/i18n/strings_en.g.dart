@@ -159,7 +159,7 @@ class TranslationsCameraEn {
 	String next_step_countdown({required Object seconds}) => 'Next step in ${seconds} seconds...';
 	String get start_workout => 'Start';
 	String get voice_hint_title => 'Ready to move?';
-	String get voice_hint_body => 'Say "GO" loudly or tap the button below to launch your session.';
+	String get voice_hint_body => 'Say "GO" or "Let\'s go" loudly, or tap the button below to launch your session.';
 	String get voice_hint_listening => 'Listening...';
 	String get voice_hint_permission => 'Enable your microphone to use voice start.';
 	String get voice_hint_tap => 'Prefer tapping? Press Start.';
@@ -440,7 +440,7 @@ extension on Translations {
 			case 'camera.next_step_countdown': return ({required Object seconds}) => 'Next step in ${seconds} seconds...';
 			case 'camera.start_workout': return 'Start';
 			case 'camera.voice_hint_title': return 'Ready to move?';
-			case 'camera.voice_hint_body': return 'Say "GO" loudly or tap the button below to launch your session.';
+			case 'camera.voice_hint_body': return 'Say "GO" or "Let\'s go" loudly, or tap the button below to launch your session.';
 			case 'camera.voice_hint_listening': return 'Listening...';
 			case 'camera.voice_hint_permission': return 'Enable your microphone to use voice start.';
 			case 'camera.voice_hint_tap': return 'Prefer tapping? Press Start.';

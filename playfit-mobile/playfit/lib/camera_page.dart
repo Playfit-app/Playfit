@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:playfit/i18n/strings.g.dart';
@@ -67,6 +70,9 @@ class _CameraViewState extends State<CameraView> {
   bool _isListeningForGo = false;
   bool _goTriggered = false;
   Timer? _speechRestartTimer;
+  bool _speechPermissionDenied = false;
+  String? _speechErrorMessage;
+  String? _lastRecognizedPhrase;
 
   /// Converts a workout name to a [WorkoutType].
   /// This method maps the name of the workout to its corresponding enum value.
@@ -109,10 +115,10 @@ class _CameraViewState extends State<CameraView> {
     _exerciseName = exercise['name'];
     _flutterTts = FlutterTts();
     configureTtsLanguage(_flutterTts);
-  _speechToText = SpeechToText();
+    _speechToText = SpeechToText();
 
     initCamera();
-  _initializeSpeechRecognition();
+    _initializeSpeechRecognition();
     // Listen for changes in workout counts to update the count and trigger announcements
     _workoutAnalyzer.workoutCounts.addListener(() {
       final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
@@ -193,20 +199,72 @@ class _CameraViewState extends State<CameraView> {
       setState(() {});
     }
   }
-  //end function after help
 
   Future<void> _initializeSpeechRecognition() async {
-    final status = await Permission.microphone.request();
-    if (!status.isGranted) {
+    print('🔐 Vérification des permissions...');
+    
+    // Try to initialize speech recognition first (this will trigger the permission request on iOS)
+    final available = await _speechToText.initialize(
+      onStatus: _onSpeechStatus,
+      onError: _onSpeechError,
+      debugLogging: true,
+    );
+
+    print('🎙️ Speech disponible après initialize: $available');
+
+    // Then check microphone permission
+    var micStatus = await Permission.microphone.status;
+    print('🎤 Microphone status: $micStatus');
+    
+    if (!micStatus.isGranted) {
+      micStatus = await Permission.microphone.request();
+      print('🎤 Microphone après request: $micStatus');
+    }
+    
+    // Check speech permission on iOS
+    PermissionStatus? speechStatus;
+    if (Platform.isIOS) {
+      speechStatus = await Permission.speech.status;
+      print('🗣️ Speech status: $speechStatus');
+      
+      if (!speechStatus.isGranted && !speechStatus.isPermanentlyDenied) {
+        speechStatus = await Permission.speech.request();
+        print('🗣️ Speech après request: $speechStatus');
+      }
+    }
+
+    final hasMic = micStatus.isGranted;
+    final hasSpeechPermission = available; // Use speech_to_text's own check
+
+    print('✅ Microphone accordé: $hasMic');
+    print('✅ Speech disponible: $hasSpeechPermission');
+
+    if (!hasMic || !hasSpeechPermission) {
+      print('❌ Permissions insuffisantes !');
+      print('💡 Speech Recognition disponible: $available');
+      setState(() {
+        _speechPermissionDenied = !hasSpeechPermission;
+        _speechAvailable = available;
+      });
+      
+      // If speech is available but permission_handler says no, trust speech_to_text
+      if (available) {
+        print('✅ Speech_to_text dit que c\'est OK, on continue !');
+        if (mounted && _showStartButton) {
+          await _startListeningForGo();
+        }
+        return;
+      }
       return;
     }
 
-    _speechAvailable = await _speechToText.initialize(
-      onStatus: _onSpeechStatus,
-      onError: (error) {
-        _scheduleGoListeningRestart();
-      },
-    );
+    if (mounted) {
+      setState(() {
+        _speechAvailable = available;
+        _speechPermissionDenied = false;
+        _speechErrorMessage = null;
+      });
+    }
 
     if (_speechAvailable && mounted && _showStartButton) {
       await _startListeningForGo();
@@ -214,17 +272,48 @@ class _CameraViewState extends State<CameraView> {
   }
 
   Future<void> _startListeningForGo() async {
-    if (!_speechAvailable || _goTriggered || !_showStartButton) return;
-    if (_speechToText.isListening) return;
+    if (!_speechAvailable || _goTriggered || !_showStartButton) {
+      print('⚠️ Ne peut pas écouter: available=$_speechAvailable, triggered=$_goTriggered, showButton=$_showStartButton');
+      return;
+    }
+    
+    if (_speechToText.isListening) {
+      print('⚠️ Déjà en écoute');
+      return;
+    }
 
-    final locale = await _speechToText.systemLocale();
-    _isListeningForGo = await _speechToText.listen(
-      onResult: _onSpeechResult,
-      listenFor: const Duration(seconds: 8),
-      pauseFor: const Duration(seconds: 3),
-      partialResults: true,
-      localeId: locale?.localeId,
+    final locales = await _speechToText.locales();
+    
+    // Chercher la locale française, sinon prendre la première disponible
+    final frenchLocale = locales.firstWhere(
+      (l) => l.localeId.startsWith('fr'),
+      orElse: () => locales.first,
     );
+    
+    print('🌍 Locale choisie: ${frenchLocale.localeId}');
+    
+    _lastRecognizedPhrase = null;
+    _speechErrorMessage = null;
+
+    await _speechToText.listen(
+      onResult: _onSpeechResult,
+      listenFor: const Duration(seconds: 10),
+      pauseFor: const Duration(seconds: 2),
+      partialResults: true,
+      localeId: frenchLocale.localeId,
+      cancelOnError: false,
+      listenMode: ListenMode.confirmation,
+    );
+
+    // Vérifier le statut réel après avoir lancé l'écoute
+    final isListening = _speechToText.isListening;
+    print('🎙️ Écoute démarrée: $isListening');
+
+    if (mounted) {
+      setState(() {
+        _isListeningForGo = isListening;
+      });
+    }
 
     if (!_isListeningForGo) {
       _scheduleGoListeningRestart();
@@ -232,18 +321,54 @@ class _CameraViewState extends State<CameraView> {
   }
 
   void _onSpeechResult(SpeechRecognitionResult result) {
-    final text = result.recognizedWords.toLowerCase();
-    if (RegExp(r'\bgo\b').hasMatch(text) && !_goTriggered) {
+    final rawText = result.recognizedWords;
+    final sanitized = _sanitizeRecognizedText(rawText);
+
+    print('🎤 Brut: "$rawText"');
+    print('🧹 Nettoyé: "$sanitized"');
+    print('✓ Final: ${result.finalResult}');
+
+    if (sanitized.isEmpty) {
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _lastRecognizedPhrase = sanitized;
+      });
+    }
+
+    if (_containsGoCommand(sanitized) && !_goTriggered) {
+      print('🚀 GO TRIGGERED !');
       _goTriggered = true;
       _handleWorkoutStartTrigger();
     }
   }
 
   void _onSpeechStatus(String status) {
+    print('📊 Status: $status');
     if (status == 'notListening') {
-      _isListeningForGo = false;
+      if (mounted) {
+        setState(() {
+          _isListeningForGo = false;
+        });
+      }
       _scheduleGoListeningRestart();
     }
+  }
+
+  void _onSpeechError(SpeechRecognitionError error) {
+    print('❌ Erreur speech: ${error.errorMsg}');
+    if (_goTriggered || !_showStartButton) return;
+
+    if (mounted) {
+      setState(() {
+        _speechErrorMessage = error.errorMsg;
+        _isListeningForGo = false;
+      });
+    }
+
+    _scheduleGoListeningRestart();
   }
 
   Future<void> _stopListeningForGo() async {
@@ -267,10 +392,12 @@ class _CameraViewState extends State<CameraView> {
   }
 
   void _handleWorkoutStartTrigger() {
+    print('🏋️ Démarrage du workout...');
     if (!_showStartButton) return;
     setState(() {
       _showStartButton = false;
     });
+    _speechErrorMessage = null;
     unawaited(_stopListeningForGo());
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
@@ -306,6 +433,7 @@ class _CameraViewState extends State<CameraView> {
           final inputImage = ImageUtils.getInputImage(image, _controller);
           await _workoutAnalyzer.detectWorkout(inputImage, _workoutType);
         } catch (e) {
+          print('❌ Erreur détection: $e');
         } finally {
           _isDetecting = false;
         }
@@ -387,8 +515,7 @@ class _CameraViewState extends State<CameraView> {
                   left: 0,
                   right: 0,
                   child: Text(
-                    _exerciseName
-                        .toUpperCase(), // tu peux enlever le toUpperCase() si tu veux le nom original
+                    _exerciseName.toUpperCase(),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 24,
@@ -453,44 +580,21 @@ class _CameraViewState extends State<CameraView> {
                   ),
 
                 if (_showStartButton)
-                  Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ElevatedButton(
-                          onPressed: _handleWorkoutStartTrigger,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          child: Text(
-                            t.camera.start_workout,
-                            style: const TextStyle(
-                                fontSize: 18, color: Colors.white),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Dites "GO" ou appuyez sur le bouton pour commencer',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                blurRadius: 5.0,
-                                color: Colors.black54,
-                                offset: Offset(1, 1),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 48,
+                      ),
+                      child: _VoiceStartCard(
+                        onPressed: _handleWorkoutStartTrigger,
+                        isListening: _isListeningForGo,
+                        speechAvailable: _speechAvailable,
+                        permissionDenied: _speechPermissionDenied,
+                        errorMessage: _speechErrorMessage,
+                        lastRecognizedPhrase: _lastRecognizedPhrase,
+                      ),
                     ),
                   ),
               ],
@@ -517,5 +621,379 @@ class _CameraViewState extends State<CameraView> {
       _speechToText.stop();
     }
     super.dispose();
+  }
+
+  String _sanitizeRecognizedText(String text) {
+    final lower = text.toLowerCase();
+    final cleaned = lower
+        .replaceAll(RegExp(r"[^\p{L}\p{N}\s]", unicode: true), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    return cleaned;
+  }
+
+  bool _containsGoCommand(String text) {
+    if (text.isEmpty) {
+      return false;
+    }
+
+    print('🔍 Vérification du mot "go" dans: "$text"');
+
+    // Normaliser le texte
+    final normalized = text
+        .toLowerCase()
+        .replaceAll("'", '')
+        .replaceAll('-', ' ')
+        .trim();
+
+    print('🧹 Normalisé: "$normalized"');
+
+    // Liste de toutes les variantes possibles
+    final goCommands = [
+      'go',
+      'gau',
+      'guo',
+      'go ',
+      ' go',
+      'lets go',
+      'let go',
+      'allez',
+      'allez go',
+      'vas y',
+      'vas-y',
+      'vasy',
+      'cest parti',
+      'c est parti',
+      'parti',
+      'top',
+      'top depart',
+      'depart',
+      'allons y',
+      'on y va',
+    ];
+
+    // Vérifier si le texte contient une des commandes
+    for (final cmd in goCommands) {
+      if (normalized.contains(cmd)) {
+        print('✅ Commande "$cmd" détectée !');
+        return true;
+      }
+    }
+
+    // Vérifier les mots individuels
+    final words = normalized.split(' ');
+    for (final word in words) {
+      if (word == 'go' || word == 'gau' || word == 'allez' || word == 'parti') {
+        print('✅ Mot "$word" détecté !');
+        return true;
+      }
+    }
+
+    print('❌ Aucune commande détectée');
+    return false;
+  }
+}
+
+class _VoiceStartCard extends StatelessWidget {
+  const _VoiceStartCard({
+    required this.onPressed,
+    required this.isListening,
+    required this.speechAvailable,
+    required this.permissionDenied,
+    required this.errorMessage,
+    required this.lastRecognizedPhrase,
+  });
+
+  final VoidCallback onPressed;
+  final bool isListening;
+  final bool speechAvailable;
+  final bool permissionDenied;
+  final String? errorMessage;
+  final String? lastRecognizedPhrase;
+
+  @override
+  Widget build(BuildContext context) {
+    final cameraStrings = t.camera;
+
+    final statusText = !speechAvailable || permissionDenied
+        ? cameraStrings.voice_hint_permission
+        : errorMessage != null
+            ? cameraStrings.voice_hint_error
+            : isListening
+                ? cameraStrings.voice_hint_listening
+                : cameraStrings.voice_hint_tap;
+
+    final statusColor = !speechAvailable || permissionDenied
+        ? const Color(0xFFE57207)
+        : errorMessage != null
+            ? const Color(0xFFE57207)
+            : const Color(0xFFF8871F);
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFF8871F), Color(0xFFE57207)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF8871F).withOpacity(0.4),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.3),
+            width: 1.5,
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(32),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(0.15),
+                    Colors.white.withOpacity(0.05),
+                  ],
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(isListening ? 0.3 : 0.2),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: isListening
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.4),
+                                      blurRadius: 12,
+                                      spreadRadius: 2,
+                                    )
+                                  ]
+                                : [],
+                          ),
+                          child: Icon(
+                            isListening ? Icons.graphic_eq_rounded : Icons.mic_rounded,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                        ),
+                        const SizedBox(width: 18),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                cameraStrings.voice_hint_title,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -0.5,
+                                  shadows: [
+                                    Shadow(
+                                      color: Color(0x40000000),
+                                      offset: Offset(0, 2),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                cameraStrings.voice_hint_body,
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.95),
+                                  fontSize: 15,
+                                  height: 1.5,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: onPressed,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFFE57207),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.play_arrow_rounded, size: 24),
+                            const SizedBox(width: 8),
+                            Text(cameraStrings.start_workout),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (permissionDenied)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.3),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: TextButton.icon(
+                            onPressed: () async {
+                              await openAppSettings();
+                            },
+                            icon: const Icon(Icons.settings_rounded, color: Colors.white, size: 20),
+                            label: const Text(
+                              'Ouvrir les Réglages',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                              backgroundColor: Colors.white.withOpacity(0.15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 18),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeInOut,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: statusColor.withOpacity(0.4),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isListening ? Icons.hearing_rounded : Icons.mic_off_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              statusText,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (lastRecognizedPhrase != null && lastRecognizedPhrase!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 14),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFE9CA).withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: const Color(0xFFFFE9CA).withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.chat_bubble_outline_rounded,
+                                color: Color(0xFFFFE9CA),
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  cameraStrings.voice_hint_last_heard(
+                                    phrase: lastRecognizedPhrase!,
+                                  ),
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.95),
+                                    fontSize: 13,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

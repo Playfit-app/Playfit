@@ -163,6 +163,8 @@ class TranslationsCameraEn {
 	String get voice_hint_listening => 'Listening...';
 	String get voice_hint_permission => 'Enable your microphone to use voice start.';
 	String get voice_hint_tap => 'Prefer tapping? Press Start.';
+	String get voice_hint_error => 'Voice start unavailable. Tap Start instead.';
+	String voice_hint_last_heard({required Object phrase}) => 'Heard: ${phrase}';
 }
 
 // Path: notifications
@@ -442,6 +444,8 @@ extension on Translations {
 			case 'camera.voice_hint_listening': return 'Listening...';
 			case 'camera.voice_hint_permission': return 'Enable your microphone to use voice start.';
 			case 'camera.voice_hint_tap': return 'Prefer tapping? Press Start.';
+			case 'camera.voice_hint_error': return 'Voice start unavailable. Tap Start instead.';
+			case 'camera.voice_hint_last_heard': return ({required Object phrase}) => 'Heard: ${phrase}';
 			case 'notifications.title': return 'Notifications';
 			case 'notifications.read_all': return 'Read all';
 			case 'notifications.empty': return 'No notifications at the moment.';

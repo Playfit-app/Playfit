@@ -52,7 +52,9 @@
         "voice_hint_body": "Say \"GO\" loudly or tap the button below to launch your session.",
         "voice_hint_listening": "Listening...",
         "voice_hint_permission": "Enable your microphone to use voice start.",
-        "voice_hint_tap": "Prefer tapping? Press Start."
+        "voice_hint_tap": "Prefer tapping? Press Start.",
+        "voice_hint_error": "Voice start unavailable. Tap Start instead.",
+        "voice_hint_last_heard": "Heard: $phrase"
     },
     "notifications": {
         "title": "Notifications",

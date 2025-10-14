@@ -5,23 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'pa      print('❌ Insufficient permissions!');
-      print('💡 Speech Recognition available: $available');
-      setState(() {
-        _speechPermissionDenied = !hasSpeechPermission;
-        _speechAvailable = available;
-      });
-      
-      // If speech is available but permission_handler says no, trust speech_to_text
-      if (available) {
-        print('✅ Speech_to_text says it\'s OK, continuing!');
-        if (mounted && _showStartButton) {
-          await _startListeningForGo();
-        }
-        return;
-      }
-      return;
-    }s/google_fonts.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -92,13 +76,6 @@ class _CameraViewState extends State<CameraView> {
   String? _speechErrorMessage;
   String? _lastRecognizedPhrase;
 
-  /// Converts a workout name to a [WorkoutType].
-  /// This method maps the name of the workout to its corresponding enum value.
-  /// Throws an exception if the name is not recognized.
-  ///
-  /// `name` is the name of the workout as a string.
-  ///
-  /// Returns a [WorkoutType] corresponding to the name.
   WorkoutType workoutTypeFromName(String name) {
     switch (name.toLowerCase().replaceAll('-', '')) {
       case 'squat':
@@ -136,8 +113,8 @@ class _CameraViewState extends State<CameraView> {
     _speechToText = SpeechToText();
 
     initCamera();
+    // Don't auto-start listening - only initialize permissions
     _initializeSpeechRecognition();
-    // Listen for changes in workout counts to update the count and trigger announcements
     _workoutAnalyzer.workoutCounts.addListener(() {
       final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
       if (count != null && count > _count && count <= _targetCount) {
@@ -147,18 +124,13 @@ class _CameraViewState extends State<CameraView> {
           if (_count == _targetCount && !_celebrationStarted) {
             _celebrationStarted = true;
             _showCelebration = true;
-            _stopDetecting(); // Triggers the countdown
+            _stopDetecting();
           }
         });
       }
     });
   }
 
-  /// Announces the current count or target count using Text-to-Speech (TTS).
-  /// This method stops any ongoing speech and speaks the current count.
-  /// If the count matches the target count, it announces a congratulatory message.
-  ///
-  /// Returns a [Future] that completes when the speech is done.
   Future<void> _announceCount() async {
     await _flutterTts.stop();
     if (_count == _targetCount) {
@@ -169,23 +141,10 @@ class _CameraViewState extends State<CameraView> {
     }
   }
 
-  /// Starts a timer that updates the elapsed time every second.
-  /// This method also checks if the target count has been reached
-  /// and sets a flag to show the celebration overlay.
-  ///
-  /// Returns a [void] that completes when the timer is started.
   void _startTimer() {
     _workoutTimerService.start();
   }
 
-  /// Initializes the camera and sets up the camera controller.
-  /// This method retrieves the available cameras, selects the front camera,
-  /// and initializes the camera controller with a high resolution preset.
-  ///
-  /// It also sets up a listener for workout counts to update the count
-  /// and trigger the celebration overlay when the target count is reached.
-  ///
-  /// Returns a [Future] that completes when the camera is initialized.
   Future<void> initCamera() async {
     final cameras = await availableCameras();
     _controller = CameraController(
@@ -196,7 +155,6 @@ class _CameraViewState extends State<CameraView> {
     );
     await _controller?.initialize();
 
-    // Listen for changes in workout counts to update the count and trigger announcements
     _workoutAnalyzer.workoutCounts.addListener(() {
       final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
 
@@ -221,7 +179,6 @@ class _CameraViewState extends State<CameraView> {
   Future<void> _initializeSpeechRecognition() async {
     print('🔐 Checking permissions...');
     
-    // Try to initialize speech recognition first (this will trigger the permission request on iOS)
     final available = await _speechToText.initialize(
       onStatus: _onSpeechStatus,
       onError: _onSpeechError,
@@ -230,7 +187,6 @@ class _CameraViewState extends State<CameraView> {
 
     print('🎙️ Speech available after initialize: $available');
 
-    // Then check microphone permission
     var micStatus = await Permission.microphone.status;
     print('🎤 Microphone status: $micStatus');
     
@@ -239,7 +195,7 @@ class _CameraViewState extends State<CameraView> {
       print('🎤 Microphone after request: $micStatus');
     }
     
-    // Check speech permission on iOS
+    // Check speech permission on iOS only
     PermissionStatus? speechStatus;
     if (Platform.isIOS) {
       speechStatus = await Permission.speech.status;
@@ -252,41 +208,23 @@ class _CameraViewState extends State<CameraView> {
     }
 
     final hasMic = micStatus.isGranted;
-    final hasSpeechPermission = available; // Use speech_to_text's own check
+    final hasSpeechPermission = available;
 
     print('✅ Microphone granted: $hasMic');
     print('✅ Speech available: $hasSpeechPermission');
-
-    if (!hasMic || !hasSpeechPermission) {
-      print('❌ Insufficient permissions!');
-      print('💡 Speech Recognition available: $available');
-      setState(() {
-        _speechPermissionDenied = !hasSpeechPermission;
-        _speechAvailable = available;
-      });
-      
-      // If speech is available but permission_handler says no, trust speech_to_text
-      if (available) {
-        print('✅ Speech_to_text dit que c\'est OK, on continue !');
-        if (mounted && _showStartButton) {
-          await _startListeningForGo();
-        }
-        return;
-      }
-      return;
-    }
+    print('📱 Platform: ${Platform.isAndroid ? "Android" : "iOS"}');
 
     if (mounted) {
       setState(() {
         _speechAvailable = available;
-        _speechPermissionDenied = false;
+        _speechPermissionDenied = !hasSpeechPermission || !hasMic;
         _speechErrorMessage = null;
       });
     }
 
-    if (_speechAvailable && mounted && _showStartButton) {
-      await _startListeningForGo();
-    }
+    // Don't auto-start listening here anymore
+    // Let the user see the card first before starting
+    print('✅ Speech recognition initialized, waiting for user interaction');
   }
 
   Future<void> _startListeningForGo() async {
@@ -302,7 +240,6 @@ class _CameraViewState extends State<CameraView> {
 
     final locales = await _speechToText.locales();
     
-    // Look for French locale, otherwise take the first available
     final frenchLocale = locales.firstWhere(
       (l) => l.localeId.startsWith('fr'),
       orElse: () => locales.first,
@@ -323,7 +260,6 @@ class _CameraViewState extends State<CameraView> {
       listenMode: ListenMode.confirmation,
     );
 
-    // Check actual status after starting listening
     final isListening = _speechToText.isListening;
     print('🎙️ Listening started: $isListening');
 
@@ -386,6 +322,13 @@ class _CameraViewState extends State<CameraView> {
       });
     }
 
+    // Restart listening after an error (except permanent errors)
+    if (error.errorMsg != 'error_speech_timeout' && 
+        error.errorMsg != 'error_no_match') {
+      print('⚠️ Non-recoverable error, not restarting');
+      return;
+    }
+    
     _scheduleGoListeningRestart();
   }
 
@@ -399,11 +342,14 @@ class _CameraViewState extends State<CameraView> {
 
   void _scheduleGoListeningRestart() {
     if (_goTriggered || !_showStartButton || !_speechAvailable) {
+      print('⚠️ Not restarting: goTriggered=$_goTriggered, showButton=$_showStartButton, available=$_speechAvailable');
       return;
     }
     _speechRestartTimer?.cancel();
+    print('⏱️ Scheduling restart in 700ms...');
     _speechRestartTimer = Timer(const Duration(milliseconds: 700), () {
-      if (mounted) {
+      if (mounted && _showStartButton && !_goTriggered) {
+        print('🔄 Restarting listening...');
         unawaited(_startListeningForGo());
       }
     });
@@ -411,7 +357,15 @@ class _CameraViewState extends State<CameraView> {
 
   void _handleWorkoutStartTrigger() {
     print('🏋️ Starting workout...');
-    if (!_showStartButton) return;
+    if (!_showStartButton) {
+      print('⚠️ Button already hidden, ignoring trigger');
+      return;
+    }
+    if (!_goTriggered) {
+      print('⚠️ GO not triggered, ignoring manual start');
+      // Allow manual start via button press even without voice command
+      _goTriggered = true;
+    }
     setState(() {
       _showStartButton = false;
     });
@@ -424,11 +378,6 @@ class _CameraViewState extends State<CameraView> {
     });
   }
 
-  /// Starts the workout detection process.
-  /// This method checks if the camera controller is initialized and not already streaming images.
-  /// If the conditions are met, it starts the image stream and begins detecting workouts.
-  ///
-  /// Returns a [void] that completes when the detection starts.
   void _startDetecting() async {
     if (_controller != null) {
       if (_controller!.value.isStreamingImages) return;
@@ -439,11 +388,7 @@ class _CameraViewState extends State<CameraView> {
       }
 
       _startTimer();
-      // Start the camera image stream
-      // This will call the detectWorkout method in WorkoutAnalyzer
-      // with the input image from the camera
       _controller!.startImageStream((image) async {
-        // Check if we are already detecting to avoid multiple detections
         if (_isDetecting) return;
         _isDetecting = true;
 
@@ -459,22 +404,13 @@ class _CameraViewState extends State<CameraView> {
     }
   }
 
-  /// Stops the workout detection process and starts a countdown for the celebration overlay.
-  /// This method checks if the camera controller is initialized and streaming images.
-  /// If so, it cancels the timer, stops the image stream,
-  /// and sets a flag to show the celebration overlay.
-  /// It also starts a countdown timer that updates the UI every second.
-  ///
-  /// Returns a [void] that completes when the detection is stopped.
   void _stopDetecting() async {
     if (_controller != null && _controller!.value.isStreamingImages) {
-      // Stop the workout timer
       _workoutTimerService.stop();
       await _controller!.stopImageStream();
       _isDetecting = false;
     }
 
-    // Start countdown
     _celebrationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         _celebrationCountdown--;
@@ -486,11 +422,6 @@ class _CameraViewState extends State<CameraView> {
     });
   }
 
-  /// Navigates to the WorkoutProgressionPage with the current exercise index and difficulty.
-  /// This method creates a new route and passes the necessary parameters,
-  /// including the difficulty level, images, starting point, and character images.
-  ///
-  /// Returns a [void] that completes when the navigation is done.
   void _goToProgressionPage() {
     final Difficulty difficulty = widget.difficulty == "beginner"
         ? Difficulty.easy
@@ -564,7 +495,6 @@ class _CameraViewState extends State<CameraView> {
                       count: _count,
                       targetCount: _targetCount),
 
-                // Overlay when count hits the target
                 if (_showCelebration)
                   CelebrationOverlay(
                     finalTime: _workoutTimerService.elapsed,
@@ -656,7 +586,6 @@ class _CameraViewState extends State<CameraView> {
 
     print('🔍 Checking command in: "$text"');
 
-    // Normalize text (lowercase, remove accents and punctuation)
     final normalized = text
         .toLowerCase()
         .replaceAll("'", ' ')
@@ -668,23 +597,16 @@ class _CameraViewState extends State<CameraView> {
 
     print('🧹 Normalized: "$normalized"');
 
-    // Accepted commands (2 per language)
-    // French: "GO" or "C'est parti"
-    // English: "GO" or "Let's go"
     final goCommands = [
-      // French
       'cest parti',
       'c est parti',
       'ces parti',
       'se parti',
-      
-      // English
       'lets go',
       'let go',
       'letsgo',
     ];
 
-    // Check complete phrases
     for (final cmd in goCommands) {
       if (normalized.contains(cmd)) {
         print('✅ Command "$cmd" detected!');
@@ -692,7 +614,6 @@ class _CameraViewState extends State<CameraView> {
       }
     }
 
-    // Check for "GO" word alone or in text
     final words = normalized.split(' ');
     for (final word in words) {
       if (word == 'go' || word == 'gau' || word == 'guo') {
@@ -706,7 +627,7 @@ class _CameraViewState extends State<CameraView> {
   }
 }
 
-class _VoiceStartCard extends StatelessWidget {
+class _VoiceStartCard extends StatefulWidget {
   const _VoiceStartCard({
     required this.onPressed,
     required this.isListening,
@@ -724,18 +645,40 @@ class _VoiceStartCard extends StatelessWidget {
   final String? lastRecognizedPhrase;
 
   @override
+  State<_VoiceStartCard> createState() => _VoiceStartCardState();
+}
+
+class _VoiceStartCardState extends State<_VoiceStartCard> {
+  @override
+  void initState() {
+    super.initState();
+    // Start listening after a short delay to let the UI render
+    if (widget.speechAvailable && !widget.permissionDenied) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          // Trigger listening through parent
+          final cameraState = context.findAncestorStateOfType<_CameraViewState>();
+          if (cameraState != null && cameraState._showStartButton && !cameraState._goTriggered) {
+            print('🎯 Starting initial listening from card...');
+            cameraState._startListeningForGo();
+          }
+        }
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cameraStrings = t.camera;
 
-    final statusText = !speechAvailable || permissionDenied
+    final statusText = !widget.speechAvailable || widget.permissionDenied
         ? cameraStrings.voice_hint_permission
-        : errorMessage != null
+        : widget.errorMessage != null
             ? cameraStrings.voice_hint_error
-            : isListening
+            : widget.isListening
                 ? cameraStrings.voice_hint_listening
                 : cameraStrings.voice_hint_tap;
 
-    // Playfit colors
     const playfitOrange = Color(0xFFF8871F);
     const playfitOrangeDark = Color(0xFFE57207);
     const playfitBeige = Color(0xFFFFE9CA);
@@ -762,7 +705,6 @@ class _VoiceStartCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header with icon
             Row(
               children: [
                 Container(
@@ -776,7 +718,7 @@ class _VoiceStartCard extends StatelessWidget {
                     ),
                   ),
                   child: Icon(
-                    isListening ? Icons.graphic_eq_rounded : Icons.mic_rounded,
+                    widget.isListening ? Icons.graphic_eq_rounded : Icons.mic_rounded,
                     color: playfitOrangeDark,
                     size: 28,
                   ),
@@ -811,7 +753,6 @@ class _VoiceStartCard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             
-            // Main button
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
@@ -824,7 +765,7 @@ class _VoiceStartCard extends StatelessWidget {
                 ],
               ),
               child: ElevatedButton(
-                onPressed: onPressed,
+                onPressed: widget.onPressed,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: playfitOrange,
                   foregroundColor: Colors.white,
@@ -851,8 +792,7 @@ class _VoiceStartCard extends StatelessWidget {
               ),
             ),
 
-            // Settings button if permission denied
-            if (permissionDenied)
+            if (widget.permissionDenied)
               Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: TextButton.icon(
@@ -891,16 +831,15 @@ class _VoiceStartCard extends StatelessWidget {
             
             const SizedBox(height: 16),
 
-            // Listening status
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isListening
+                color: widget.isListening
                     ? playfitOrange.withOpacity(0.15)
                     : AppStyles.grey.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isListening
+                  color: widget.isListening
                       ? playfitOrange.withOpacity(0.4)
                       : AppStyles.grey.withOpacity(0.15),
                   width: 1.5,
@@ -911,14 +850,14 @@ class _VoiceStartCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: isListening
+                      color: widget.isListening
                           ? playfitOrange.withOpacity(0.2)
                           : AppStyles.grey.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      isListening ? Icons.hearing_rounded : Icons.mic_off_rounded,
-                      color: isListening ? playfitOrangeDark : AppStyles.grey,
+                      widget.isListening ? Icons.hearing_rounded : Icons.mic_off_rounded,
+                      color: widget.isListening ? playfitOrangeDark : AppStyles.grey,
                       size: 16,
                     ),
                   ),
@@ -937,8 +876,7 @@ class _VoiceStartCard extends StatelessWidget {
               ),
             ),
 
-            // Last recognized phrase
-            if (lastRecognizedPhrase != null && lastRecognizedPhrase!.isNotEmpty)
+            if (widget.lastRecognizedPhrase != null && widget.lastRecognizedPhrase!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: Container(
@@ -962,7 +900,7 @@ class _VoiceStartCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           cameraStrings.voice_hint_last_heard(
-                            phrase: lastRecognizedPhrase!,
+                            phrase: widget.lastRecognizedPhrase!,
                           ),
                           style: GoogleFonts.amaranth(
                             color: AppStyles.grey.withOpacity(0.85),

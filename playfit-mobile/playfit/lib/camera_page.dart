@@ -5,7 +5,23 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'pa      print('❌ Insufficient permissions!');
+      print('💡 Speech Recognition available: $available');
+      setState(() {
+        _speechPermissionDenied = !hasSpeechPermission;
+        _speechAvailable = available;
+      });
+      
+      // If speech is available but permission_handler says no, trust speech_to_text
+      if (available) {
+        print('✅ Speech_to_text says it\'s OK, continuing!');
+        if (mounted && _showStartButton) {
+          await _startListeningForGo();
+        }
+        return;
+      }
+      return;
+    }s/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -203,7 +219,7 @@ class _CameraViewState extends State<CameraView> {
   }
 
   Future<void> _initializeSpeechRecognition() async {
-    print('🔐 Vérification des permissions...');
+    print('🔐 Checking permissions...');
     
     // Try to initialize speech recognition first (this will trigger the permission request on iOS)
     final available = await _speechToText.initialize(
@@ -212,7 +228,7 @@ class _CameraViewState extends State<CameraView> {
       debugLogging: true,
     );
 
-    print('🎙️ Speech disponible après initialize: $available');
+    print('🎙️ Speech available after initialize: $available');
 
     // Then check microphone permission
     var micStatus = await Permission.microphone.status;
@@ -220,7 +236,7 @@ class _CameraViewState extends State<CameraView> {
     
     if (!micStatus.isGranted) {
       micStatus = await Permission.microphone.request();
-      print('🎤 Microphone après request: $micStatus');
+      print('🎤 Microphone after request: $micStatus');
     }
     
     // Check speech permission on iOS
@@ -231,19 +247,19 @@ class _CameraViewState extends State<CameraView> {
       
       if (!speechStatus.isGranted && !speechStatus.isPermanentlyDenied) {
         speechStatus = await Permission.speech.request();
-        print('🗣️ Speech après request: $speechStatus');
+        print('🗣️ Speech after request: $speechStatus');
       }
     }
 
     final hasMic = micStatus.isGranted;
     final hasSpeechPermission = available; // Use speech_to_text's own check
 
-    print('✅ Microphone accordé: $hasMic');
-    print('✅ Speech disponible: $hasSpeechPermission');
+    print('✅ Microphone granted: $hasMic');
+    print('✅ Speech available: $hasSpeechPermission');
 
     if (!hasMic || !hasSpeechPermission) {
-      print('❌ Permissions insuffisantes !');
-      print('💡 Speech Recognition disponible: $available');
+      print('❌ Insufficient permissions!');
+      print('💡 Speech Recognition available: $available');
       setState(() {
         _speechPermissionDenied = !hasSpeechPermission;
         _speechAvailable = available;
@@ -275,24 +291,24 @@ class _CameraViewState extends State<CameraView> {
 
   Future<void> _startListeningForGo() async {
     if (!_speechAvailable || _goTriggered || !_showStartButton) {
-      print('⚠️ Ne peut pas écouter: available=$_speechAvailable, triggered=$_goTriggered, showButton=$_showStartButton');
+      print('⚠️ Cannot listen: available=$_speechAvailable, triggered=$_goTriggered, showButton=$_showStartButton');
       return;
     }
     
     if (_speechToText.isListening) {
-      print('⚠️ Déjà en écoute');
+      print('⚠️ Already listening');
       return;
     }
 
     final locales = await _speechToText.locales();
     
-    // Chercher la locale française, sinon prendre la première disponible
+    // Look for French locale, otherwise take the first available
     final frenchLocale = locales.firstWhere(
       (l) => l.localeId.startsWith('fr'),
       orElse: () => locales.first,
     );
     
-    print('🌍 Locale choisie: ${frenchLocale.localeId}');
+    print('🌍 Locale chosen: ${frenchLocale.localeId}');
     
     _lastRecognizedPhrase = null;
     _speechErrorMessage = null;
@@ -307,9 +323,9 @@ class _CameraViewState extends State<CameraView> {
       listenMode: ListenMode.confirmation,
     );
 
-    // Vérifier le statut réel après avoir lancé l'écoute
+    // Check actual status after starting listening
     final isListening = _speechToText.isListening;
-    print('🎙️ Écoute démarrée: $isListening');
+    print('🎙️ Listening started: $isListening');
 
     if (mounted) {
       setState(() {
@@ -326,8 +342,8 @@ class _CameraViewState extends State<CameraView> {
     final rawText = result.recognizedWords;
     final sanitized = _sanitizeRecognizedText(rawText);
 
-    print('🎤 Brut: "$rawText"');
-    print('🧹 Nettoyé: "$sanitized"');
+    print('🎤 Raw: "$rawText"');
+    print('🧹 Sanitized: "$sanitized"');
     print('✓ Final: ${result.finalResult}');
 
     if (sanitized.isEmpty) {
@@ -341,7 +357,7 @@ class _CameraViewState extends State<CameraView> {
     }
 
     if (_containsGoCommand(sanitized) && !_goTriggered) {
-      print('🚀 GO TRIGGERED !');
+      print('🚀 GO TRIGGERED!');
       _goTriggered = true;
       _handleWorkoutStartTrigger();
     }
@@ -360,7 +376,7 @@ class _CameraViewState extends State<CameraView> {
   }
 
   void _onSpeechError(SpeechRecognitionError error) {
-    print('❌ Erreur speech: ${error.errorMsg}');
+    print('❌ Speech error: ${error.errorMsg}');
     if (_goTriggered || !_showStartButton) return;
 
     if (mounted) {
@@ -394,7 +410,7 @@ class _CameraViewState extends State<CameraView> {
   }
 
   void _handleWorkoutStartTrigger() {
-    print('🏋️ Démarrage du workout...');
+    print('🏋️ Starting workout...');
     if (!_showStartButton) return;
     setState(() {
       _showStartButton = false;
@@ -435,7 +451,7 @@ class _CameraViewState extends State<CameraView> {
           final inputImage = ImageUtils.getInputImage(image, _controller);
           await _workoutAnalyzer.detectWorkout(inputImage, _workoutType);
         } catch (e) {
-          print('❌ Erreur détection: $e');
+          print('❌ Detection error: $e');
         } finally {
           _isDetecting = false;
         }
@@ -458,7 +474,7 @@ class _CameraViewState extends State<CameraView> {
       _isDetecting = false;
     }
 
-    // Démarrer le compte à rebours
+    // Start countdown
     _celebrationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         _celebrationCountdown--;
@@ -537,12 +553,12 @@ class _CameraViewState extends State<CameraView> {
                     ),
                   ),
                 ),
-                if (widget.boxType == BoxType.left)
+                if (widget.boxType == BoxType.left && !_showStartButton)
                   LeftBoxWidget(
                       elapsedTime: _elapsedTime,
                       count: _count,
                       targetCount: _targetCount),
-                if (widget.boxType == BoxType.bottom)
+                if (widget.boxType == BoxType.bottom && !_showStartButton)
                   BottomBoxWidget(
                       elapsedTime: _elapsedTime,
                       count: _count,
@@ -638,9 +654,9 @@ class _CameraViewState extends State<CameraView> {
       return false;
     }
 
-    print('🔍 Vérification de la commande dans: "$text"');
+    print('🔍 Checking command in: "$text"');
 
-    // Normaliser le texte (minuscules, suppression accents et ponctuation)
+    // Normalize text (lowercase, remove accents and punctuation)
     final normalized = text
         .toLowerCase()
         .replaceAll("'", ' ')
@@ -650,42 +666,42 @@ class _CameraViewState extends State<CameraView> {
         .replaceAll('ê', 'e')
         .trim();
 
-    print('🧹 Normalisé: "$normalized"');
+    print('🧹 Normalized: "$normalized"');
 
-    // Commandes acceptées (2 par langue)
-    // Français: "GO" ou "C'est parti"
-    // Anglais: "GO" ou "Let's go"
+    // Accepted commands (2 per language)
+    // French: "GO" or "C'est parti"
+    // English: "GO" or "Let's go"
     final goCommands = [
-      // Français
+      // French
       'cest parti',
       'c est parti',
       'ces parti',
       'se parti',
       
-      // Anglais
+      // English
       'lets go',
       'let go',
       'letsgo',
     ];
 
-    // Vérifier les phrases complètes
+    // Check complete phrases
     for (final cmd in goCommands) {
       if (normalized.contains(cmd)) {
-        print('✅ Commande "$cmd" détectée !');
+        print('✅ Command "$cmd" detected!');
         return true;
       }
     }
 
-    // Vérifier le mot "GO" seul ou dans le texte
+    // Check for "GO" word alone or in text
     final words = normalized.split(' ');
     for (final word in words) {
       if (word == 'go' || word == 'gau' || word == 'guo') {
-        print('✅ Mot "GO" détecté !');
+        print('✅ Word "GO" detected!');
         return true;
       }
     }
 
-    print('❌ Aucune commande détectée');
+    print('❌ No command detected');
     return false;
   }
 }
@@ -719,7 +735,7 @@ class _VoiceStartCard extends StatelessWidget {
                 ? cameraStrings.voice_hint_listening
                 : cameraStrings.voice_hint_tap;
 
-    // Couleurs Playfit
+    // Playfit colors
     const playfitOrange = Color(0xFFF8871F);
     const playfitOrangeDark = Color(0xFFE57207);
     const playfitBeige = Color(0xFFFFE9CA);
@@ -746,7 +762,7 @@ class _VoiceStartCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header avec icône
+            // Header with icon
             Row(
               children: [
                 Container(
@@ -795,7 +811,7 @@ class _VoiceStartCard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             
-            // Bouton principal
+            // Main button
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
@@ -835,7 +851,7 @@ class _VoiceStartCard extends StatelessWidget {
               ),
             ),
 
-            // Bouton des réglages si permission refusée
+            // Settings button if permission denied
             if (permissionDenied)
               Padding(
                 padding: const EdgeInsets.only(top: 12),
@@ -875,7 +891,7 @@ class _VoiceStartCard extends StatelessWidget {
             
             const SizedBox(height: 16),
 
-            // Statut d'écoute
+            // Listening status
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
@@ -921,7 +937,7 @@ class _VoiceStartCard extends StatelessWidget {
               ),
             ),
 
-            // Dernière phrase reconnue
+            // Last recognized phrase
             if (lastRecognizedPhrase != null && lastRecognizedPhrase!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 12),

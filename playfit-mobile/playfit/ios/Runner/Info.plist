@@ -28,28 +28,33 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<string>14</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>Nous avons besoin d'accéder à la caméra pour capturer des photos et vidéos.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Nous avons besoin d'accéder au microphone pour enregistrer l'audio.</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>Nous avons besoin d'accéder au réseau local pour détecter et communiquer avec les appareils à proximité.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_http._tcp</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Nous avons besoin d'accéder à la caméra pour capturer des photos et vidéos.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Nous avons besoin d'accéder au réseau local pour détecter et communiquer avec les appareils à proximité.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Nous avons besoin d'accéder au microphone pour enregistrer l'audio.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>UIRequiresFullScreen</key>
+	<true/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

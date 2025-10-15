@@ -36,10 +36,12 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _loadStayConnectedPreference() async {
-    final storedValue = await authService.storage.read(key: 'stayConnected');
     if (!mounted) {
       return;
     }
+
+    final storedValue = await authService.storage.read(key: 'stayConnected');
+
     setState(() {
       _stayConnected = storedValue == 'true';
     });

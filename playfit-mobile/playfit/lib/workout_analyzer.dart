@@ -9,12 +9,16 @@ enum WorkoutType {
   pushUp,
   pullUp,
   goodMorning,
+  gluteBridge,
 }
 
 enum BodySide { left, right }
 
 class WorkoutAnalyzer {
-  final LogService _logService = LogService.instance;
+  final LogService _logService = LogService(
+    logFileName: 'workout_analyzer.log',
+    keepInMemory: false,
+  );
   final PoseDetector _poseDetector = PoseDetector(
     options: PoseDetectorOptions(
       mode: PoseDetectionMode.stream,
@@ -28,6 +32,7 @@ class WorkoutAnalyzer {
     WorkoutType.pushUp: 0,
     WorkoutType.pullUp: 0,
     WorkoutType.goodMorning: 0,
+    WorkoutType.gluteBridge: 0,
   });
   // A map to keep track of the status of each workout type
   // This is used to determine if the user has completed a workout
@@ -54,14 +59,26 @@ class WorkoutAnalyzer {
       final pose = poses.first;
 
       switch (workout) {
-        case WorkoutType.squat: detectSquat(pose); break;
-        case WorkoutType.jumpingJack: detectJumpingJack(pose); break;
-        case WorkoutType.pushUp: detectPushUp(pose); break;
-        case WorkoutType.pullUp: detectPullUp(pose); break;
-        case WorkoutType.goodMorning: detectGoodMorning(pose); break;
+        case WorkoutType.squat:
+          detectSquat(pose);
+          break;
+        case WorkoutType.jumpingJack:
+          detectJumpingJack(pose);
+          break;
+        case WorkoutType.pushUp:
+          detectPushUp(pose);
+          break;
+        case WorkoutType.pullUp:
+          detectPullUp(pose);
+          break;
+        case WorkoutType.goodMorning:
+          detectGoodMorning(pose);
+          break;
+        case WorkoutType.gluteBridge:
+          detectGluteBridge(pose);
+          break;
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   /// Detects the squat workout based on the pose landmarks
@@ -230,8 +247,7 @@ class WorkoutAnalyzer {
     const double upThreshold = 60.0;
     const double downThreshold = 160.0;
     const double shoulderYMovementThreshold = 100;
-    final previousLeftShoulder =
-        _lastLandmarks[PoseLandmarkType.leftShoulder];
+    final previousLeftShoulder = _lastLandmarks[PoseLandmarkType.leftShoulder];
     final previousRightShoulder =
         _lastLandmarks[PoseLandmarkType.rightShoulder];
 
@@ -296,7 +312,8 @@ class WorkoutAnalyzer {
 
     // Check if both hips are bent below the downThreshold. Legs should remain relatively straight.
     // If both conditions are met, it indicates a good morning exercise.
-    if (leftHipAngle <= downThreshold && rightHipAngle <= downThreshold &&
+    if (leftHipAngle <= downThreshold &&
+        rightHipAngle <= downThreshold &&
         leftKneeAngle >= kneeStraightThreshold &&
         rightKneeAngle >= kneeStraightThreshold) {
       if (!_workoutStatus[WorkoutType.goodMorning]!) {
@@ -306,6 +323,40 @@ class WorkoutAnalyzer {
       if (_workoutStatus[WorkoutType.goodMorning]!) {
         incrementWorkoutCount(WorkoutType.goodMorning);
         _workoutStatus[WorkoutType.goodMorning] = false;
+      }
+    }
+  }
+
+  void detectGluteBridge(Pose pose) {
+    final leftShoulder = pose.landmarks[PoseLandmarkType.leftShoulder];
+    final rightShoulder = pose.landmarks[PoseLandmarkType.rightShoulder];
+    final leftHip = pose.landmarks[PoseLandmarkType.leftHip];
+    final rightHip = pose.landmarks[PoseLandmarkType.rightHip];
+    final leftKnee = pose.landmarks[PoseLandmarkType.leftKnee];
+    final rightKnee = pose.landmarks[PoseLandmarkType.rightKnee];
+
+    if (!_visible(leftShoulder) ||
+        !_visible(rightShoulder) ||
+        !_visible(leftHip) ||
+        !_visible(rightHip) ||
+        !_visible(leftKnee) ||
+        !_visible(rightKnee)) {
+      return;
+    }
+
+    final leftHipAngle = calculateAngle(leftKnee!, leftHip!, leftShoulder!);
+    final rightHipAngle = calculateAngle(rightKnee!, rightHip!, rightShoulder!);
+    const double downThreshold = 130;
+    const double upThreshold = 145;
+
+    if (leftHipAngle <= downThreshold && rightHipAngle <= downThreshold) {
+      if (!_workoutStatus[WorkoutType.gluteBridge]!) {
+        _workoutStatus[WorkoutType.gluteBridge] = true;
+      }
+    } else if (leftHipAngle >= upThreshold && rightHipAngle >= upThreshold) {
+      if (_workoutStatus[WorkoutType.gluteBridge]!) {
+        incrementWorkoutCount(WorkoutType.gluteBridge);
+        _workoutStatus[WorkoutType.gluteBridge] = false;
       }
     }
   }
@@ -335,7 +386,8 @@ class WorkoutAnalyzer {
     return angle;
   }
 
-  bool _visible(PoseLandmark? landmark) => landmark != null && landmark.likelihood > 0.5;
+  bool _visible(PoseLandmark? landmark) =>
+      landmark != null && landmark.likelihood > 0.5;
 
   /// Increments the count for the specified workout type
   ///

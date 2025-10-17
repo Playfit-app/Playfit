@@ -61,6 +61,7 @@ class _CameraViewState extends State<CameraView> {
   Timer? _celebrationTimer;
   bool _celebrationStarted = false;
   late FlutterTts _flutterTts;
+  Future<void>? _cameraShutdown;
 
   /// Converts a workout name to a [WorkoutType].
   /// This method maps the name of the workout to its corresponding enum value.
@@ -77,6 +78,8 @@ class _CameraViewState extends State<CameraView> {
         return WorkoutType.jumpingJack;
       case 'pushup':
         return WorkoutType.pushUp;
+      case 'glutebridge':
+        return WorkoutType.gluteBridge;
       case 'pullup':
         return WorkoutType.pullUp;
       default:
@@ -165,23 +168,6 @@ class _CameraViewState extends State<CameraView> {
       enableAudio: false,
     );
     await _controller?.initialize();
-    // Listen for changes in workout counts to update the count and trigger announcements
-    _workoutAnalyzer.workoutCounts.addListener(() {
-      final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
-
-      if (count != null && count > _count && count <= _targetCount) {
-        setState(() {
-          _count = count;
-
-          if (_count == _targetCount && !_celebrationStarted) {
-            _celebrationStarted = true;
-            _showCelebration = true;
-            _stopDetecting();
-          }
-        });
-      }
-    });
-
     if (mounted) {
       setState(() {});
     }
@@ -270,7 +256,7 @@ class _CameraViewState extends State<CameraView> {
       });
       if (_celebrationCountdown == 0) {
         _celebrationTimer?.cancel();
-        _goToProgressionPage();
+        unawaited(_goToProgressionPage());
       }
     });
   }
@@ -280,7 +266,12 @@ class _CameraViewState extends State<CameraView> {
   /// including the difficulty level, images, starting point, and character images.
   ///
   /// Returns a [void] that completes when the navigation is done.
-  void _goToProgressionPage() {
+  Future<void> _goToProgressionPage() async {
+    await _shutdownCamera();
+    if (!mounted) {
+      return;
+    }
+
     final Difficulty difficulty = widget.difficulty == "beginner"
         ? Difficulty.easy
         : widget.difficulty == "intermediate"
@@ -421,13 +412,50 @@ class _CameraViewState extends State<CameraView> {
     _workoutTimerService.stop();
     _celebrationTimer?.cancel();
     _workoutAnalyzer.dispose();
-    if (_controller != null) {
-      if (_controller!.value.isStreamingImages) {
-        _controller!.stopImageStream();
-      }
-      _controller!.dispose();
-    }
+    unawaited(_shutdownCamera());
     _flutterTts.stop();
     super.dispose();
+  }
+
+  Future<void> _shutdownCamera() {
+    if (_cameraShutdown != null) {
+      return _cameraShutdown!;
+    }
+    final controller = _controller;
+    if (controller == null) {
+      return Future<void>.value();
+    }
+
+    _cameraShutdown = _disposeCameraController(controller).whenComplete(() {
+      _cameraShutdown = null;
+    });
+    return _cameraShutdown!;
+  }
+
+  Future<void> _disposeCameraController(CameraController controller) async {
+    _controller = null;
+    try {
+      if (controller.value.isStreamingImages) {
+        try {
+          await controller.stopImageStream();
+          _isDetecting = false;
+        } catch (e, st) {
+          _logService.log(
+            'Camera exception while stopping image stream during shutdown',
+            level: LogLevel.warning,
+            error: e,
+            stackTrace: st,
+          );
+        }
+      }
+      await controller.dispose();
+    } catch (e, st) {
+      _logService.log(
+        'Camera exception while disposing controller',
+        level: LogLevel.warning,
+        error: e,
+        stackTrace: st,
+      );
+    }
   }
 }

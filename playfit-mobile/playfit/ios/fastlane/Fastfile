@@ -31,11 +31,36 @@ platform :ios do
     lane_context[SharedValues::IPA_OUTPUT_PATH]
   end
 
+  private_lane :upload_to_store do |options|
+    destination = options[:destination]
+    ipa_path = options[:ipa]
+    changelog = options[:changelog]
+    app_store_options = options[:app_store_options] || {}
+
+    UI.user_error!("ipa path is required") if ipa_path.nil?
+    UI.user_error!("destination must be :testflight or :app_store") unless [:testflight, :app_store].include?(destination)
+
+    setup_asc_key
+
+    case destination
+    when :testflight
+      upload_to_testflight(
+        ipa: ipa_path,
+        changelog: changelog
+      )
+    when :app_store
+      upload_to_app_store(
+        { ipa: ipa_path }.merge(app_store_options)
+      )
+    end
+  end
+
   desc "Distribute to TestFlight"
   lane :beta do
     ipa_path = build_ipa
     generic_notes = "Bug fixes and performance improvements"
-    upload_to_testflight(
+    upload_to_store(
+      destination: :testflight,
       ipa: ipa_path,
       changelog: generic_notes
     )
@@ -45,18 +70,21 @@ platform :ios do
   lane :release do
     ipa_path = build_ipa
     generic_notes = "Bug fixes and performance improvements"
-    upload_to_app_store(
+    upload_to_store(
+      destination: :app_store,
       ipa: ipa_path,
-      skip_metadata: true,
-      skip_screenshots: true,
-      precheck_include_in_app_purchases: false,
-      release_notes: {
-        "en-US" => generic_notes,
-        "fr-FR" => generic_notes
-      },
-      submit_for_review: true,
-      automatic_release: true,
-      phased_release: false
+      app_store_options: {
+        skip_metadata: true,
+        skip_screenshots: true,
+        precheck_include_in_app_purchases: false,
+        release_notes: {
+          "en-US" => generic_notes,
+          "fr-FR" => generic_notes
+        },
+        submit_for_review: true,
+        automatic_release: true,
+        phased_release: false
+      }
     )
   end
 end

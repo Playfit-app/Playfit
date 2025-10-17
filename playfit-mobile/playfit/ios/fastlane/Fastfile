@@ -14,7 +14,7 @@ platform :ios do
   private_lane :build_ipa do
     setup_asc_key
     app_id = CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)
-    latest = latest_testflight_build_number(app_identifier: app_id)
+    latest = latest_testflight_build_number(app_identifier: app_id) || 0
     increment_build_number(
       xcodeproj: "Runner.xcodeproj",
       build_number: latest + 1

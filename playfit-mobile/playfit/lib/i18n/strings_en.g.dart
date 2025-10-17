@@ -158,6 +158,13 @@ class TranslationsCameraEn {
 	// Translations
 	String next_step_countdown({required Object seconds}) => 'Next step in ${seconds} seconds...';
 	String get start_workout => 'Start';
+	String get voice_hint_title => 'Ready to move?';
+	String get voice_hint_body => 'Say "GO" or "Let\'s go" to start a session. You can also press the start button below.';
+	String get voice_hint_listening => 'Listening...';
+	String get voice_hint_permission => 'Enable your microphone to use voice start.';
+	String get voice_hint_tap => 'Prefer tapping? Press Start.';
+	String get voice_hint_error => 'Voice start unavailable. Tap Start instead.';
+	String voice_hint_last_heard({required Object phrase}) => 'Heard: ${phrase}';
 }
 
 // Path: notifications
@@ -432,6 +439,13 @@ extension on Translations {
 			case 'home.error_loading': return 'Error loading data.';
 			case 'camera.next_step_countdown': return ({required Object seconds}) => 'Next step in ${seconds} seconds...';
 			case 'camera.start_workout': return 'Start';
+			case 'camera.voice_hint_title': return 'Ready to move?';
+			case 'camera.voice_hint_body': return 'Say "GO" or "Let\'s go" to start a session. You can also press the start button below.';
+			case 'camera.voice_hint_listening': return 'Listening...';
+			case 'camera.voice_hint_permission': return 'Enable your microphone to use voice start.';
+			case 'camera.voice_hint_tap': return 'Prefer tapping? Press Start.';
+			case 'camera.voice_hint_error': return 'Voice start unavailable. Tap Start instead.';
+			case 'camera.voice_hint_last_heard': return ({required Object phrase}) => 'Heard: ${phrase}';
 			case 'notifications.title': return 'Notifications';
 			case 'notifications.read_all': return 'Read all';
 			case 'notifications.empty': return 'No notifications at the moment.';

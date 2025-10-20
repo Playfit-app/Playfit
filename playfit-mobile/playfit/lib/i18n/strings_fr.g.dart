@@ -157,6 +157,13 @@ class _TranslationsCameraFr extends TranslationsCameraEn {
 	// Translations
 	@override String next_step_countdown({required Object seconds}) => 'Prochaine étape dans ${seconds} secondes...';
 	@override String get start_workout => 'Démarrer';
+	@override String get voice_hint_title => 'Prêt à bouger ?';
+	@override String get voice_hint_body => 'Dis "GO" ou "C\'est parti" pour commencer une séance. Tu peux aussi appuyer sur le bouton démarrer ci-dessous.';
+	@override String get voice_hint_listening => 'À l\'écoute...';
+	@override String get voice_hint_permission => 'Active ton micro pour utiliser le démarrage vocal.';
+	@override String get voice_hint_tap => 'Tu préfères cliquer ? Appuie sur Démarrer.';
+	@override String get voice_hint_error => 'Démarrage vocal indisponible. Appuie sur Démarrer.';
+	@override String voice_hint_last_heard({required Object phrase}) => 'Entendu : ${phrase}';
 }
 
 // Path: notifications
@@ -431,6 +438,13 @@ extension on TranslationsFr {
 			case 'home.error_loading': return 'Erreur lors du chargement des données.';
 			case 'camera.next_step_countdown': return ({required Object seconds}) => 'Prochaine étape dans ${seconds} secondes...';
 			case 'camera.start_workout': return 'Démarrer';
+			case 'camera.voice_hint_title': return 'Prêt à bouger ?';
+			case 'camera.voice_hint_body': return 'Dis "GO" ou "C\'est parti" pour commencer une séance. Tu peux aussi appuyer sur le bouton démarrer ci-dessous.';
+			case 'camera.voice_hint_listening': return 'À l\'écoute...';
+			case 'camera.voice_hint_permission': return 'Active ton micro pour utiliser le démarrage vocal.';
+			case 'camera.voice_hint_tap': return 'Tu préfères cliquer ? Appuie sur Démarrer.';
+			case 'camera.voice_hint_error': return 'Démarrage vocal indisponible. Appuie sur Démarrer.';
+			case 'camera.voice_hint_last_heard': return ({required Object phrase}) => 'Entendu : ${phrase}';
 			case 'notifications.title': return 'Notifications';
 			case 'notifications.read_all': return 'Tout lire';
 			case 'notifications.empty': return 'Aucune notification pour le moment.';

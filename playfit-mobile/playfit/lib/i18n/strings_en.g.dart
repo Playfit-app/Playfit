@@ -93,6 +93,7 @@ class TranslationsLoginEn {
 	String get username => 'Username';
 	String get password => 'Password';
 	String get login => 'Login';
+	String get stay_connected => 'Stay connected';
 	String get invalid_credentials => 'Invalid username or password.';
 	String get empty_username => 'Please enter your username.';
 	String get empty_password => 'Please enter your password.';
@@ -401,6 +402,7 @@ extension on Translations {
 			case 'login.username': return 'Username';
 			case 'login.password': return 'Password';
 			case 'login.login': return 'Login';
+			case 'login.stay_connected': return 'Stay connected';
 			case 'login.invalid_credentials': return 'Invalid username or password.';
 			case 'login.empty_username': return 'Please enter your username.';
 			case 'login.empty_password': return 'Please enter your password.';
@@ -558,4 +560,3 @@ extension on Translations {
 		}
 	}
 }
-

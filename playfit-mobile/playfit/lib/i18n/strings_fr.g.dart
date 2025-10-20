@@ -92,6 +92,7 @@ class _TranslationsLoginFr extends TranslationsLoginEn {
 	@override String get username => 'Nom d\'utilisateur';
 	@override String get password => 'Mot de passe';
 	@override String get login => 'Connexion';
+	@override String get stay_connected => 'Rester connecté';
 	@override String get invalid_credentials => 'Nom d\'utilisateur ou mot de passe invalide.';
 	@override String get empty_username => 'Veuillez entrer votre nom d\'utilisateur.';
 	@override String get empty_password => 'Veuillez entrer votre mot de passe.';
@@ -400,6 +401,7 @@ extension on TranslationsFr {
 			case 'login.username': return 'Nom d\'utilisateur';
 			case 'login.password': return 'Mot de passe';
 			case 'login.login': return 'Connexion';
+			case 'login.stay_connected': return 'Rester connecté';
 			case 'login.invalid_credentials': return 'Nom d\'utilisateur ou mot de passe invalide.';
 			case 'login.empty_username': return 'Veuillez entrer votre nom d\'utilisateur.';
 			case 'login.empty_password': return 'Veuillez entrer votre mot de passe.';
@@ -557,4 +559,3 @@ extension on TranslationsFr {
 		}
 	}
 }
-

@@ -4,6 +4,7 @@
         "username": "Nom d'utilisateur",
         "password": "Mot de passe",
         "login": "Connexion",
+        "stay_connected": "Rester connecté",
         "invalid_credentials": "Nom d'utilisateur ou mot de passe invalide.",
         "empty_username": "Veuillez entrer votre nom d'utilisateur.",
         "empty_password": "Veuillez entrer votre mot de passe.",

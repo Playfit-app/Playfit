@@ -29,12 +29,12 @@ class BottomBoxWidget extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.timer, color: Colors.orange, size: 30),
-                const SizedBox(width: 5),
+                const Icon(Icons.timer, color: Colors.orange, size: 28),
+                const SizedBox(width: 8),
                 Text(
                   '${elapsedTime.inMinutes}:${(elapsedTime.inSeconds % 60).toString().padLeft(2, '0')}',
                   style: const TextStyle(
-                    fontSize: 34,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -42,19 +42,19 @@ class BottomBoxWidget extends StatelessWidget {
             ),
             Row(
               children: [
-                const Icon(Icons.fitness_center, color: Colors.orange, size: 30),
-                const SizedBox(width: 5),
+                const Icon(Icons.fitness_center, color: Colors.orange, size: 28),
+                const SizedBox(width: 8),
                 Text(
                   '$count / $targetCount',
-                  style: TextStyle(
-                    fontSize: 34,
+                  style: const TextStyle(
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
             SizedBox(
-              height: 80,
+              height: 75,
               child: Image.asset("assets/images/mascot.png"),
             ),
           ],

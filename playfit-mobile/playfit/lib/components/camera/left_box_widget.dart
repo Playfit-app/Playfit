@@ -31,34 +31,34 @@ class LeftBoxWidget extends StatelessWidget {
           children: [
             Column(
               children: [
-                const Icon(Icons.timer, color: Colors.orange, size: 36),
-                const SizedBox(height: 8),
+                const Icon(Icons.timer, color: Colors.orange, size: 32),
+                const SizedBox(height: 6),
                 Text(
                   '${elapsedTime.inMinutes}:${(elapsedTime.inSeconds % 60).toString().padLeft(2, '0')}',
                   style: const TextStyle(
-                    fontSize: 30,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 24),
             Column(
               children: [
-                const Icon(Icons.fitness_center, color: Colors.orange, size: 36),
-                const SizedBox(height: 8),
+                const Icon(Icons.fitness_center, color: Colors.orange, size: 32),
+                const SizedBox(height: 6),
                 Text(
                   '$count / $targetCount',
-                  style: TextStyle(
-                    fontSize: 30,
+                  style: const TextStyle(
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 24),
             const SizedBox(
-              height: 100,
+              height: 90,
               child: Image(
                 image: AssetImage("assets/images/mascot.png"),
               ),

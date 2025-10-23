@@ -190,6 +190,121 @@ class WorkoutSessionsView(APIView):
 
         return Response("Workout session updated successfully", status=status.HTTP_200_OK)
 
+
+def generate_workout_exercises(user, workout_session):
+    # Define available exercises pool
+    # For now, using core 3 exercises across all fitness levels
+    EXERCISE_POOLS = {
+        'beginner': ['pushUp', 'squat', 'jumpingJack'],
+        'intermediate': ['pushUp', 'squat', 'jumpingJack'],
+        'advanced': ['pushUp', 'squat', 'jumpingJack']
+    }
+    
+    # Default repetitions for first session (core 3 exercises only)
+    DEFAULT_REPS = {
+        'beginner': {
+            'pushUp': 5,
+            'squat': 10,
+            'jumpingJack': 15
+        },
+        'intermediate': {
+            'pushUp': 10,
+            'squat': 15,
+            'jumpingJack': 25
+        },
+        'advanced': {
+            'pushUp': 15,
+            'squat': 25,
+            'jumpingJack': 40
+        }
+    }
+    
+    # Get user's fitness level
+    fitness_level = user.fitness_level
+    
+    # Get the appropriate exercise pool
+    exercise_names = EXERCISE_POOLS.get(fitness_level, EXERCISE_POOLS['beginner'])
+    
+    # Generate exercises for each difficulty level
+    for difficulty in ['beginner', 'intermediate', 'advanced']:
+        # For now, all difficulty levels use the same 3 core exercises
+        # TODO: When more exercises are added, use different counts:
+        # beginner: 3, intermediate: 4, advanced: 5
+        selected_exercises = exercise_names  # Use all available exercises (currently 3)
+        
+        for exercise_name in selected_exercises:
+            try:
+                exercise = Exercise.objects.get(name__iexact=exercise_name)
+            except Exercise.DoesNotExist:
+                continue
+            
+            # Get the last 3-5 performances for this specific exercise and difficulty
+            recent_performances = WorkoutSessionExercise.objects.filter(
+                workout_session__user=user,
+                workout_session__completed_date__isnull=False,
+                exercise=exercise,
+                difficulty=difficulty
+            ).order_by('-workout_session__completed_date')[:5]  # Get up to 5 most recent
+            
+            # Determine repetitions based on past performance
+            if recent_performances.exists():
+                # User has completed this exercise before at this difficulty
+                performances_list = list(recent_performances)
+                total_reps = sum(perf.repetitions for perf in performances_list)
+                avg_reps = total_reps / len(performances_list)
+                
+                # Analyze performance trend to determine progression rate
+                performance_trend = 0.0
+                if len(performances_list) >= 2:
+                    recent_avg = sum(p.repetitions for p in performances_list[:2]) / 2
+                    older_avg = sum(p.repetitions for p in performances_list[2:]) / len(performances_list[2:]) if len(performances_list) > 2 else recent_avg
+                    performance_trend = (recent_avg - older_avg) / older_avg if older_avg > 0 else 0.0
+                
+                # Determine base progression rate based on rep range
+                if avg_reps <= 5:
+                    base_rate = 0.20  # 20% for very low reps
+                elif avg_reps <= 10:
+                    base_rate = 0.15  # 15% for low reps
+                elif avg_reps <= 20:
+                    base_rate = 0.10  # 10% for medium reps
+                else:
+                    base_rate = 0.05  # 5% for high reps
+                
+                # Adjust progression rate based on performance trend
+                if performance_trend > 0.10:
+                    adjusted_rate = base_rate * 1.5
+                elif performance_trend > 0.05:
+                    adjusted_rate = base_rate * 1.25
+                elif performance_trend < -0.05:
+                    adjusted_rate = base_rate * 0.7
+                elif performance_trend < 0:
+                    adjusted_rate = base_rate * 0.85
+                else:
+                    adjusted_rate = base_rate
+                
+                # Apply the adjusted progression rate
+                repetitions = int(avg_reps * (1 + adjusted_rate))
+                
+                # Ensure at least +1 rep progression (unless declining)
+                if repetitions == int(avg_reps) and performance_trend >= 0:
+                    repetitions = int(avg_reps) + 1
+                elif repetitions < int(avg_reps):
+                    repetitions = int(avg_reps)
+            else:
+                # First time doing this exercise at this difficulty - use defaults
+                repetitions = DEFAULT_REPS[difficulty].get(exercise_name, 10)
+            
+            # Create the workout session exercise
+            WorkoutSessionExercise.objects.create(
+                workout_session=workout_session,
+                exercise=exercise,
+                sets=1,
+                repetitions=repetitions,
+                weight=0,
+                difficulty=difficulty,
+            )
+
+
 class WorkoutSessionExerciseView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -213,7 +328,7 @@ class WorkoutSessionExerciseView(APIView):
             pass
 
         if workout_session is None:
-            # Generate a new workout session, temporary solution
+            # Generate a new workout session
             workout_session = WorkoutSession.objects.create(
                 user=request.user,
                 city=wp.city if wp.is_in_city() else None,
@@ -222,36 +337,12 @@ class WorkoutSessionExerciseView(APIView):
                 transition_to=wp.transition_to if wp.is_in_transition() else None,
                 creation_date=now().date(),
             )
-            # Generate exercises for the workout session
+            
+            # Generate exercises using the intelligent algorithm
             try:
-                exercises = ['pushUp', 'squat', 'jumpingJack']
-                for exercise in exercises:
-                    WorkoutSessionExercise.objects.create(
-                        workout_session=workout_session,
-                        exercise=Exercise.objects.get(name__iexact=exercise),
-                        sets=1,
-                        repetitions=3 if exercise == 'pushUp' else 10 if exercise == 'squat' else 15,
-                        weight=0,
-                        difficulty="beginner",
-                    )
-                    WorkoutSessionExercise.objects.create(
-                        workout_session=workout_session,
-                        exercise=Exercise.objects.get(name__iexact=exercise),
-                        sets=1,
-                        repetitions=7 if exercise == 'pushUp' else 15 if exercise == 'squat' else 25,
-                        weight=0,
-                        difficulty="intermediate",
-                    )
-                    WorkoutSessionExercise.objects.create(
-                        workout_session=workout_session,
-                        exercise=Exercise.objects.get(name__iexact=exercise),
-                        sets=1,
-                        repetitions=15 if exercise == 'pushUp' else 30 if exercise == 'squat' else 50,
-                        weight=0,
-                        difficulty="advanced",
-                    )
+                generate_workout_exercises(request.user, workout_session)
             except Exercise.DoesNotExist:
-                return Response("Exercise not found", status=status.HTTP_404_NOT_FOUND)
+                return Response("Exercise not found. Please ensure all required exercises exist in the database.", status=status.HTTP_404_NOT_FOUND)
             except Exception as e:
                 return Response(f"Error generating workout session: {str(e)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

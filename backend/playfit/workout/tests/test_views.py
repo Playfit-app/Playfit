@@ -294,7 +294,7 @@ class WorkoutSessionExerciseViewTests(APITestCase):
             city_level=1
         )
         
-        # Create exercises
+        # Create core 3 exercises only
         self.exercise_push = Exercise.objects.create(name="pushUp", image=None)
         self.exercise_squat = Exercise.objects.create(name="squat", image=None)
         self.exercise_jumping = Exercise.objects.create(name="jumpingJack", image=None)
@@ -349,9 +349,14 @@ class WorkoutSessionExerciseViewTests(APITestCase):
         self.assertIn('intermediate', response.data)
         self.assertIn('advanced', response.data)
         
-        # Check that all three exercises are included for each difficulty
+        # All difficulty levels should have 3 core exercises
+        # (pushUp, squat, jumpingJack) regardless of user fitness level
+        self.assertEqual(len(response.data['beginner']), 3)
+        self.assertEqual(len(response.data['intermediate']), 3)
+        self.assertEqual(len(response.data['advanced']), 3)
+        
+        # Check that the 3 core exercises are included in all difficulty levels
         for difficulty in ['beginner', 'intermediate', 'advanced']:
-            self.assertEqual(len(response.data[difficulty]), 3)
             exercise_names = [ex['name'] for ex in response.data[difficulty]]
             self.assertIn('pushUp', exercise_names)
             self.assertIn('squat', exercise_names)
@@ -381,9 +386,147 @@ class WorkoutSessionExerciseViewTests(APITestCase):
         
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.data, "Exercise not found")
+        self.assertEqual(response.data, "Exercise not found. Please ensure all required exercises exist in the database.")
 
     def test_get_workout_session_exercises_unauthenticated(self):
         self.client.credentials()  # Remove authentication
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_progressive_overload_with_multiple_performances(self):
+        # Create multiple completed workout sessions with varying performance
+        dates = [7, 14, 21, 28]  # days ago
+        reps_history = [10, 12, 11, 13]  # User's performance over time
+        
+        for days_ago, reps in zip(dates, reps_history):
+            past_workout = WorkoutSession.objects.create(
+                user=self.user,
+                city=self.city,
+                city_level=1,
+                creation_date=now().date() - datetime.timedelta(days=days_ago),
+                completed_date=now().date() - datetime.timedelta(days=days_ago)
+            )
+            
+            WorkoutSessionExercise.objects.create(
+                workout_session=past_workout,
+                exercise=self.exercise_push,
+                sets=1,
+                repetitions=reps,
+                weight=Decimal('0.00'),
+                difficulty='beginner'
+            )
+        
+        # Move user to next level to trigger new workout generation
+        self.world_position.city_level = 2
+        self.world_position.save()
+        
+        # Get new workout - should apply adaptive progressive overload based on average
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Average of [10, 12, 11, 13] = 11.5
+        # 11.5 reps falls in 11-20 range → 10% increase
+        # Adaptive progressive overload: 11.5 * 1.10 = 12.65 → int(12.65) = 12
+        beginner_exercises = response.data['beginner']
+        push_up_exercise = next((ex for ex in beginner_exercises if ex['name'] == 'pushUp'), None)
+        self.assertIsNotNone(push_up_exercise)
+        self.assertEqual(push_up_exercise['repetitions'], 12)  # 10% increase from average of 11.5
+    
+    def test_adaptive_progression_low_reps(self):
+        # Test progression for very low reps (≤5) using pushUp
+        past_workout = WorkoutSession.objects.create(
+            user=self.user,
+            city=self.city,
+            city_level=1,
+            creation_date=now().date() - datetime.timedelta(days=7),
+            completed_date=now().date() - datetime.timedelta(days=7)
+        )
+        
+        WorkoutSessionExercise.objects.create(
+            workout_session=past_workout,
+            exercise=self.exercise_push,
+            sets=1,
+            repetitions=5,
+            weight=Decimal('0.00'),
+            difficulty='beginner'
+        )
+        
+        self.world_position.city_level = 2
+        self.world_position.save()
+        
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # For low reps (5), should add 1 rep minimum
+        beginner_exercises = response.data['beginner']
+        push_exercise = next((ex for ex in beginner_exercises if ex['name'] == 'pushUp'), None)
+        self.assertIsNotNone(push_exercise)
+        self.assertEqual(push_exercise['repetitions'], 6)  # 5 + 1
+    
+    def test_adaptive_progression_high_reps(self):
+        # Test progression for high reps (>20)
+        past_workout = WorkoutSession.objects.create(
+            user=self.user,
+            city=self.city,
+            city_level=1,
+            creation_date=now().date() - datetime.timedelta(days=7),
+            completed_date=now().date() - datetime.timedelta(days=7)
+        )
+        
+        WorkoutSessionExercise.objects.create(
+            workout_session=past_workout,
+            exercise=self.exercise_jumping,
+            sets=1,
+            repetitions=40,
+            weight=Decimal('0.00'),
+            difficulty='beginner'
+        )
+        
+        self.world_position.city_level = 2
+        self.world_position.save()
+        
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # For high reps (40), should use 5% increase
+        # 40 * 1.05 = 42
+        beginner_exercises = response.data['beginner']
+        jumping_exercise = next((ex for ex in beginner_exercises if ex['name'] == 'jumpingJack'), None)
+        self.assertIsNotNone(jumping_exercise)
+        self.assertEqual(jumping_exercise['repetitions'], 42)  # 5% increase
+
+    def test_different_fitness_levels(self):
+        # Test intermediate user - should still get 3 core exercises
+        self.user.fitness_level = 'intermediate'
+        self.user.save()
+        
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # All fitness levels now use the same 3 core exercises
+        intermediate_exercises = response.data['intermediate']
+        self.assertEqual(len(intermediate_exercises), 3)
+        exercise_names = [ex['name'] for ex in intermediate_exercises]
+        self.assertIn('pushUp', exercise_names)
+        self.assertIn('squat', exercise_names)
+        self.assertIn('jumpingJack', exercise_names)
+        
+        # Test advanced user - should also get 3 core exercises
+        self.user.fitness_level = 'advanced'
+        self.user.save()
+        
+        # Delete previous workout to generate new one
+        WorkoutSession.objects.filter(user=self.user).delete()
+        self.world_position.city_level = 3
+        self.world_position.save()
+        
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Advanced fitness level still uses 3 core exercises
+        advanced_exercises = response.data['advanced']
+        self.assertEqual(len(advanced_exercises), 3)
+        exercise_names = [ex['name'] for ex in advanced_exercises]
+        self.assertIn('pushUp', exercise_names)
+        self.assertIn('squat', exercise_names)
+        self.assertIn('jumpingJack', exercise_names)

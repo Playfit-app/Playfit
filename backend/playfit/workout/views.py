@@ -236,7 +236,8 @@ def generate_workout_exercises(user, workout_session):
             try:
                 exercise = Exercise.objects.get(name__iexact=exercise_name)
             except Exercise.DoesNotExist:
-                continue
+                # Return None to signal that a required exercise is missing
+                return None
             
             # Get the last 3-5 performances for this specific exercise and difficulty
             recent_performances = WorkoutSessionExercise.objects.filter(
@@ -303,6 +304,9 @@ def generate_workout_exercises(user, workout_session):
                 weight=0,
                 difficulty=difficulty,
             )
+    
+    # Return True to signal successful generation
+    return True
 
 
 class WorkoutSessionExerciseView(APIView):
@@ -339,12 +343,11 @@ class WorkoutSessionExerciseView(APIView):
             )
             
             # Generate exercises using the intelligent algorithm
-            try:
-                generate_workout_exercises(request.user, workout_session)
-            except Exercise.DoesNotExist:
+            result = generate_workout_exercises(request.user, workout_session)
+            if result is None:
+                # One or more required exercises are missing from the database
+                workout_session.delete()  # Clean up the created session
                 return Response("Exercise not found. Please ensure all required exercises exist in the database.", status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response(f"Error generating workout session: {str(e)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         workout_session_exercises = WorkoutSessionExercise.objects.filter(workout_session=workout_session)
         data = {

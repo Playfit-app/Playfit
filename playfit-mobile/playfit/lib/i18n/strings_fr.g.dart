@@ -265,6 +265,7 @@ class _TranslationsSettingsFr extends TranslationsSettingsEn {
 	@override String get others => 'Autres';
 	@override String get delete_account_confirmation => 'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.';
 	@override String get logout => 'Se déconnecter';
+	@override String get logout_confirmation => 'Voulez-vous vraiment vous déconnecter ?';
 	@override Map<String, String> get languages => {
 		'fr': 'Français',
 		'en': 'Anglais',
@@ -502,6 +503,7 @@ extension on TranslationsFr {
 			case 'settings.others': return 'Autres';
 			case 'settings.delete_account_confirmation': return 'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.';
 			case 'settings.logout': return 'Se déconnecter';
+			case 'settings.logout_confirmation': return 'Voulez-vous vraiment vous déconnecter ?';
 			case 'settings.languages.fr': return 'Français';
 			case 'settings.languages.en': return 'Anglais';
 			case 'settings.cancel': return 'Annuler';
@@ -559,3 +561,4 @@ extension on TranslationsFr {
 		}
 	}
 }
+

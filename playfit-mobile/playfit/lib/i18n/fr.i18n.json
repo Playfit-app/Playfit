@@ -131,6 +131,7 @@
         "others": "Autres",
         "delete_account_confirmation": "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
         "logout": "Se déconnecter",
+        "logout_confirmation": "Voulez-vous vraiment vous déconnecter ?",
         "languages": {
             "fr": "Français",
             "en": "Anglais"

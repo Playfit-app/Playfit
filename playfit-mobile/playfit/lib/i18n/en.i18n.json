@@ -131,6 +131,7 @@
         "others": "Others",
         "delete_account_confirmation": "Are you sure you want to delete your account? This action cannot be undone.",
         "logout": "Logout",
+        "logout_confirmation": "Do you really want to log out?",
         "languages": {
             "fr": "French",
             "en": "English"

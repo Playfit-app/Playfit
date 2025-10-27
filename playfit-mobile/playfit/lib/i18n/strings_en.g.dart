@@ -266,6 +266,7 @@ class TranslationsSettingsEn {
 	String get others => 'Others';
 	String get delete_account_confirmation => 'Are you sure you want to delete your account? This action cannot be undone.';
 	String get logout => 'Logout';
+	String get logout_confirmation => 'Do you really want to log out?';
 	Map<String, String> get languages => {
 		'fr': 'French',
 		'en': 'English',
@@ -503,6 +504,7 @@ extension on Translations {
 			case 'settings.others': return 'Others';
 			case 'settings.delete_account_confirmation': return 'Are you sure you want to delete your account? This action cannot be undone.';
 			case 'settings.logout': return 'Logout';
+			case 'settings.logout_confirmation': return 'Do you really want to log out?';
 			case 'settings.languages.fr': return 'French';
 			case 'settings.languages.en': return 'English';
 			case 'settings.cancel': return 'Cancel';
@@ -560,3 +562,4 @@ extension on Translations {
 		}
 	}
 }
+

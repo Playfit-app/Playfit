@@ -86,6 +86,8 @@ class _CameraViewState extends State<CameraView> {
         return WorkoutType.pushUp;
       case 'pullup':
         return WorkoutType.pullUp;
+      case 'highknees':
+        return WorkoutType.highKnees;
       default:
         throw Exception('Workout type not recognized: $name');
     }

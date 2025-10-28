@@ -97,7 +97,7 @@ class _CameraViewState extends State<CameraView> {
   void initState() {
     super.initState();
 
-    _enableWakelock();
+    unawaited(_enableWakelock());
 
     _elapsedTime = _workoutTimerService.elapsed;
     _workoutTimerService.onTick = (elapsed) {

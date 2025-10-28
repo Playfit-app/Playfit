@@ -10,6 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:wakelock_plus/wakelock_plus.dart'; // ✅ Import ajouté
 import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/level_cinematic/difficulty.dart';
 import 'package:playfit/services/tts_service.dart';
@@ -95,6 +96,9 @@ class _CameraViewState extends State<CameraView> {
   void initState() {
     super.initState();
 
+    // ✅ Activer le wakelock au démarrage
+    _enableWakelock();
+
     _elapsedTime = _workoutTimerService.elapsed;
     _workoutTimerService.onTick = (elapsed) {
       if (mounted) {
@@ -113,7 +117,6 @@ class _CameraViewState extends State<CameraView> {
     _speechToText = SpeechToText();
 
     initCamera();
-    // Don't auto-start listening - only initialize permissions
     _initializeSpeechRecognition();
     _workoutAnalyzer.workoutCounts.addListener(() {
       final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
@@ -129,6 +132,26 @@ class _CameraViewState extends State<CameraView> {
         });
       }
     });
+  }
+
+  // Method for activating wakelock
+  Future<void> _enableWakelock() async {
+    try {
+      await WakelockPlus.enable();
+      print('🔒 Wakelock activé - l\'écran ne s\'éteindra pas');
+    } catch (e) {
+      print('⚠️ Erreur lors de l\'activation du wakelock: $e');
+    }
+  }
+
+  // Method for disabling wakelock
+  Future<void> _disableWakelock() async {
+    try {
+      await WakelockPlus.disable();
+      print('🔓 Wakelock désactivé - l\'écran peut s\'éteindre normalement');
+    } catch (e) {
+      print('⚠️ Erreur lors de la désactivation du wakelock: $e');
+    }
   }
 
   Future<void> _announceCount() async {
@@ -195,7 +218,6 @@ class _CameraViewState extends State<CameraView> {
       print('🎤 Microphone after request: $micStatus');
     }
     
-    // Check speech permission on iOS only
     PermissionStatus? speechStatus;
     if (Platform.isIOS) {
       speechStatus = await Permission.speech.status;
@@ -222,8 +244,6 @@ class _CameraViewState extends State<CameraView> {
       });
     }
 
-    // Don't auto-start listening here anymore
-    // Let the user see the card first before starting
     print('✅ Speech recognition initialized, waiting for user interaction');
   }
 
@@ -322,7 +342,6 @@ class _CameraViewState extends State<CameraView> {
       });
     }
 
-    // Restart listening after an error (except permanent errors)
     if (error.errorMsg != 'error_speech_timeout' && 
         error.errorMsg != 'error_no_match') {
       print('⚠️ Non-recoverable error, not restarting');
@@ -363,7 +382,6 @@ class _CameraViewState extends State<CameraView> {
     }
     if (!_goTriggered) {
       print('⚠️ GO not triggered, ignoring manual start');
-      // Allow manual start via button press even without voice command
       _goTriggered = true;
     }
     setState(() {
@@ -552,6 +570,9 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   void dispose() {
+    // ✅ Désactiver le wakelock à la fin
+    _disableWakelock();
+    
     _workoutTimerService.onTick = null;
     _workoutTimerService.stop();
     _celebrationTimer?.cancel();
@@ -652,11 +673,9 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
   @override
   void initState() {
     super.initState();
-    // Start listening after a short delay to let the UI render
     if (widget.speechAvailable && !widget.permissionDenied) {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
-          // Trigger listening through parent
           final cameraState = context.findAncestorStateOfType<_CameraViewState>();
           if (cameraState != null && cameraState._showStartButton && !cameraState._goTriggered) {
             print('🎯 Starting initial listening from card...');

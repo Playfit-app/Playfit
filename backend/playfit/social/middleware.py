@@ -12,7 +12,10 @@ def get_user_from_token(token_key):
     try:
         token = Token.objects.get(key=token_key)
         return token.user
-    except (Token.DoesNotExist, Exception):
+    except Token.DoesNotExist:
+        return AnonymousUser()
+    except Exception:
+        logger.exception("Error retrieving user from token")
         return AnonymousUser()
 
 class TokenAuthMiddleware(BaseMiddleware):

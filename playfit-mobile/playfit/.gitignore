@@ -108,6 +108,8 @@ pubspec.lock
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
 **/ios/Runner/GoogleService-Info.plist
+**/ios/Runner/Configs/DevelopmentTeam.xcconfig
+
 
 # macOS
 **/Flutter/ephemeral/
@@ -153,3 +155,10 @@ backend/playfit/staticfiles/
 # Bundle
 **/ios/vendor
 **/ios/.bundle
+
+# Google auth files
+**/ios/Runner/GoogleService-Info.plist
+**/android/app/google-services.json
+
+# serviceAccount keys
+serviceAccountKey.json

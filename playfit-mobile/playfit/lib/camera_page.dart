@@ -540,7 +540,7 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   void dispose() {
-    _disableWakelock();
+    unawaited(_disableWakelock());
     
     _workoutTimerService.onTick = null;
     _workoutTimerService.stop();

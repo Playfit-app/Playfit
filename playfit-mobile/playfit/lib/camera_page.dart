@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -10,7 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:wakelock_plus/wakelock_plus.dart'; // ✅ Import ajouté
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/level_cinematic/difficulty.dart';
 import 'package:playfit/services/tts_service.dart';
@@ -96,7 +97,6 @@ class _CameraViewState extends State<CameraView> {
   void initState() {
     super.initState();
 
-    // ✅ Activer le wakelock au démarrage
     _enableWakelock();
 
     _elapsedTime = _workoutTimerService.elapsed;
@@ -138,9 +138,9 @@ class _CameraViewState extends State<CameraView> {
   Future<void> _enableWakelock() async {
     try {
       await WakelockPlus.enable();
-      print('🔒 Wakelock activé - l\'écran ne s\'éteindra pas');
+      debugPrint('Wakelock enabled - screen will not turn off');
     } catch (e) {
-      print('⚠️ Erreur lors de l\'activation du wakelock: $e');
+      debugPrint('Error enabling wakelock: $e');
     }
   }
 
@@ -148,9 +148,9 @@ class _CameraViewState extends State<CameraView> {
   Future<void> _disableWakelock() async {
     try {
       await WakelockPlus.disable();
-      print('🔓 Wakelock désactivé - l\'écran peut s\'éteindre normalement');
+      debugPrint('Wakelock disabled - screen can turn off normally');
     } catch (e) {
-      print('⚠️ Erreur lors de la désactivation du wakelock: $e');
+      debugPrint('Error disabling wakelock: $e');
     }
   }
 
@@ -200,7 +200,6 @@ class _CameraViewState extends State<CameraView> {
   }
 
   Future<void> _initializeSpeechRecognition() async {
-    print('🔐 Checking permissions...');
     
     final available = await _speechToText.initialize(
       onStatus: _onSpeechStatus,
@@ -208,33 +207,24 @@ class _CameraViewState extends State<CameraView> {
       debugLogging: true,
     );
 
-    print('🎙️ Speech available after initialize: $available');
-
     var micStatus = await Permission.microphone.status;
-    print('🎤 Microphone status: $micStatus');
     
     if (!micStatus.isGranted) {
       micStatus = await Permission.microphone.request();
-      print('🎤 Microphone after request: $micStatus');
     }
     
     PermissionStatus? speechStatus;
     if (Platform.isIOS) {
       speechStatus = await Permission.speech.status;
-      print('🗣️ Speech status: $speechStatus');
-      
       if (!speechStatus.isGranted && !speechStatus.isPermanentlyDenied) {
         speechStatus = await Permission.speech.request();
-        print('🗣️ Speech after request: $speechStatus');
       }
     }
 
     final hasMic = micStatus.isGranted;
     final hasSpeechPermission = available;
 
-    print('✅ Microphone granted: $hasMic');
-    print('✅ Speech available: $hasSpeechPermission');
-    print('📱 Platform: ${Platform.isAndroid ? "Android" : "iOS"}');
+    debugPrint('Platform: ${Platform.isAndroid ? "Android" : "iOS"}');
 
     if (mounted) {
       setState(() {
@@ -244,17 +234,16 @@ class _CameraViewState extends State<CameraView> {
       });
     }
 
-    print('✅ Speech recognition initialized, waiting for user interaction');
   }
 
   Future<void> _startListeningForGo() async {
     if (!_speechAvailable || _goTriggered || !_showStartButton) {
-      print('⚠️ Cannot listen: available=$_speechAvailable, triggered=$_goTriggered, showButton=$_showStartButton');
+      debugPrint('Cannot listen: available=$_speechAvailable, triggered=$_goTriggered, showButton=$_showStartButton');
       return;
     }
     
     if (_speechToText.isListening) {
-      print('⚠️ Already listening');
+      debugPrint('Already listening');
       return;
     }
 
@@ -264,9 +253,7 @@ class _CameraViewState extends State<CameraView> {
       (l) => l.localeId.startsWith('fr'),
       orElse: () => locales.first,
     );
-    
-    print('🌍 Locale chosen: ${frenchLocale.localeId}');
-    
+        
     _lastRecognizedPhrase = null;
     _speechErrorMessage = null;
 
@@ -281,8 +268,6 @@ class _CameraViewState extends State<CameraView> {
     );
 
     final isListening = _speechToText.isListening;
-    print('🎙️ Listening started: $isListening');
-
     if (mounted) {
       setState(() {
         _isListeningForGo = isListening;
@@ -298,10 +283,6 @@ class _CameraViewState extends State<CameraView> {
     final rawText = result.recognizedWords;
     final sanitized = _sanitizeRecognizedText(rawText);
 
-    print('🎤 Raw: "$rawText"');
-    print('🧹 Sanitized: "$sanitized"');
-    print('✓ Final: ${result.finalResult}');
-
     if (sanitized.isEmpty) {
       return;
     }
@@ -313,14 +294,12 @@ class _CameraViewState extends State<CameraView> {
     }
 
     if (_containsGoCommand(sanitized) && !_goTriggered) {
-      print('🚀 GO TRIGGERED!');
       _goTriggered = true;
       _handleWorkoutStartTrigger();
     }
   }
 
   void _onSpeechStatus(String status) {
-    print('📊 Status: $status');
     if (status == 'notListening') {
       if (mounted) {
         setState(() {
@@ -332,7 +311,6 @@ class _CameraViewState extends State<CameraView> {
   }
 
   void _onSpeechError(SpeechRecognitionError error) {
-    print('❌ Speech error: ${error.errorMsg}');
     if (_goTriggered || !_showStartButton) return;
 
     if (mounted) {
@@ -344,7 +322,6 @@ class _CameraViewState extends State<CameraView> {
 
     if (error.errorMsg != 'error_speech_timeout' && 
         error.errorMsg != 'error_no_match') {
-      print('⚠️ Non-recoverable error, not restarting');
       return;
     }
     
@@ -361,34 +338,28 @@ class _CameraViewState extends State<CameraView> {
 
   void _scheduleGoListeningRestart() {
     if (_goTriggered || !_showStartButton || !_speechAvailable) {
-      print('⚠️ Not restarting: goTriggered=$_goTriggered, showButton=$_showStartButton, available=$_speechAvailable');
+      debugPrint('Not restarting: goTriggered=$_goTriggered, showButton=$_showStartButton, available=$_speechAvailable');
       return;
     }
     _speechRestartTimer?.cancel();
-    print('⏱️ Scheduling restart in 700ms...');
     _speechRestartTimer = Timer(const Duration(milliseconds: 700), () {
       if (mounted && _showStartButton && !_goTriggered) {
-        print('🔄 Restarting listening...');
         unawaited(_startListeningForGo());
       }
     });
   }
 
   void _handleWorkoutStartTrigger() {
-    print('🏋️ Starting workout...');
     if (!_showStartButton) {
-      print('⚠️ Button already hidden, ignoring trigger');
       return;
     }
     if (!_goTriggered) {
-      print('⚠️ GO not triggered, ignoring manual start');
       _goTriggered = true;
     }
     setState(() {
       _showStartButton = false;
     });
     _speechErrorMessage = null;
-    unawaited(_stopListeningForGo());
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         _startDetecting();
@@ -414,7 +385,6 @@ class _CameraViewState extends State<CameraView> {
           final inputImage = ImageUtils.getInputImage(image, _controller);
           await _workoutAnalyzer.detectWorkout(inputImage, _workoutType);
         } catch (e) {
-          print('❌ Detection error: $e');
         } finally {
           _isDetecting = false;
         }
@@ -570,7 +540,6 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   void dispose() {
-    // ✅ Désactiver le wakelock à la fin
     _disableWakelock();
     
     _workoutTimerService.onTick = null;
@@ -605,7 +574,6 @@ class _CameraViewState extends State<CameraView> {
       return false;
     }
 
-    print('🔍 Checking command in: "$text"');
 
     final normalized = text
         .toLowerCase()
@@ -616,7 +584,7 @@ class _CameraViewState extends State<CameraView> {
         .replaceAll('ê', 'e')
         .trim();
 
-    print('🧹 Normalized: "$normalized"');
+    debugPrint('Normalized: "$normalized"');
 
     final goCommands = [
       'cest parti',
@@ -630,7 +598,7 @@ class _CameraViewState extends State<CameraView> {
 
     for (final cmd in goCommands) {
       if (normalized.contains(cmd)) {
-        print('✅ Command "$cmd" detected!');
+        debugPrint('Command "$cmd" detected');
         return true;
       }
     }
@@ -638,12 +606,11 @@ class _CameraViewState extends State<CameraView> {
     final words = normalized.split(' ');
     for (final word in words) {
       if (word == 'go' || word == 'gau' || word == 'guo') {
-        print('✅ Word "GO" detected!');
         return true;
       }
     }
 
-    print('❌ No command detected');
+    debugPrint('No command detected');
     return false;
   }
 }
@@ -678,7 +645,6 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
         if (mounted) {
           final cameraState = context.findAncestorStateOfType<_CameraViewState>();
           if (cameraState != null && cameraState._showStartButton && !cameraState._goTriggered) {
-            print('🎯 Starting initial listening from card...');
             cameraState._startListeningForGo();
           }
         }

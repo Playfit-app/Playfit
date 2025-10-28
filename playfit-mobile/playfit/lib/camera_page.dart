@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -540,7 +539,7 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   void dispose() {
-    unawaited(_disableWakelock());
+    _disableWakelock();
     
     _workoutTimerService.onTick = null;
     _workoutTimerService.stop();

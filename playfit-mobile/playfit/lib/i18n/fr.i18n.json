@@ -55,7 +55,8 @@
         "voice_hint_permission": "Active ton micro pour utiliser le démarrage vocal.",
         "voice_hint_tap": "Tu préfères cliquer ? Appuie sur Démarrer.",
         "voice_hint_error": "Démarrage vocal indisponible. Appuie sur Démarrer.",
-        "voice_hint_last_heard": "Entendu : $phrase"
+        "voice_hint_last_heard": "Entendu : $phrase",
+        "open_settings": "Ouvrir les réglages"
     },
     "notifications": {
         "title": "Notifications",

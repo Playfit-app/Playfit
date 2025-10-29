@@ -3,14 +3,14 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/services/push_notification_service.dart';
 import 'adventure_page.dart';
-import 'missions_page.dart';
-import 'boutique_page.dart';
 import 'profile_page.dart';
 import 'package:playfit/social_page.dart';
 import 'components/top_bar.dart';
+import 'package:playfit/providers/language_provider.dart';
 
 class HomePage extends StatefulWidget {
   final bool firstLogin;
@@ -105,31 +105,32 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Heights and insets
-    final double navBaseHeight  = kBottomNavigationBarHeight;
-    final double curvedClipExtra = 40;
-    final double paddingExtra    = 10;
-    final double bottomInset     = MediaQuery.of(context).padding.bottom;
-    final double clipHeight      = navBaseHeight + curvedClipExtra;
+    return Consumer<LanguageProvider>(
+      builder: (context, languageProvider, child) {
+        // Heights and insets
+        final double navBaseHeight  = kBottomNavigationBarHeight;
+        final double curvedClipExtra = 40;
+        final double bottomInset     = MediaQuery.of(context).padding.bottom;
+        final double clipHeight      = navBaseHeight + curvedClipExtra;
 
-    // Move _pages creation here so it always uses the latest _anecdoteSeen
-    final List<Widget> _pages = [
-      AdventurePage(
-        workoutDone: widget.workoutDone && !_anecdoteSeen,
-        landmarkUrl: widget.landmarkUrl,
-        onAnecdoteClosed: () {
-          setState(() {
-            _anecdoteSeen = true;
-          });
-        },
-        // moveCharacter: widget.workoutDone,
-        // completedDifficulty: widget.completedDifficulty,
-      ),
-      // const MissionsPage(),
-      // const BoutiquePage(),
-      const SocialPage(),
-      const ProfilePage(),
-    ];
+        // Move _pages creation here so it always uses the latest _anecdoteSeen
+        final List<Widget> _pages = [
+          AdventurePage(
+            workoutDone: widget.workoutDone && !_anecdoteSeen,
+            landmarkUrl: widget.landmarkUrl,
+            onAnecdoteClosed: () {
+              setState(() {
+                _anecdoteSeen = true;
+              });
+            },
+            // moveCharacter: widget.workoutDone,
+            // completedDifficulty: widget.completedDifficulty,
+          ),
+          // const MissionsPage(),
+          // const BoutiquePage(),
+          const SocialPage(),
+          const ProfilePage(),
+        ];
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -197,6 +198,8 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
+    );
+      },
     );
   }
 

@@ -26,7 +26,7 @@ jobs:
             - name: Set up Flutter
               uses: subosito/flutter-action@v2
               with:
-                flutter-version: 3.29.0
+                flutter-version: 3.35.0
                 channel: stable
             - name: Install dependencies
               run: flutter pub get
@@ -39,6 +39,9 @@ jobs:
                 echo "SERVER_BASE_URL=http://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
                 echo "SERVER_BASE_WS_URL=ws://${{ vars.FLUTTER_SERVER_IP }}:${{ vars.FLUTTER_SERVER_PORT }}" >> .env
                 echo "GOOGLE_CLIENT_ID=${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}" >> .env
+              working-directory: ./playfit-mobile/playfit
+            - name: Generate mock files
+              run: dart run build_runner build --delete-conflicting-outputs
               working-directory: ./playfit-mobile/playfit
             - name: Run tests
               run: flutter test

@@ -25,7 +25,8 @@ class AuthService {
 
   /// Logs in a user with [username] and [password], stores the token, and connects notifications.
   Future<Map<String, String>> login(
-      BuildContext context, String username, String password) async {
+      BuildContext context, String username, String password,
+      {bool stayConnected = false}) async {
     try {
       final data = <String, String>{
         'username': username,
@@ -44,6 +45,8 @@ class AuthService {
         await storage.write(key: 'token', value: token);
         await storage.write(
             key: 'userId', value: body['user']['id'].toString());
+        await storage.write(
+            key: 'stayConnected', value: stayConnected.toString());
 
         if (context.mounted) {
           Provider.of<NotificationProvider>(context, listen: false)
@@ -134,7 +137,8 @@ class AuthService {
 
   /// Signs in the user with Google and authenticates with the backend.
   /// Stores token and user ID on success, or returns an error message.
-  Future<Map<String, String>> loginWithGoogle(BuildContext context) async {
+  Future<Map<String, String>> loginWithGoogle(BuildContext context,
+      {bool stayConnected = false}) async {
     try {
       // Sign in with Google
       GoogleSignInAccount? account = await googleSignIn.signIn();
@@ -156,6 +160,8 @@ class AuthService {
             await storage.write(key: 'token', value: token);
             await storage.write(
                 key: 'userId', value: body['user']['id'].toString());
+            await storage.write(
+                key: 'stayConnected', value: stayConnected.toString());
 
             if (context.mounted) {
               Provider.of<NotificationProvider>(context, listen: false)

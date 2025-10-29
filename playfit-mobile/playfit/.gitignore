@@ -108,6 +108,8 @@ pubspec.lock
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
 **/ios/Runner/GoogleService-Info.plist
+**/ios/Runner/Configs/DevelopmentTeam.xcconfig
+
 
 # macOS
 **/Flutter/ephemeral/
@@ -143,3 +145,20 @@ app.*.symbols
 !/dev/ci/**/Gemfile.lock
 !.vscode/settings.json
 backend/playfit/staticfiles/
+
+/test/*mocks.dart
+
+# Fastlane
+**/ios/fastlane/report.xml
+**/ios/fastlane/README.md
+
+# Bundle
+**/ios/vendor
+**/ios/.bundle
+
+# Google auth files
+**/ios/Runner/GoogleService-Info.plist
+**/android/app/google-services.json
+
+# serviceAccount keys
+serviceAccountKey.json

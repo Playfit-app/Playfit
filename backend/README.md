@@ -75,6 +75,20 @@ python3 manage.py createsuperuser
 export DJANGO_SETTINGS_MODULE=playfit.settings ; daphne -b 0.0.0.0 -p 8000 playfit.asgi:application
 ```
 
+## Run the tests
+
+```bash
+coverage run manage.py test
+```
+
+> Add --parallel option to run tests in parallel
+
+## Coverage report
+
+```bash
+coverage report
+```
+
 ## Deactivate the virtual environment
 
 ```bash

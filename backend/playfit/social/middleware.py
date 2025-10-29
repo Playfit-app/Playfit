@@ -14,6 +14,9 @@ def get_user_from_token(token_key):
         return token.user
     except Token.DoesNotExist:
         return AnonymousUser()
+    except Exception:
+        logger.exception("Error retrieving user from token")
+        return AnonymousUser()
 
 class TokenAuthMiddleware(BaseMiddleware):
     async def __call__(self, scope, receive, send):
@@ -25,6 +28,8 @@ class TokenAuthMiddleware(BaseMiddleware):
                 token_name, token_key = auth_header.decode().split()
                 if token_name == "Token":
                     scope["user"] = await get_user_from_token(token_key)
+                else:
+                    scope["user"] = AnonymousUser()
             except ValueError:
                 scope["user"] = AnonymousUser()
         else:

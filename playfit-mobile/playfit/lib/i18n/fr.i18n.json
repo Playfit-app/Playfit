@@ -4,6 +4,7 @@
         "username": "Nom d'utilisateur",
         "password": "Mot de passe",
         "login": "Connexion",
+        "stay_connected": "Rester connecté",
         "invalid_credentials": "Nom d'utilisateur ou mot de passe invalide.",
         "empty_username": "Veuillez entrer votre nom d'utilisateur.",
         "empty_password": "Veuillez entrer votre mot de passe.",
@@ -47,7 +48,15 @@
     },
     "camera": {
         "next_step_countdown": "Prochaine étape dans $seconds secondes...",
-        "start_workout": "Démarrer"
+        "start_workout": "Démarrer",
+        "voice_hint_title": "Prêt à bouger ?",
+        "voice_hint_body": "Dis \"GO\" ou \"C'est parti\" pour commencer une séance. Tu peux aussi appuyer sur le bouton démarrer ci-dessous.",
+        "voice_hint_listening": "À l'écoute...",
+        "voice_hint_permission": "Active ton micro pour utiliser le démarrage vocal.",
+        "voice_hint_tap": "Tu préfères cliquer ? Appuie sur Démarrer.",
+        "voice_hint_error": "Démarrage vocal indisponible. Appuie sur Démarrer.",
+        "voice_hint_last_heard": "Entendu : $phrase",
+        "open_settings": "Ouvrir les réglages"
     },
     "notifications": {
         "title": "Notifications",
@@ -123,6 +132,7 @@
         "others": "Autres",
         "delete_account_confirmation": "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
         "logout": "Se déconnecter",
+        "logout_confirmation": "Voulez-vous vraiment vous déconnecter ?",
         "languages": {
             "fr": "Français",
             "en": "Anglais"

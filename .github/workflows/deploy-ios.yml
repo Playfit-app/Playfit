@@ -1,0 +1,80 @@
+name: Deploy iOS (Fastlane)
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The git reference to deploy'
+        required: true
+        type: string
+      lane:
+        description: "fastlane lane to run (beta or release)"
+        required: true
+        type: string
+        default: "beta"
+    secrets:
+      FLUTTER_GOOGLE_SERVICES:
+        description: 'Base64 encoded Google Services credentials JSON'
+        required: true
+      FLUTTER_GOOGLE_CLIENT_ID:
+        description: 'Google Client ID for Flutter'
+        required: true
+      IOS_CERT_P12_BASE64:
+        description: 'Base64 encoded p12 file for iOS code signing'
+        required: true
+      IOS_CERT_PASSWORD:
+        description: 'Password for the p12 file'
+        required: true
+      IOS_PROVISION_PROFILE_BASE64:
+        description: 'Base64 encoded mobile provisioning profile for iOS code signing'
+        required: true
+      APPLE_TEAM_ID:
+        description: 'Apple Developer Team ID'
+        required: true
+      ASC_KEY_ID:
+        description: 'App Store Connect Key ID'
+        required: true
+      ASC_ISSUER_ID:
+        description: 'App Store Connect Issuer ID'
+        required: true
+      ASC_API_KEY_BASE64:
+        description: 'Base64 encoded App Store Connect API Key'
+        required: true
+
+jobs:
+  deploy:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Install fastlane
+        run: |
+          gem install fastlane
+
+      - name: Download IPA artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-ipa
+          path: ./dist
+
+      - name: Move IPA to expected path
+        run: |
+          mkdir -p ./playfit-mobile/playfit/build/ios/ipa
+          cp ./dist/*.ipa ./playfit-mobile/playfit/build/ios/ipa/
+
+      - name: Fastlane ${{ inputs.lane }}
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_API_KEY_BASE64: ${{ secrets.ASC_API_KEY_BASE64 }}
+        run: |
+          fastlane ios ${{ inputs.lane }}
+        working-directory: ./playfit-mobile/playfit/ios

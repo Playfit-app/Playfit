@@ -789,7 +789,7 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
                     size: 20,
                   ),
                   label: Text(
-                    'Ouvrir les Réglages',
+                    cameraStrings.open_settings,
                     style: GoogleFonts.amaranth(
                       color: playfitOrangeDark,
                       fontSize: 16,

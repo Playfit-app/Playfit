@@ -165,6 +165,7 @@ class _TranslationsCameraFr extends TranslationsCameraEn {
 	@override String get voice_hint_tap => 'Tu préfères cliquer ? Appuie sur Démarrer.';
 	@override String get voice_hint_error => 'Démarrage vocal indisponible. Appuie sur Démarrer.';
 	@override String voice_hint_last_heard({required Object phrase}) => 'Entendu : ${phrase}';
+	@override String get open_settings => 'Ouvrir les réglages';
 }
 
 // Path: notifications
@@ -448,6 +449,7 @@ extension on TranslationsFr {
 			case 'camera.voice_hint_tap': return 'Tu préfères cliquer ? Appuie sur Démarrer.';
 			case 'camera.voice_hint_error': return 'Démarrage vocal indisponible. Appuie sur Démarrer.';
 			case 'camera.voice_hint_last_heard': return ({required Object phrase}) => 'Entendu : ${phrase}';
+			case 'camera.open_settings': return 'Ouvrir les réglages';
 			case 'notifications.title': return 'Notifications';
 			case 'notifications.read_all': return 'Tout lire';
 			case 'notifications.empty': return 'Aucune notification pour le moment.';

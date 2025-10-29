@@ -165,6 +165,12 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
                 if (value.length < 8) {
                   return t.register.invalid_password;
                 }
+                // Password requirements:
+                // - At least 8 characters
+                // - At least one lowercase letter
+                // - At least one uppercase letter
+                // - At least one digit
+                // - At least one special character from [@$!%*?&]
                 if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
                     .hasMatch(value)) {
                   return t.register.invalid_password;

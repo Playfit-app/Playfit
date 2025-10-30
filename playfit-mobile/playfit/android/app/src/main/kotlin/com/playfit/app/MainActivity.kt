@@ -1,4 +1,4 @@
-package com.example.playfit
+package com.playfit.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -71,11 +71,13 @@ class _ProfilePageState extends State<ProfilePage> {
       Uri.parse(url),
       headers: {
         'Authorization': 'Token $token',
+        'Cache-Control': 'no-cache',
       },
     );
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      final data = json.decode(response.body);
+      return data;
     } else {
       throw Exception('Failed to load user data');
     }
@@ -193,11 +195,14 @@ class _ProfilePageState extends State<ProfilePage> {
               IconButton(
                 icon: const Icon(Icons.settings_outlined),
                 color: Colors.black,
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const SettingsPage()),
                   );
+                  if (result == true) {
+                    _load();
+                  }
                 },
               ),
             ],

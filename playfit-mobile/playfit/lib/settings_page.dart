@@ -33,13 +33,15 @@ class _SettingsPageState extends State<SettingsPage> {
   final Color orange = const Color(0xFFE07C27);
   final FlutterSecureStorage storage = const FlutterSecureStorage();
   final _notificationService = NotificationService();
-  bool _notificationsEnabled = false; // Initialize with default value
-  UserBoxType _selectedBoxType = UserBoxType.left; // Initialize with default value
+  bool _notificationsEnabled = false;
+  UserBoxType _selectedBoxType = UserBoxType.left;
   bool _showAccountOptions = false;
   bool _showPrivacyPolicy = false;
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  Map<String, dynamic>? _userData;
+  bool _userDataChanged = false;
 
   @override
   void initState() {
@@ -53,7 +55,33 @@ class _SettingsPageState extends State<SettingsPage> {
         boxTypeStr == 'bottom' ? UserBoxType.bottom : UserBoxType.left;
     _notificationsEnabled =
         await _notificationService.loadNotificationSettings();
+    
+    await _loadUserData();
+    
     setState(() {});
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final token = await storage.read(key: 'token');
+      if (token == null) return;
+
+      final response = await http.get(
+        Uri.parse('${dotenv.env['SERVER_BASE_URL']}/api/auth/get_my_data/'),
+        headers: {
+          'Authorization': 'Token $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        _userData = jsonDecode(response.body);
+        _usernameController.text = _userData?['username'] ?? '';
+        _emailController.text = _userData?['email'] ?? '';
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
+    }
   }
 
   void _showConfirmationDialog(
@@ -164,13 +192,13 @@ void _showDeleteConfirmationDialog() {
             Navigator.pushReplacementNamed(context, '/login');
           }
         } else {
-          print("Erreur suppression : ${response.body}");
+          print("Error deleting account: ${response.body}");
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(t.settings.delete_account_fail)),
           );
         }
       } catch (e) {
-        print("Erreur exception : $e");
+        print("Error exception: $e");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(t.settings.delete_account_error)),
         );
@@ -210,6 +238,85 @@ void _showDeleteConfirmationDialog() {
     );
   }
 
+  Future<void> _updateUsername() async {
+    try {
+      final token = await storage.read(key: 'token');
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Token non trouvé")),
+        );
+        return;
+      }
+
+      final response = await http.patch(
+        Uri.parse('${dotenv.env['SERVER_BASE_URL']}/api/auth/update_my_data/'),
+        headers: {
+          'Authorization': 'Token $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'username': _usernameController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        _showFieldSavedSnackBar(t.settings.username);
+        await _loadUserData();
+        _userDataChanged = true;
+        setState(() {});
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erreur lors de la mise à jour du nom d'utilisateur")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erreur: $e")),
+      );
+    }
+  }
+
+  Future<void> _updateEmail() async {
+    try {
+      final token = await storage.read(key: 'token');
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Token non trouvé")),
+        );
+        return;
+      }
+
+      final response = await http.patch(
+        Uri.parse('${dotenv.env['SERVER_BASE_URL']}/api/auth/update_my_data/'),
+        headers: {
+          'Authorization': 'Token $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'email': _emailController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        _showFieldSavedSnackBar(t.settings.email);
+        // Recharger les données depuis le serveur pour s'assurer de la synchronisation
+        await _loadUserData();
+        // Marquer que les données utilisateur ont changé
+        _userDataChanged = true;
+        // Rafraîchir l'interface
+        setState(() {});
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erreur lors de la mise à jour de l'email")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erreur: $e")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<LanguageProvider>(
@@ -233,7 +340,7 @@ void _showDeleteConfirmationDialog() {
                             alignment: Alignment.topLeft,
                             child: IconButton(
                               icon: const Icon(Icons.close, size: 28),
-                              onPressed: () => Navigator.pop(context),
+                              onPressed: () => Navigator.pop(context, _userDataChanged),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -312,8 +419,7 @@ void _showDeleteConfirmationDialog() {
                               _showConfirmationDialog(
                                 t.settings.edit_username_title,
                                 t.settings.edit_username_confirmation,
-                                () => _showFieldSavedSnackBar(
-                                    t.settings.username),
+                                () => _updateUsername(),
                               );
                             }),
                             const SizedBox(height: 8),
@@ -322,7 +428,7 @@ void _showDeleteConfirmationDialog() {
                               _showConfirmationDialog(
                                 t.settings.edit_email_title,
                                 t.settings.edit_email_confirmation,
-                                () => _showFieldSavedSnackBar(t.settings.email),
+                                () => _updateEmail(),
                               );
                             }),
                             const SizedBox(height: 8),
@@ -436,6 +542,17 @@ void _showDeleteConfirmationDialog() {
               borderSide: BorderSide(color: orange),
               borderRadius: BorderRadius.circular(10),
             ),
+            // Afficher un indicateur si les données ne sont pas encore chargées
+            suffixIcon: _userData == null 
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : null,
           ),
         ),
         const SizedBox(height: 8),

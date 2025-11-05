@@ -307,12 +307,12 @@ void _showDeleteConfirmationDialog() {
         setState(() {});
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Erreur lors de la mise à jour de l'email")),
+          SnackBar(content: Text("Error while updating email")),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erreur: $e")),
+        SnackBar(content: Text("Error: $e")),
       );
     }
   }

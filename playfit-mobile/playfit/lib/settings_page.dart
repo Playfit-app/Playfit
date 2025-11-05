@@ -238,7 +238,55 @@ void _showDeleteConfirmationDialog() {
     );
   }
 
-  Future<void> _updateUsername() async {
+  /// Validates email format for TextFormField
+  String? _validateEmailField(String? email) {
+    if (email == null || email.isEmpty) {
+      return 'Email cannot be empty';
+    }
+    
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    if (!emailRegex.hasMatch(email)) {
+      return 'Please enter a valid email address';
+    }
+    
+    return null; // Valid email
+  }
+
+  /// Validates username format for TextFormField
+  String? _validateUsernameField(String? username) {
+    if (username == null || username.isEmpty) {
+      return 'Username cannot be empty';
+    }
+    
+    if (username.length < 3) {
+      return 'Username must be at least 3 characters long';
+    }
+    
+    if (username.length > 30) {
+      return 'Username must be less than 30 characters';
+    }
+    
+    // Check for valid characters (letters, numbers, underscores, hyphens)
+    final usernameRegex = RegExp(r'^[a-zA-Z0-9_-]+$');
+    if (!usernameRegex.hasMatch(username)) {
+      return 'Username can only contain letters, numbers, underscores, and hyphens';
+    }
+    
+    return null; // Valid username
+  }
+
+  /// Validates email format
+  String? _validateEmail(String? email) {
+    return _validateEmailField(email);
+  }
+
+  /// Validates username format
+  String? _validateUsername(String? username) {
+    return _validateUsernameField(username);
+  }
+
+  /// Generic method to update user field data
+  Future<void> _updateUserField(String fieldName, String value, String displayName) async {
     try {
       final token = await storage.read(key: 'token');
       if (token == null) {
@@ -255,18 +303,18 @@ void _showDeleteConfirmationDialog() {
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'username': _usernameController.text,
+          fieldName: value,
         }),
       );
 
       if (response.statusCode == 200) {
-        _showFieldSavedSnackBar(t.settings.username);
+        _showFieldSavedSnackBar(displayName);
         await _loadUserData();
         _userDataChanged = true;
         setState(() {});
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error while updating username")),
+          SnackBar(content: Text("Error while updating $displayName")),
         );
       }
     } catch (e) {
@@ -276,45 +324,36 @@ void _showDeleteConfirmationDialog() {
     }
   }
 
-  Future<void> _updateEmail() async {
-    try {
-      final token = await storage.read(key: 'token');
-      if (token == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Token not found")),
-        );
-        return;
-      }
-
-      final response = await http.patch(
-        Uri.parse('${dotenv.env['SERVER_BASE_URL']}/api/auth/update_my_data/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'email': _emailController.text,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        _showFieldSavedSnackBar(t.settings.email);
-        // Recharger les données depuis le serveur pour s'assurer de la synchronisation
-        await _loadUserData();
-        // Marquer que les données utilisateur ont changé
-        _userDataChanged = true;
-        // Rafraîchir l'interface
-        setState(() {});
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error while updating email")),
-        );
-      }
-    } catch (e) {
+  Future<void> _updateUsername() async {
+    // Validate username before making API call
+    final validationError = _validateUsername(_usernameController.text);
+    if (validationError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
+        SnackBar(
+          content: Text(validationError),
+          backgroundColor: Colors.red,
+        ),
       );
+      return;
     }
+    
+    await _updateUserField('username', _usernameController.text, t.settings.username);
+  }
+
+  Future<void> _updateEmail() async {
+    // Validate email before making API call
+    final validationError = _validateEmail(_emailController.text);
+    if (validationError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(validationError),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
+    await _updateUserField('email', _emailController.text, t.settings.email);
   }
 
   @override
@@ -421,7 +460,7 @@ void _showDeleteConfirmationDialog() {
                                 t.settings.edit_username_confirmation,
                                 () => _updateUsername(),
                               );
-                            }),
+                            }, validator: _validateUsernameField),
                             const SizedBox(height: 8),
                             _buildEditableField(
                                 t.settings.email, _emailController, () {
@@ -430,7 +469,7 @@ void _showDeleteConfirmationDialog() {
                                 t.settings.edit_email_confirmation,
                                 () => _updateEmail(),
                               );
-                            }),
+                            }, validator: _validateEmailField),
                             const SizedBox(height: 8),
                             // _buildEditableField(
                             //     'Mot de passe', _passwordController, () {
@@ -528,13 +567,15 @@ void _showDeleteConfirmationDialog() {
 
   Widget _buildEditableField(
       String label, TextEditingController controller, VoidCallback onSave,
-      {bool obscureText = false}) {
+      {bool obscureText = false, String? Function(String?)? validator}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
+        TextFormField(
           controller: controller,
           obscureText: obscureText,
+          validator: validator,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: InputDecoration(
             labelText: label,
             labelStyle: const TextStyle(fontFamily: 'family'),
@@ -542,7 +583,15 @@ void _showDeleteConfirmationDialog() {
               borderSide: BorderSide(color: orange),
               borderRadius: BorderRadius.circular(10),
             ),
-            // Afficher un indicateur si les données ne sont pas encore chargées
+            errorBorder: OutlineInputBorder(
+              borderSide: const BorderSide(color: Colors.red),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderSide: const BorderSide(color: Colors.red, width: 2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            // Display an indicator if data is not yet loaded
             suffixIcon: _userData == null 
               ? const SizedBox(
                   width: 20,

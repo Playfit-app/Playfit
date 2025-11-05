@@ -243,7 +243,7 @@ void _showDeleteConfirmationDialog() {
       final token = await storage.read(key: 'token');
       if (token == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Token non trouvé")),
+          SnackBar(content: Text("Token not found")),
         );
         return;
       }
@@ -266,12 +266,12 @@ void _showDeleteConfirmationDialog() {
         setState(() {});
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Erreur lors de la mise à jour du nom d'utilisateur")),
+          SnackBar(content: Text("Error while updating username")),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erreur: $e")),
+        SnackBar(content: Text("Error: $e")),
       );
     }
   }
@@ -281,7 +281,7 @@ void _showDeleteConfirmationDialog() {
       final token = await storage.read(key: 'token');
       if (token == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Token non trouvé")),
+          SnackBar(content: Text("Token not found")),
         );
         return;
       }

@@ -21,6 +21,8 @@ class RegistrationStep1 extends StatefulWidget {
 
 class _RegistrationStep1State extends State<RegistrationStep1> {
   late final List<TextEditingController> _watchedControllers;
+  bool _passwordVisible = false;
+  bool _confirmPasswordVisible = false;
 
   @override
   void initState() {
@@ -138,7 +140,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
             child: TextFormField(
               controller: widget.passwordController,
-              obscureText: true,
+              obscureText: !_passwordVisible,
               decoration: InputDecoration(
                 labelText: t.register.password,
                 filled: true,
@@ -146,12 +148,22 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
                 // Allow the validation error text to wrap to multiple lines so it's fully visible
                 errorMaxLines: 3,
                 prefixIcon: const Icon(Icons.lock_outline),
-                suffixIcon: widget.passwordController.text.isNotEmpty
-                    ? IconButton(
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.passwordController.text.isNotEmpty)
+                      IconButton(
                         icon: const Icon(Icons.close),
                         onPressed: () => widget.passwordController.clear(),
-                      )
-                    : null,
+                      ),
+                    IconButton(
+                      icon: Icon(
+                        _passwordVisible ? Icons.visibility_off : Icons.visibility,
+                      ),
+                      onPressed: () => setState(() => _passwordVisible = !_passwordVisible),
+                    ),
+                  ],
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                   borderSide: BorderSide.none,
@@ -184,7 +196,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2),
             child: TextFormField(
               controller: widget.confirmPasswordController,
-              obscureText: true,
+              obscureText: !_confirmPasswordVisible,
               decoration: InputDecoration(
                 labelText: t.register.confirm_password,
                 filled: true,
@@ -192,12 +204,22 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
                 // Allow the validation error text to wrap to multiple lines so it's fully visible
                 errorMaxLines: 3,
                 prefixIcon: const Icon(Icons.lock_outline),
-                suffixIcon: widget.confirmPasswordController.text.isNotEmpty
-                    ? IconButton(
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.confirmPasswordController.text.isNotEmpty)
+                      IconButton(
                         icon: const Icon(Icons.close),
                         onPressed: () => widget.confirmPasswordController.clear(),
-                      )
-                    : null,
+                      ),
+                    IconButton(
+                      icon: Icon(
+                        _confirmPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                      ),
+                      onPressed: () => setState(() => _confirmPasswordVisible = !_confirmPasswordVisible),
+                    ),
+                  ],
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                   borderSide: BorderSide.none,

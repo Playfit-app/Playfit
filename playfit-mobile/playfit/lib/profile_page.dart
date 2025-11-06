@@ -196,9 +196,20 @@ class _ProfilePageState extends State<ProfilePage> {
                 icon: const Icon(Icons.settings_outlined),
                 color: Colors.black,
                 onPressed: () async {
+                  // Convert profile data structure to settings data structure
+                  Map<String, dynamic>? settingsUserData;
+                  if (_profile != null) {
+                    settingsUserData = {
+                      'username': _profile!['user']['username'],
+                    };
+                  }
+      
+                  
                   final result = await Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const SettingsPage()),
+                    MaterialPageRoute(
+                      builder: (_) => SettingsPage(initialUserData: settingsUserData),
+                    ),
                   );
                   if (result == true) {
                     _load();

@@ -23,7 +23,9 @@ extension UserBoxTypeExtension on UserBoxType {
 }
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  final Map<String, dynamic>? initialUserData;
+  
+  const SettingsPage({Key? key, this.initialUserData}) : super(key: key);
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -56,12 +58,17 @@ class _SettingsPageState extends State<SettingsPage> {
     _notificationsEnabled =
         await _notificationService.loadNotificationSettings();
     
-    await _loadUserData();
-    
+    // Use passed user data if available and complete, otherwise load from API
+    if (widget.initialUserData != null && 
+        widget.initialUserData!.containsKey('username')) {
+      _userData = widget.initialUserData;
+      _usernameController.text = _userData?['username'] ?? '';
+      await _loadEmailData();
+    }
     setState(() {});
   }
 
-  Future<void> _loadUserData() async {
+  Future<void> _loadEmailData() async {
     try {
       final token = await storage.read(key: 'token');
       if (token == null) return;
@@ -75,12 +82,14 @@ class _SettingsPageState extends State<SettingsPage> {
       );
 
       if (response.statusCode == 200) {
-        _userData = jsonDecode(response.body);
-        _usernameController.text = _userData?['username'] ?? '';
-        _emailController.text = _userData?['email'] ?? '';
+        final data = jsonDecode(response.body);
+        _emailController.text = data['email'] ?? '';
+        if (_userData != null) {
+          _userData!['email'] = data['email'];
+        }
       }
     } catch (e) {
-      print('Error loading user data: $e');
+      print('Error loading email data: $e');
     }
   }
 
@@ -296,20 +305,21 @@ void _showDeleteConfirmationDialog() {
         return;
       }
 
+      // Construire le body dynamiquement avec la clé variable
+      final Map<String, dynamic> requestBody = {};
+      requestBody[fieldName] = value;
+
       final response = await http.patch(
         Uri.parse('${dotenv.env['SERVER_BASE_URL']}/api/auth/update_my_data/'),
         headers: {
           'Authorization': 'Token $token',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({
-          fieldName: value,
-        }),
+        body: jsonEncode(requestBody),
       );
 
       if (response.statusCode == 200) {
         _showFieldSavedSnackBar(displayName);
-        await _loadUserData();
         _userDataChanged = true;
         setState(() {});
       } else {

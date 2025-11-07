@@ -288,23 +288,23 @@ class WorkoutAnalyzer {
     final leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
     final rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
 
-    // Seuil pour détecter un genou levé
-    const double kneeUpAngleThreshold = 90.0;
-    const double kneeDownAngleThreshold = 140.0;
+    // Seuils ajustés pour une meilleure détection
+    const double kneeUpAngleThreshold = 110.0; // Plus souple
+    const double kneeDownAngleThreshold = 130.0; // Plus souple
     
-    // Calculer la position verticale moyenne des hanches
     final hipYAverage = (leftHip.y + rightHip.y) / 2;
     
-    // Vérifier si le genou gauche est levé au-dessus de la hanche
-    bool leftKneeUp = leftKnee.y < hipYAverage && leftKneeAngle < kneeUpAngleThreshold;
+    // Distance verticale entre genou et hanche
+    final leftKneeDistance = hipYAverage - leftKnee.y;
+    final rightKneeDistance = hipYAverage - rightKnee.y;
     
-    // Vérifier si le genou droit est levé au-dessus de la hanche
-    bool rightKneeUp = rightKnee.y < hipYAverage && rightKneeAngle < kneeUpAngleThreshold;
+    // Seuil de distance plus souple (en pixels)
+    const double minKneeUpDistance = 50.0;
     
-    // Vérifier si les genoux sont en position basse
+    bool leftKneeUp = leftKneeDistance > minKneeUpDistance && leftKneeAngle < kneeUpAngleThreshold;
+    bool rightKneeUp = rightKneeDistance > minKneeUpDistance && rightKneeAngle < kneeUpAngleThreshold;
     bool kneesDown = leftKneeAngle > kneeDownAngleThreshold && rightKneeAngle > kneeDownAngleThreshold;
 
-    // Détection du mouvement : un genou levé puis redescendu
     if (leftKneeUp || rightKneeUp) {
       if (!_workoutStatus[WorkoutType.highKnees]!) {
         _workoutStatus[WorkoutType.highKnees] = true;

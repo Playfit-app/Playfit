@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
 import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/settings/dropdown_parameter.dart';
-import 'package:playfit/services/language_service.dart';
+import 'package:playfit/providers/language_provider.dart';
 import 'package:playfit/services/push_notification_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -21,18 +22,6 @@ extension UserBoxTypeExtension on UserBoxType {
   }
 }
 
-class _Settings {
-  final AppLocale locale;
-  final bool notificationsEnabled;
-  // final String overlayPosition;
-
-  _Settings({
-    required this.locale,
-    required this.notificationsEnabled,
-    // required this.overlayPosition,
-  });
-}
-
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
 
@@ -44,53 +33,103 @@ class _SettingsPageState extends State<SettingsPage> {
   final Color orange = const Color(0xFFE07C27);
   final FlutterSecureStorage storage = const FlutterSecureStorage();
   final _notificationService = NotificationService();
-  late AppLocale _selectedLanguage;
-  late bool _notificationsEnabled;
-  late UserBoxType _selectedBoxType;
+  bool _notificationsEnabled = false; // Initialize with default value
+  UserBoxType _selectedBoxType = UserBoxType.left; // Initialize with default value
   bool _showAccountOptions = false;
   bool _showPrivacyPolicy = false;
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
 
-  Future<_Settings> _loadSettings() async {
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
     String? boxTypeStr = await storage.read(key: 'boxType');
     _selectedBoxType =
         boxTypeStr == 'bottom' ? UserBoxType.bottom : UserBoxType.left;
-    return _Settings(
-      locale:
-          await LanguageService.loadLocale() ?? LocaleSettings.currentLocale,
-      notificationsEnabled:
-          await _notificationService.loadNotificationSettings(),
-    );
+    _notificationsEnabled =
+        await _notificationService.loadNotificationSettings();
+    setState(() {});
   }
 
   void _showConfirmationDialog(
-      String title, String content, VoidCallback onConfirm) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(content),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(t.settings.cancel),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                onConfirm();
-              },
-              child: Text(t.settings.confirm),
+    String title, String content, VoidCallback onConfirm) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+          side: BorderSide(color: orange, width: 2),
+        ),
+        title: Row(
+          children: [
+            Container(width: 4, height: 24, color: orange),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Amaranth',
+                ),
+              ),
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+        content: Text(
+          content,
+          style: const TextStyle(
+            fontSize: 16,
+            fontFamily: 'family',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.grey[600],
+            ),
+            child: Text(
+              t.settings.cancel,
+              style: const TextStyle(
+                fontSize: 16,
+                fontFamily: 'family',
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              onConfirm();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: orange,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
+            child: Text(
+              t.settings.confirm,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontFamily: 'family',
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
 
   
 void _showDeleteConfirmationDialog() {
@@ -140,6 +179,14 @@ void _showDeleteConfirmationDialog() {
   );
 }
 
+  void _showLogoutConfirmationDialog() {
+    _showConfirmationDialog(
+      t.settings.logout,
+      t.settings.logout_confirmation,
+      () => logout(),
+    );
+  }
+
   void logout() async {
     final token = await storage.read(key: 'token');
 
@@ -165,18 +212,8 @@ void _showDeleteConfirmationDialog() {
 
   @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery.of(context).size;
-
-    return FutureBuilder<_Settings>(
-      future: _loadSettings(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final settings = snapshot.data!;
-        _selectedLanguage = settings.locale;
-        _notificationsEnabled = settings.notificationsEnabled;
-
+    return Consumer<LanguageProvider>(
+      builder: (context, languageProvider, child) {
         return Scaffold(
           backgroundColor: Colors.white,
           body: SafeArea(
@@ -205,18 +242,14 @@ void _showDeleteConfirmationDialog() {
                           Divider(color: orange, thickness: 1),
                           DropdownParameter(
                             title: t.settings.language,
-                            currentValue: _selectedLanguage,
+                            currentValue: languageProvider.currentLocale,
                             items: AppLocale.values,
-                            onChanged: (value) {
-                              setState(() async {
-                                if (value != null) {
-                                  _selectedLanguage = value;
-                                  await LanguageService.saveLocale(value);
-                                  await LocaleSettings.setLocale(value);
-                                }
-                              });
+                            onChanged: (value) async {
+                              if (value != null) {
+                                await languageProvider.changeLanguage(value);
+                              }
                             },
-                            itemLabelBuilder: LanguageService.getLocaleName,
+                            itemLabelBuilder: languageProvider.getLanguageName,
                           ),
                           Divider(color: orange, thickness: 1),
                           SwitchListTile(
@@ -317,7 +350,7 @@ void _showDeleteConfirmationDialog() {
                           ListTile(
                             leading: Icon(Icons.logout, color: orange),
                             title: _buildText(t.settings.logout),
-                            onTap: logout,
+                            onTap: _showLogoutConfirmationDialog,
                           ),
                           Divider(color: orange, thickness: 1),
                           ExpansionTile(
@@ -383,22 +416,6 @@ void _showDeleteConfirmationDialog() {
       style: TextStyle(
         fontSize: size,
         fontFamily: 'family',
-      ),
-    );
-  }
-
-  Widget _buildDropdownTile(String title, String currentValue,
-      List<String> options, ValueChanged<String?> onChanged) {
-    return ListTile(
-      leading: Icon(Icons.circle, size: 10, color: orange),
-      title: _buildText(title),
-      trailing: DropdownButton<String>(
-        value: currentValue,
-        underline: Container(),
-        items: options
-            .map((lang) => DropdownMenuItem(value: lang, child: Text(lang)))
-            .toList(),
-        onChanged: onChanged,
       ),
     );
   }

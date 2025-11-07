@@ -92,6 +92,7 @@ class _TranslationsLoginFr extends TranslationsLoginEn {
 	@override String get username => 'Nom d\'utilisateur';
 	@override String get password => 'Mot de passe';
 	@override String get login => 'Connexion';
+	@override String get stay_connected => 'Rester connecté';
 	@override String get invalid_credentials => 'Nom d\'utilisateur ou mot de passe invalide.';
 	@override String get empty_username => 'Veuillez entrer votre nom d\'utilisateur.';
 	@override String get empty_password => 'Veuillez entrer votre mot de passe.';
@@ -157,6 +158,14 @@ class _TranslationsCameraFr extends TranslationsCameraEn {
 	// Translations
 	@override String next_step_countdown({required Object seconds}) => 'Prochaine étape dans ${seconds} secondes...';
 	@override String get start_workout => 'Démarrer';
+	@override String get voice_hint_title => 'Prêt à bouger ?';
+	@override String get voice_hint_body => 'Dis "GO" ou "C\'est parti" pour commencer une séance. Tu peux aussi appuyer sur le bouton démarrer ci-dessous.';
+	@override String get voice_hint_listening => 'À l\'écoute...';
+	@override String get voice_hint_permission => 'Active ton micro pour utiliser le démarrage vocal.';
+	@override String get voice_hint_tap => 'Tu préfères cliquer ? Appuie sur Démarrer.';
+	@override String get voice_hint_error => 'Démarrage vocal indisponible. Appuie sur Démarrer.';
+	@override String voice_hint_last_heard({required Object phrase}) => 'Entendu : ${phrase}';
+	@override String get open_settings => 'Ouvrir les réglages';
 }
 
 // Path: notifications
@@ -257,6 +266,7 @@ class _TranslationsSettingsFr extends TranslationsSettingsEn {
 	@override String get others => 'Autres';
 	@override String get delete_account_confirmation => 'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.';
 	@override String get logout => 'Se déconnecter';
+	@override String get logout_confirmation => 'Voulez-vous vraiment vous déconnecter ?';
 	@override Map<String, String> get languages => {
 		'fr': 'Français',
 		'en': 'Anglais',
@@ -393,6 +403,7 @@ extension on TranslationsFr {
 			case 'login.username': return 'Nom d\'utilisateur';
 			case 'login.password': return 'Mot de passe';
 			case 'login.login': return 'Connexion';
+			case 'login.stay_connected': return 'Rester connecté';
 			case 'login.invalid_credentials': return 'Nom d\'utilisateur ou mot de passe invalide.';
 			case 'login.empty_username': return 'Veuillez entrer votre nom d\'utilisateur.';
 			case 'login.empty_password': return 'Veuillez entrer votre mot de passe.';
@@ -431,6 +442,14 @@ extension on TranslationsFr {
 			case 'home.error_loading': return 'Erreur lors du chargement des données.';
 			case 'camera.next_step_countdown': return ({required Object seconds}) => 'Prochaine étape dans ${seconds} secondes...';
 			case 'camera.start_workout': return 'Démarrer';
+			case 'camera.voice_hint_title': return 'Prêt à bouger ?';
+			case 'camera.voice_hint_body': return 'Dis "GO" ou "C\'est parti" pour commencer une séance. Tu peux aussi appuyer sur le bouton démarrer ci-dessous.';
+			case 'camera.voice_hint_listening': return 'À l\'écoute...';
+			case 'camera.voice_hint_permission': return 'Active ton micro pour utiliser le démarrage vocal.';
+			case 'camera.voice_hint_tap': return 'Tu préfères cliquer ? Appuie sur Démarrer.';
+			case 'camera.voice_hint_error': return 'Démarrage vocal indisponible. Appuie sur Démarrer.';
+			case 'camera.voice_hint_last_heard': return ({required Object phrase}) => 'Entendu : ${phrase}';
+			case 'camera.open_settings': return 'Ouvrir les réglages';
 			case 'notifications.title': return 'Notifications';
 			case 'notifications.read_all': return 'Tout lire';
 			case 'notifications.empty': return 'Aucune notification pour le moment.';
@@ -486,6 +505,7 @@ extension on TranslationsFr {
 			case 'settings.others': return 'Autres';
 			case 'settings.delete_account_confirmation': return 'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.';
 			case 'settings.logout': return 'Se déconnecter';
+			case 'settings.logout_confirmation': return 'Voulez-vous vraiment vous déconnecter ?';
 			case 'settings.languages.fr': return 'Français';
 			case 'settings.languages.en': return 'Anglais';
 			case 'settings.cancel': return 'Annuler';

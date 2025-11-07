@@ -16,7 +16,7 @@ class WorkoutAnalyzer {
       mode: PoseDetectionMode.stream,
     ),
   );
-  
+
   ValueNotifier<Map<WorkoutType, int>> workoutCounts = ValueNotifier({
     WorkoutType.squat: 0,
     WorkoutType.jumpingJack: 0,
@@ -24,7 +24,7 @@ class WorkoutAnalyzer {
     WorkoutType.pullUp: 0,
     WorkoutType.highKnees: 0,
   });
-  
+
   final Map<WorkoutType, bool> _workoutStatus = {
     WorkoutType.squat: false,
     WorkoutType.jumpingJack: false,
@@ -32,7 +32,7 @@ class WorkoutAnalyzer {
     WorkoutType.pullUp: false,
     WorkoutType.highKnees: false,
   };
-  
+
   Map<PoseLandmarkType, PoseLandmark> _lastLandmarks = {};
 
   Future<void> detectWorkout(InputImage inputImage, WorkoutType workout) async {
@@ -291,19 +291,22 @@ class WorkoutAnalyzer {
     // Adjusted thresholds for better detection
     const double kneeUpAngleThreshold = 110.0; // More flexible
     const double kneeDownAngleThreshold = 130.0; // More flexible
-    
+
     final hipYAverage = (leftHip.y + rightHip.y) / 2;
-    
+
     // Vertical distance between knee and hip
     final leftKneeDistance = hipYAverage - leftKnee.y;
     final rightKneeDistance = hipYAverage - rightKnee.y;
-    
+
     // More flexible distance threshold (in pixels)
     const double minKneeUpDistance = 50.0;
-    
-    bool leftKneeUp = leftKneeDistance > minKneeUpDistance && leftKneeAngle < kneeUpAngleThreshold;
-    bool rightKneeUp = rightKneeDistance > minKneeUpDistance && rightKneeAngle < kneeUpAngleThreshold;
-    bool kneesDown = leftKneeAngle > kneeDownAngleThreshold && rightKneeAngle > kneeDownAngleThreshold;
+
+    bool leftKneeUp = leftKneeDistance > minKneeUpDistance &&
+        leftKneeAngle < kneeUpAngleThreshold;
+    bool rightKneeUp = rightKneeDistance > minKneeUpDistance &&
+        rightKneeAngle < kneeUpAngleThreshold;
+    bool kneesDown = leftKneeAngle > kneeDownAngleThreshold &&
+        rightKneeAngle > kneeDownAngleThreshold;
 
     if (leftKneeUp || rightKneeUp) {
       if (!_workoutStatus[WorkoutType.highKnees]!) {

@@ -201,7 +201,6 @@ class _CameraViewState extends State<CameraView> {
   }
 
   Future<void> _initializeSpeechRecognition() async {
-    
     final available = await _speechToText.initialize(
       onStatus: _onSpeechStatus,
       onError: _onSpeechError,
@@ -209,14 +208,14 @@ class _CameraViewState extends State<CameraView> {
     );
 
     var micStatus = await Permission.microphone.status;
-    
+
     if (!micStatus.isGranted) {
       micStatus = await Permission.microphone.request();
     }
-    
+
     PermissionStatus? speechStatus;
     if (Platform.isIOS) {
-      speechStatus = await Permission.speech.status;      
+      speechStatus = await Permission.speech.status;
       if (!speechStatus.isGranted && !speechStatus.isPermanentlyDenied) {
         speechStatus = await Permission.speech.request();
       }
@@ -224,9 +223,9 @@ class _CameraViewState extends State<CameraView> {
 
     final hasMic = micStatus.isGranted;
     final hasSpeechPermission = available;
-    
+
     debugPrint('Platform: ${Platform.isAndroid ? "Android" : "iOS"}');
-    
+
     if (mounted) {
       setState(() {
         _speechAvailable = available;
@@ -238,22 +237,23 @@ class _CameraViewState extends State<CameraView> {
 
   Future<void> _startListeningForGo() async {
     if (!_speechAvailable || _goTriggered || !_showStartButton) {
-      debugPrint('Cannot listen: available=$_speechAvailable, triggered=$_goTriggered, showButton=$_showStartButton');
+      debugPrint(
+          'Cannot listen: available=$_speechAvailable, triggered=$_goTriggered, showButton=$_showStartButton');
       return;
     }
-    
+
     if (_speechToText.isListening) {
       debugPrint('Already listening');
       return;
     }
 
     final locales = await _speechToText.locales();
-    
+
     final frenchLocale = locales.firstWhere(
       (l) => l.localeId.startsWith('fr'),
       orElse: () => locales.first,
     );
-        
+
     _lastRecognizedPhrase = null;
     _speechErrorMessage = null;
 
@@ -320,11 +320,11 @@ class _CameraViewState extends State<CameraView> {
       });
     }
 
-    if (error.errorMsg != 'error_speech_timeout' && 
+    if (error.errorMsg != 'error_speech_timeout' &&
         error.errorMsg != 'error_no_match') {
       return;
     }
-    
+
     _scheduleGoListeningRestart();
   }
 
@@ -338,7 +338,8 @@ class _CameraViewState extends State<CameraView> {
 
   void _scheduleGoListeningRestart() {
     if (_goTriggered || !_showStartButton || !_speechAvailable) {
-      debugPrint('Not restarting: goTriggered=$_goTriggered, showButton=$_showStartButton, available=$_speechAvailable');
+      debugPrint(
+          'Not restarting: goTriggered=$_goTriggered, showButton=$_showStartButton, available=$_speechAvailable');
       return;
     }
     _speechRestartTimer?.cancel();
@@ -461,7 +462,6 @@ class _CameraViewState extends State<CameraView> {
                     ),
                   ),
                 ),
-
                 Center(
                   child: FittedBox(
                     fit: BoxFit.cover,
@@ -482,7 +482,6 @@ class _CameraViewState extends State<CameraView> {
                       elapsedTime: _elapsedTime,
                       count: _count,
                       targetCount: _targetCount),
-
                 if (_showCelebration)
                   CelebrationOverlay(
                     finalTime: _workoutTimerService.elapsed,
@@ -514,7 +513,6 @@ class _CameraViewState extends State<CameraView> {
                       ),
                     ),
                   ),
-
                 if (_showStartButton)
                   Align(
                     alignment: Alignment.center,
@@ -541,7 +539,7 @@ class _CameraViewState extends State<CameraView> {
   @override
   void dispose() {
     _disableWakelock();
-    
+
     _workoutTimerService.onTick = null;
     _workoutTimerService.stop();
     _celebrationTimer?.cancel();
@@ -573,7 +571,7 @@ class _CameraViewState extends State<CameraView> {
     if (text.isEmpty) {
       return false;
     }
-    
+
     final normalized = text
         .toLowerCase()
         .replaceAll("'", ' ')
@@ -584,7 +582,7 @@ class _CameraViewState extends State<CameraView> {
         .trim();
 
     debugPrint('Normalized: "$normalized"');
-    
+
     final goCommands = [
       'cest parti',
       'c est parti',
@@ -642,8 +640,11 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
     if (widget.speechAvailable && !widget.permissionDenied) {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
-          final cameraState = context.findAncestorStateOfType<_CameraViewState>();
-          if (cameraState != null && cameraState._showStartButton && !cameraState._goTriggered) {
+          final cameraState =
+              context.findAncestorStateOfType<_CameraViewState>();
+          if (cameraState != null &&
+              cameraState._showStartButton &&
+              !cameraState._goTriggered) {
             cameraState._startListeningForGo();
           }
         }
@@ -702,7 +703,9 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
                     ),
                   ),
                   child: Icon(
-                    widget.isListening ? Icons.graphic_eq_rounded : Icons.mic_rounded,
+                    widget.isListening
+                        ? Icons.graphic_eq_rounded
+                        : Icons.mic_rounded,
                     color: playfitOrangeDark,
                     size: 28,
                   ),
@@ -736,7 +739,6 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
               ],
             ),
             const SizedBox(height: 20),
-            
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
@@ -775,7 +777,6 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
                 ),
               ),
             ),
-
             if (widget.permissionDenied)
               Padding(
                 padding: const EdgeInsets.only(top: 12),
@@ -812,9 +813,7 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
                   ),
                 ),
               ),
-            
             const SizedBox(height: 16),
-
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
@@ -840,8 +839,12 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      widget.isListening ? Icons.hearing_rounded : Icons.mic_off_rounded,
-                      color: widget.isListening ? playfitOrangeDark : AppStyles.grey,
+                      widget.isListening
+                          ? Icons.hearing_rounded
+                          : Icons.mic_off_rounded,
+                      color: widget.isListening
+                          ? playfitOrangeDark
+                          : AppStyles.grey,
                       size: 16,
                     ),
                   ),
@@ -859,12 +862,13 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
                 ],
               ),
             ),
-
-            if (widget.lastRecognizedPhrase != null && widget.lastRecognizedPhrase!.isNotEmpty)
+            if (widget.lastRecognizedPhrase != null &&
+                widget.lastRecognizedPhrase!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: playfitOrange.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),

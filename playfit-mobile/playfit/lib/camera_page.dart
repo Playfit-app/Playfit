@@ -10,6 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/components/level_cinematic/difficulty.dart';
 import 'package:playfit/services/tts_service.dart';
@@ -97,6 +98,8 @@ class _CameraViewState extends State<CameraView> {
   void initState() {
     super.initState();
 
+    unawaited(_enableWakelock());
+
     _elapsedTime = _workoutTimerService.elapsed;
     _workoutTimerService.onTick = (elapsed) {
       if (mounted) {
@@ -115,7 +118,6 @@ class _CameraViewState extends State<CameraView> {
     _speechToText = SpeechToText();
 
     initCamera();
-    // Don't auto-start listening - only initialize permissions
     _initializeSpeechRecognition();
     _workoutAnalyzer.workoutCounts.addListener(() {
       final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
@@ -131,6 +133,26 @@ class _CameraViewState extends State<CameraView> {
         });
       }
     });
+  }
+
+  // Method for activating wakelock
+  Future<void> _enableWakelock() async {
+    try {
+      await WakelockPlus.enable();
+      debugPrint('Wakelock enabled - screen will not turn off');
+    } catch (e) {
+      debugPrint('Error enabling wakelock: $e');
+    }
+  }
+
+  // Method for disabling wakelock
+  Future<void> _disableWakelock() async {
+    try {
+      await WakelockPlus.disable();
+      debugPrint('Wakelock disabled - screen can turn off normally');
+    } catch (e) {
+      debugPrint('Error disabling wakelock: $e');
+    }
   }
 
   Future<void> _announceCount() async {
@@ -192,11 +214,9 @@ class _CameraViewState extends State<CameraView> {
       micStatus = await Permission.microphone.request();
     }
     
-    // Check speech permission on iOS only
     PermissionStatus? speechStatus;
     if (Platform.isIOS) {
-      speechStatus = await Permission.speech.status;
-      
+      speechStatus = await Permission.speech.status;      
       if (!speechStatus.isGranted && !speechStatus.isPermanentlyDenied) {
         speechStatus = await Permission.speech.request();
       }
@@ -204,7 +224,9 @@ class _CameraViewState extends State<CameraView> {
 
     final hasMic = micStatus.isGranted;
     final hasSpeechPermission = available;
-
+    
+    debugPrint('Platform: ${Platform.isAndroid ? "Android" : "iOS"}');
+    
     if (mounted) {
       setState(() {
         _speechAvailable = available;
@@ -212,17 +234,16 @@ class _CameraViewState extends State<CameraView> {
         _speechErrorMessage = null;
       });
     }
-
-    // Don't auto-start listening here anymore
-    // Let the user see the card first before starting
   }
 
   Future<void> _startListeningForGo() async {
     if (!_speechAvailable || _goTriggered || !_showStartButton) {
+      debugPrint('Cannot listen: available=$_speechAvailable, triggered=$_goTriggered, showButton=$_showStartButton');
       return;
     }
     
     if (_speechToText.isListening) {
+      debugPrint('Already listening');
       return;
     }
 
@@ -247,7 +268,6 @@ class _CameraViewState extends State<CameraView> {
     );
 
     final isListening = _speechToText.isListening;
-
     if (mounted) {
       setState(() {
         _isListeningForGo = isListening;
@@ -300,7 +320,6 @@ class _CameraViewState extends State<CameraView> {
       });
     }
 
-    // Restart listening after an error (except permanent errors)
     if (error.errorMsg != 'error_speech_timeout' && 
         error.errorMsg != 'error_no_match') {
       return;
@@ -319,6 +338,7 @@ class _CameraViewState extends State<CameraView> {
 
   void _scheduleGoListeningRestart() {
     if (_goTriggered || !_showStartButton || !_speechAvailable) {
+      debugPrint('Not restarting: goTriggered=$_goTriggered, showButton=$_showStartButton, available=$_speechAvailable');
       return;
     }
     _speechRestartTimer?.cancel();
@@ -334,14 +354,12 @@ class _CameraViewState extends State<CameraView> {
       return;
     }
     if (!_goTriggered) {
-      // Allow manual start via button press even without voice command
       _goTriggered = true;
     }
     setState(() {
       _showStartButton = false;
     });
     _speechErrorMessage = null;
-    unawaited(_stopListeningForGo());
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         _startDetecting();
@@ -522,6 +540,8 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   void dispose() {
+    _disableWakelock();
+    
     _workoutTimerService.onTick = null;
     _workoutTimerService.stop();
     _celebrationTimer?.cancel();
@@ -553,7 +573,7 @@ class _CameraViewState extends State<CameraView> {
     if (text.isEmpty) {
       return false;
     }
-
+    
     final normalized = text
         .toLowerCase()
         .replaceAll("'", ' ')
@@ -563,6 +583,8 @@ class _CameraViewState extends State<CameraView> {
         .replaceAll('ê', 'e')
         .trim();
 
+    debugPrint('Normalized: "$normalized"');
+    
     final goCommands = [
       'cest parti',
       'c est parti',
@@ -575,6 +597,7 @@ class _CameraViewState extends State<CameraView> {
 
     for (final cmd in goCommands) {
       if (normalized.contains(cmd)) {
+        debugPrint('Command "$cmd" detected');
         return true;
       }
     }
@@ -586,6 +609,7 @@ class _CameraViewState extends State<CameraView> {
       }
     }
 
+    debugPrint('No command detected');
     return false;
   }
 }
@@ -615,14 +639,11 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
   @override
   void initState() {
     super.initState();
-    // Start listening after a short delay to let the UI render
     if (widget.speechAvailable && !widget.permissionDenied) {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
-          // Trigger listening through parent
           final cameraState = context.findAncestorStateOfType<_CameraViewState>();
           if (cameraState != null && cameraState._showStartButton && !cameraState._goTriggered) {
-            print('🎯 Starting initial listening from card...');
             cameraState._startListeningForGo();
           }
         }
@@ -768,7 +789,7 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
                     size: 20,
                   ),
                   label: Text(
-                    'Ouvrir les Réglages',
+                    cameraStrings.open_settings,
                     style: GoogleFonts.amaranth(
                       color: playfitOrangeDark,
                       fontSize: 16,

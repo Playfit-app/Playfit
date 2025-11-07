@@ -260,14 +260,14 @@ class WorkoutAnalyzer {
     }
   }
 
-  /// Détecte l'exercice de montée de genoux basé sur les landmarks de la pose
+  /// Detects the high knees workout based on the pose landmarks
   ///
-  /// `pose` est la pose détectée contenant les landmarks du corps.
+  /// `pose` is the detected pose containing landmarks of the body.
   ///
-  /// La montée de genoux est détectée quand :
-  /// - Un genou est levé au-dessus de la hanche
-  /// - Le genou forme un angle aigu (< 90 degrés)
-  /// - On compte une répétition à chaque fois qu'un genou est levé puis abaissé
+  /// High knees are detected when:
+  /// - A knee is raised above the hip
+  /// - The knee forms an acute angle (< 90 degrees)
+  /// - A repetition is counted each time a knee is raised then lowered
   void detectHighKnees(Pose pose) {
     final leftHip = pose.landmarks[PoseLandmarkType.leftHip];
     final rightHip = pose.landmarks[PoseLandmarkType.rightHip];
@@ -288,17 +288,17 @@ class WorkoutAnalyzer {
     final leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
     final rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
 
-    // Seuils ajustés pour une meilleure détection
-    const double kneeUpAngleThreshold = 110.0; // Plus souple
-    const double kneeDownAngleThreshold = 130.0; // Plus souple
+    // Adjusted thresholds for better detection
+    const double kneeUpAngleThreshold = 110.0; // More flexible
+    const double kneeDownAngleThreshold = 130.0; // More flexible
     
     final hipYAverage = (leftHip.y + rightHip.y) / 2;
     
-    // Distance verticale entre genou et hanche
+    // Vertical distance between knee and hip
     final leftKneeDistance = hipYAverage - leftKnee.y;
     final rightKneeDistance = hipYAverage - rightKnee.y;
     
-    // Seuil de distance plus souple (en pixels)
+    // More flexible distance threshold (in pixels)
     const double minKneeUpDistance = 50.0;
     
     bool leftKneeUp = leftKneeDistance > minKneeUpDistance && leftKneeAngle < kneeUpAngleThreshold;

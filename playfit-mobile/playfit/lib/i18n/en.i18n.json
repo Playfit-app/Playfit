@@ -55,7 +55,8 @@
         "voice_hint_permission": "Enable your microphone to use voice start.",
         "voice_hint_tap": "Prefer tapping? Press Start.",
         "voice_hint_error": "Voice start unavailable. Tap Start instead.",
-        "voice_hint_last_heard": "Heard: $phrase"
+        "voice_hint_last_heard": "Heard: $phrase",
+        "open_settings": "Open Settings"
     },
     "notifications": {
         "title": "Notifications",

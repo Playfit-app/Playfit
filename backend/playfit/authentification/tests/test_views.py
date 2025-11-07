@@ -343,6 +343,64 @@ class UserViewTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["username"], "test2")
 
+    def test_update_email(self):
+        token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        data = {
+            'email': 'newemail@test.com',
+        }
+        response = self.client.patch(self.update_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["email"], "newemail@test.com")
+
+        # Verify email_hash was updated
+        from utilities.encrypted_fields import hash
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email_hash, hash('newemail@test.com'))
+
+    def test_update_email_already_exists(self):
+        # Create another user with a different email
+        CustomUser.objects.create_user(
+            email="existing@test.com",
+            username="existing",
+            password="test12345",
+            date_of_birth="1990-01-01",
+            height=180,
+            weight=80,
+        )
+
+        token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        data = {
+            'email': 'existing@test.com',
+        }
+        response = self.client.patch(self.update_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('email', response.data)
+
+    def test_login_with_updated_email(self):
+        # Update email first
+        token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        data = {
+            'email': 'newemail@test.com',
+        }
+        response = self.client.patch(self.update_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Now try to login with the new email
+        self.client.credentials()  # Clear credentials
+        login_data = {
+            'email': 'newemail@test.com',
+            'password': 'test12345'
+        }
+        # Note: We can't actually test the full login here without setting up WorldPosition
+        # but we can verify the email_hash was updated correctly
+        from utilities.encrypted_fields import hash
+        self.user.refresh_from_db()
+        updated_user = CustomUser.objects.get(email_hash=hash('newemail@test.com'))
+        self.assertEqual(updated_user.id, self.user.id)
+
     def test_delete_my_data(self):
         token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)

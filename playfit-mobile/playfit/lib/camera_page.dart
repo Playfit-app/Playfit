@@ -625,6 +625,18 @@ class _CameraViewState extends State<CameraView> {
       );
     }
   }
+
+  String _sanitizeRecognizedText(String text) {
+    return text
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\w\s]'), '')
+        .trim();
+  }
+
+  bool _containsGoCommand(String text) {
+    final goKeywords = ['go', 'start', 'begin', 'ready'];
+    return goKeywords.any((keyword) => text.contains(keyword));
+  }
 }
 
 class _VoiceStartCard extends StatefulWidget {

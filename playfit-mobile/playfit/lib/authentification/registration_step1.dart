@@ -193,12 +193,12 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
                 // - At least one uppercase letter
                 // - At least one digit
                 // - At least one special character from [@$!%*?&]
-        if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[ \*\.\!@#\$%\^&\(\)\{\}\[\]:;<>,\/\?~_\+\=\-\|"])[A-Za-z\d \*\.\!@#\$%\^&\(\)\{\}\[\]:;<>,\/\?~_\+\=\-\|"]{8,}$')
-          .hasMatch(value)) {
-                  return t.register.invalid_password;
+              if (!RegExp(r"""^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[ !\"#$%&'()*+,\-.\/:;<=>?@[\\\]^_`{|}~]).{8,}$""")
+                .hasMatch(value)) {
+                        return t.register.invalid_password;
                 }
                 return null;
-              },
+                },
             ),
           ),
           SizedBox(height: screenHeight * 0.02),

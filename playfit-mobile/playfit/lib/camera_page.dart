@@ -22,6 +22,7 @@ import 'package:playfit/components/camera/left_box_widget.dart';
 import 'package:playfit/components/camera/bottom_box_widget.dart';
 import 'package:playfit/components/camera/celebration_overlay.dart';
 import 'package:playfit/workout_progression_page.dart';
+import 'package:playfit/services/log_service.dart';
 
 enum BoxType { left, bottom }
 
@@ -56,6 +57,7 @@ class _CameraViewState extends State<CameraView> {
   bool _isDetecting = false;
   final WorkoutAnalyzer _workoutAnalyzer = WorkoutAnalyzer();
   WorkoutTimerService _workoutTimerService = WorkoutTimerService();
+  final LogService _logService = LogService.instance;
   late WorkoutType _workoutType;
   late String _exerciseName;
   late Duration _elapsedTime;
@@ -68,6 +70,7 @@ class _CameraViewState extends State<CameraView> {
   Timer? _celebrationTimer;
   bool _celebrationStarted = false;
   late FlutterTts _flutterTts;
+  Future<void>? _cameraShutdown;
   late final SpeechToText _speechToText;
   bool _speechAvailable = false;
   bool _isListeningForGo = false;
@@ -85,6 +88,8 @@ class _CameraViewState extends State<CameraView> {
         return WorkoutType.jumpingJack;
       case 'pushup':
         return WorkoutType.pushUp;
+      case 'glutebridge':
+        return WorkoutType.gluteBridge;
       case 'pullup':
         return WorkoutType.pullUp;
       default:
@@ -169,30 +174,15 @@ class _CameraViewState extends State<CameraView> {
 
   Future<void> initCamera() async {
     final cameras = await availableCameras();
+    final frontCamera = cameras.firstWhere(
+      (camera) => camera.lensDirection == CameraLensDirection.front,
+    );
     _controller = CameraController(
-      cameras.firstWhere(
-        (camera) => camera.lensDirection == CameraLensDirection.front,
-      ),
+      frontCamera,
       ResolutionPreset.high,
+      enableAudio: false,
     );
     await _controller?.initialize();
-
-    _workoutAnalyzer.workoutCounts.addListener(() {
-      final count = _workoutAnalyzer.workoutCounts.value[_workoutType];
-
-      if (count != null && count > _count && count <= _targetCount) {
-        setState(() {
-          _count = count;
-
-          if (_count == _targetCount && !_celebrationStarted) {
-            _celebrationStarted = true;
-            _showCelebration = true;
-            _stopDetecting();
-          }
-        });
-      }
-    });
-
     if (mounted) {
       setState(() {});
     }
@@ -367,27 +357,53 @@ class _CameraViewState extends State<CameraView> {
   }
 
   void _startDetecting() async {
-    if (_controller != null) {
-      if (_controller!.value.isStreamingImages) return;
-      if (mounted) {
-        setState(() {
-          _showStartButton = false;
-        });
-      }
+    if (_controller == null) {
+      return;
+    }
+    if (!_controller!.value.isInitialized) {
+      return;
+    }
+    if (_controller!.value.isStreamingImages) {
+      return;
+    }
 
-      _startTimer();
-      _controller!.startImageStream((image) async {
+    setState(() {
+      _showStartButton = false;
+    });
+    _startTimer();
+
+    try {
+      await _controller!.startImageStream((image) async {
         if (_isDetecting) return;
         _isDetecting = true;
 
         try {
           final inputImage = ImageUtils.getInputImage(image, _controller);
           await _workoutAnalyzer.detectWorkout(inputImage, _workoutType);
-        } catch (e) {
+        } catch (e, st) {
+          _logService.log(
+            'Error while processing camera frame for ${_workoutType.name}',
+            level: LogLevel.error,
+            error: e,
+            stackTrace: st,
+          );
         } finally {
           _isDetecting = false;
         }
       });
+    } on CameraException catch (e) {
+      _logService.log(
+        'Camera exception on StartImageStream: ${e.code} - ${e.description}',
+        level: LogLevel.error,
+        error: e,
+      );
+    } catch (e, st) {
+      _logService.log(
+        'Unexpected error starting image stream',
+        level: LogLevel.error,
+        error: e,
+        stackTrace: st,
+      );
     }
   }
 
@@ -396,6 +412,10 @@ class _CameraViewState extends State<CameraView> {
       _workoutTimerService.stop();
       await _controller!.stopImageStream();
       _isDetecting = false;
+      _logService.log(
+        'Workout detection stream stopped',
+        level: LogLevel.info,
+      );
     }
 
     _celebrationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -404,12 +424,22 @@ class _CameraViewState extends State<CameraView> {
       });
       if (_celebrationCountdown == 0) {
         _celebrationTimer?.cancel();
-        _goToProgressionPage();
+        unawaited(_goToProgressionPage());
       }
     });
   }
 
-  void _goToProgressionPage() {
+  /// Navigates to the WorkoutProgressionPage with the current exercise index and difficulty.
+  /// This method creates a new route and passes the necessary parameters,
+  /// including the difficulty level, images, starting point, and character images.
+  ///
+  /// Returns a [void] that completes when the navigation is done.
+  Future<void> _goToProgressionPage() async {
+    await _shutdownCamera();
+    if (!mounted) {
+      return;
+    }
+
     final Difficulty difficulty = widget.difficulty == "beginner"
         ? Difficulty.easy
         : widget.difficulty == "intermediate"
@@ -545,12 +575,7 @@ class _CameraViewState extends State<CameraView> {
     _workoutTimerService.stop();
     _celebrationTimer?.cancel();
     _workoutAnalyzer.dispose();
-    if (_controller != null) {
-      if (_controller!.value.isStreamingImages) {
-        _controller!.stopImageStream();
-      }
-      _controller!.dispose();
-    }
+    unawaited(_shutdownCamera());
     _flutterTts.stop();
     _speechRestartTimer?.cancel();
     if (_speechAvailable) {
@@ -559,58 +584,58 @@ class _CameraViewState extends State<CameraView> {
     super.dispose();
   }
 
+  Future<void> _shutdownCamera() {
+    if (_cameraShutdown != null) {
+      return _cameraShutdown!;
+    }
+    final controller = _controller;
+    if (controller == null) {
+      return Future<void>.value();
+    }
+
+    _cameraShutdown = _disposeCameraController(controller).whenComplete(() {
+      _cameraShutdown = null;
+    });
+    return _cameraShutdown!;
+  }
+
+  Future<void> _disposeCameraController(CameraController controller) async {
+    _controller = null;
+    try {
+      if (controller.value.isStreamingImages) {
+        try {
+          await controller.stopImageStream();
+          _isDetecting = false;
+        } catch (e, st) {
+          _logService.log(
+            'Camera exception while stopping image stream during shutdown',
+            level: LogLevel.warning,
+            error: e,
+            stackTrace: st,
+          );
+        }
+      }
+      await controller.dispose();
+    } catch (e, st) {
+      _logService.log(
+        'Camera exception while disposing controller',
+        level: LogLevel.warning,
+        error: e,
+        stackTrace: st,
+      );
+    }
+  }
+
   String _sanitizeRecognizedText(String text) {
-    final lower = text.toLowerCase();
-    final cleaned = lower
-        .replaceAll(RegExp(r"[^\p{L}\p{N}\s]", unicode: true), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
+    return text
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\w\s]'), '')
         .trim();
-    return cleaned;
   }
 
   bool _containsGoCommand(String text) {
-    if (text.isEmpty) {
-      return false;
-    }
-
-
-    final normalized = text
-        .toLowerCase()
-        .replaceAll("'", ' ')
-        .replaceAll('-', ' ')
-        .replaceAll('é', 'e')
-        .replaceAll('è', 'e')
-        .replaceAll('ê', 'e')
-        .trim();
-
-    debugPrint('Normalized: "$normalized"');
-
-    final goCommands = [
-      'cest parti',
-      'c est parti',
-      'ces parti',
-      'se parti',
-      'lets go',
-      'let go',
-      'letsgo',
-    ];
-
-    for (final cmd in goCommands) {
-      if (normalized.contains(cmd)) {
-        debugPrint('Command "$cmd" detected');
-        return true;
-      }
-    }
-
-    final words = normalized.split(' ');
-    for (final word in words) {
-      if (word == 'go' || word == 'gau' || word == 'guo') {
-        return true;
-      }
-    }
-
-    debugPrint('No command detected');
-    return false;
+    final goKeywords = ['go', 'start', 'begin', 'ready'];
+    return goKeywords.any((keyword) => text.contains(keyword));
   }
 }
 

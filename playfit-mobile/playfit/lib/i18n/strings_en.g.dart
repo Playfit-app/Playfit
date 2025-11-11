@@ -93,6 +93,7 @@ class TranslationsLoginEn {
 	String get username => 'Username';
 	String get password => 'Password';
 	String get login => 'Login';
+	String get stay_connected => 'Stay connected';
 	String get invalid_credentials => 'Invalid username or password.';
 	String get empty_username => 'Please enter your username.';
 	String get empty_password => 'Please enter your password.';
@@ -158,6 +159,14 @@ class TranslationsCameraEn {
 	// Translations
 	String next_step_countdown({required Object seconds}) => 'Next step in ${seconds} seconds...';
 	String get start_workout => 'Start';
+	String get voice_hint_title => 'Ready to move?';
+	String get voice_hint_body => 'Say "GO" or "Let\'s go" to start a session. You can also press the start button below.';
+	String get voice_hint_listening => 'Listening...';
+	String get voice_hint_permission => 'Enable your microphone to use voice start.';
+	String get voice_hint_tap => 'Prefer tapping? Press Start.';
+	String get voice_hint_error => 'Voice start unavailable. Tap Start instead.';
+	String voice_hint_last_heard({required Object phrase}) => 'Heard: ${phrase}';
+	String get open_settings => 'Open Settings';
 }
 
 // Path: notifications
@@ -258,6 +267,7 @@ class TranslationsSettingsEn {
 	String get others => 'Others';
 	String get delete_account_confirmation => 'Are you sure you want to delete your account? This action cannot be undone.';
 	String get logout => 'Logout';
+	String get logout_confirmation => 'Do you really want to log out?';
 	Map<String, String> get languages => {
 		'fr': 'French',
 		'en': 'English',
@@ -394,6 +404,7 @@ extension on Translations {
 			case 'login.username': return 'Username';
 			case 'login.password': return 'Password';
 			case 'login.login': return 'Login';
+			case 'login.stay_connected': return 'Stay connected';
 			case 'login.invalid_credentials': return 'Invalid username or password.';
 			case 'login.empty_username': return 'Please enter your username.';
 			case 'login.empty_password': return 'Please enter your password.';
@@ -432,6 +443,14 @@ extension on Translations {
 			case 'home.error_loading': return 'Error loading data.';
 			case 'camera.next_step_countdown': return ({required Object seconds}) => 'Next step in ${seconds} seconds...';
 			case 'camera.start_workout': return 'Start';
+			case 'camera.voice_hint_title': return 'Ready to move?';
+			case 'camera.voice_hint_body': return 'Say "GO" or "Let\'s go" to start a session. You can also press the start button below.';
+			case 'camera.voice_hint_listening': return 'Listening...';
+			case 'camera.voice_hint_permission': return 'Enable your microphone to use voice start.';
+			case 'camera.voice_hint_tap': return 'Prefer tapping? Press Start.';
+			case 'camera.voice_hint_error': return 'Voice start unavailable. Tap Start instead.';
+			case 'camera.voice_hint_last_heard': return ({required Object phrase}) => 'Heard: ${phrase}';
+			case 'camera.open_settings': return 'Open Settings';
 			case 'notifications.title': return 'Notifications';
 			case 'notifications.read_all': return 'Read all';
 			case 'notifications.empty': return 'No notifications at the moment.';
@@ -487,6 +506,7 @@ extension on Translations {
 			case 'settings.others': return 'Others';
 			case 'settings.delete_account_confirmation': return 'Are you sure you want to delete your account? This action cannot be undone.';
 			case 'settings.logout': return 'Logout';
+			case 'settings.logout_confirmation': return 'Do you really want to log out?';
 			case 'settings.languages.fr': return 'French';
 			case 'settings.languages.en': return 'English';
 			case 'settings.cancel': return 'Cancel';

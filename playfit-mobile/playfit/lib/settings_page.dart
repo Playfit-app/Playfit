@@ -57,30 +57,79 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showConfirmationDialog(
-      String title, String content, VoidCallback onConfirm) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(content),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(t.settings.cancel),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                onConfirm();
-              },
-              child: Text(t.settings.confirm),
+    String title, String content, VoidCallback onConfirm) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+          side: BorderSide(color: orange, width: 2),
+        ),
+        title: Row(
+          children: [
+            Container(width: 4, height: 24, color: orange),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Amaranth',
+                ),
+              ),
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+        content: Text(
+          content,
+          style: const TextStyle(
+            fontSize: 16,
+            fontFamily: 'family',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.grey[600],
+            ),
+            child: Text(
+              t.settings.cancel,
+              style: const TextStyle(
+                fontSize: 16,
+                fontFamily: 'family',
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              onConfirm();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: orange,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
+            child: Text(
+              t.settings.confirm,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontFamily: 'family',
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
 
   
 void _showDeleteConfirmationDialog() {
@@ -129,6 +178,14 @@ void _showDeleteConfirmationDialog() {
     },
   );
 }
+
+  void _showLogoutConfirmationDialog() {
+    _showConfirmationDialog(
+      t.settings.logout,
+      t.settings.logout_confirmation,
+      () => logout(),
+    );
+  }
 
   void logout() async {
     final token = await storage.read(key: 'token');
@@ -293,7 +350,7 @@ void _showDeleteConfirmationDialog() {
                           ListTile(
                             leading: Icon(Icons.logout, color: orange),
                             title: _buildText(t.settings.logout),
-                            onTap: logout,
+                            onTap: _showLogoutConfirmationDialog,
                           ),
                           Divider(color: orange, thickness: 1),
                           ExpansionTile(

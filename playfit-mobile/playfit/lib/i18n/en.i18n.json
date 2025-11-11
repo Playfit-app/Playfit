@@ -4,6 +4,7 @@
         "username": "Username",
         "password": "Password",
         "login": "Login",
+        "stay_connected": "Stay connected",
         "invalid_credentials": "Invalid username or password.",
         "empty_username": "Please enter your username.",
         "empty_password": "Please enter your password.",
@@ -47,7 +48,15 @@
     },
     "camera": {
         "next_step_countdown": "Next step in $seconds seconds...",
-        "start_workout": "Start"
+        "start_workout": "Start",
+        "voice_hint_title": "Ready to move?",
+        "voice_hint_body": "Say \"GO\" or \"Let's go\" to start a session. You can also press the start button below.",
+        "voice_hint_listening": "Listening...",
+        "voice_hint_permission": "Enable your microphone to use voice start.",
+        "voice_hint_tap": "Prefer tapping? Press Start.",
+        "voice_hint_error": "Voice start unavailable. Tap Start instead.",
+        "voice_hint_last_heard": "Heard: $phrase",
+        "open_settings": "Open Settings"
     },
     "notifications": {
         "title": "Notifications",
@@ -123,6 +132,7 @@
         "others": "Others",
         "delete_account_confirmation": "Are you sure you want to delete your account? This action cannot be undone.",
         "logout": "Logout",
+        "logout_confirmation": "Do you really want to log out?",
         "languages": {
             "fr": "French",
             "en": "English"

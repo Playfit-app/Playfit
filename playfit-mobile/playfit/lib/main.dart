@@ -10,6 +10,7 @@ import 'package:playfit/providers/notification_provider.dart';
 import 'package:playfit/providers/language_provider.dart';
 import 'package:playfit/services/push_notification_service.dart';
 import 'package:playfit/authentification/login_page.dart';
+import 'package:playfit/authentification/auth_gate.dart';
 import 'package:playfit/authentification/registration_page.dart';
 import 'package:playfit/home_page.dart';
 import 'package:playfit/profile_page.dart';
@@ -48,7 +49,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const LoginPage(),
+      home: const AuthGate(),
       routes: {
         '/register': (context) =>
             const CreateAccountPage(), // Route to registration page

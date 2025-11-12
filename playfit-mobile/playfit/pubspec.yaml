@@ -61,6 +61,7 @@ dependencies:
   slang_flutter: ^4.7.0
   animations: ^2.0.11
   permission_handler: ^12.0.0+1
+  path_provider: ^2.1.5
   wakelock_plus: ^1.2.0 
 
 dev_dependencies:

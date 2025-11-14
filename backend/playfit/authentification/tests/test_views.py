@@ -388,18 +388,29 @@ class UserViewTests(BaseAPITestCase):
         response = self.client.patch(self.update_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+        # Verify email_hash was updated
+        from utilities.encrypted_fields import hash
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email_hash, hash('newemail@test.com'))
+
+        # Now set up minimal objects required for login to succeed (world position, character, customization, progress)
+        self.continent = Continent.objects.create(name="Europe")
+        self.country = Country.objects.create(name="France", continent=self.continent)
+        self.city = City.objects.create(name="Paris", country=self.country, order=1)
+        WorldPosition.objects.create(user=self.user, city=self.city, city_level=1)
+        base_char = BaseCharacter.objects.create(name="character_image", image=create_test_image())
+        Customization.objects.create(user=self.user, base_character=base_char)
+        UserProgress.objects.create(user=self.user, longest_streak=0, current_streak=0)
+
         # Now try to login with the new email
         self.client.credentials()  # Clear credentials
         login_data = {
             'email': 'newemail@test.com',
             'password': 'test12345'
         }
-        # Note: We can't actually test the full login here without setting up WorldPosition
-        # but we can verify the email_hash was updated correctly
-        from utilities.encrypted_fields import hash
-        self.user.refresh_from_db()
-        updated_user = CustomUser.objects.get(email_hash=hash('newemail@test.com'))
-        self.assertEqual(updated_user.id, self.user.id)
+        resp = self.client.post("/api/auth/login/", login_data, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertIn('token', resp.data)
 
     def test_delete_my_data(self):
         token = Token.objects.create(user=self.user)

@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
+import 'package:playfit/services/log_service.dart';
 
 enum WorkoutType {
   squat,
@@ -8,9 +9,17 @@ enum WorkoutType {
   pushUp,
   pullUp,
   highKnees,
+  goodMorning,
+  gluteBridge,
 }
 
+enum BodySide { left, right }
+
 class WorkoutAnalyzer {
+  final LogService _logService = LogService(
+    logFileName: 'workout_analyzer.log',
+    keepInMemory: false,
+  );
   final PoseDetector _poseDetector = PoseDetector(
     options: PoseDetectorOptions(
       mode: PoseDetectionMode.stream,
@@ -23,14 +32,12 @@ class WorkoutAnalyzer {
     WorkoutType.pushUp: 0,
     WorkoutType.pullUp: 0,
     WorkoutType.highKnees: 0,
+    WorkoutType.goodMorning: 0,
+    WorkoutType.gluteBridge: 0,
   });
 
   final Map<WorkoutType, bool> _workoutStatus = {
-    WorkoutType.squat: false,
-    WorkoutType.jumpingJack: false,
-    WorkoutType.pushUp: false,
-    WorkoutType.pullUp: false,
-    WorkoutType.highKnees: false,
+    for (var type in WorkoutType.values) type: false,
   };
 
   Map<PoseLandmarkType, PoseLandmark> _lastLandmarks = {};
@@ -60,12 +67,14 @@ class WorkoutAnalyzer {
         case WorkoutType.highKnees:
           detectHighKnees(pose);
           break;
-        default:
+        case WorkoutType.goodMorning:
+          detectGoodMorning(pose);
+          break;
+        case WorkoutType.gluteBridge:
+          detectGluteBridge(pose);
           break;
       }
-    } catch (e) {
-      debugPrint('Error detection pose: $e');
-    }
+    } catch (e) {}
   }
 
   /// Detects the squat workout based on the pose landmarks
@@ -234,6 +243,14 @@ class WorkoutAnalyzer {
     const double upThreshold = 60.0;
     const double downThreshold = 160.0;
     const double shoulderYMovementThreshold = 100;
+    final previousLeftShoulder = _lastLandmarks[PoseLandmarkType.leftShoulder];
+    final previousRightShoulder =
+        _lastLandmarks[PoseLandmarkType.rightShoulder];
+
+    if (previousLeftShoulder == null || previousRightShoulder == null) {
+      _lastLandmarks = pose.landmarks;
+      return;
+    }
 
     // Check if both elbows are bent below the upThreshold
     // and if both shoulders have moved up significantly
@@ -241,11 +258,9 @@ class WorkoutAnalyzer {
     // If elbows are straight, it indicates the end of a pull-up
     if (leftElbowAngle <= upThreshold &&
         rightElbowAngle <= upThreshold &&
-        (leftShoulder.y - _lastLandmarks[PoseLandmarkType.leftShoulder]!.y)
-                .abs() >
+        (leftShoulder.y - previousLeftShoulder.y).abs() >
             shoulderYMovementThreshold &&
-        (rightShoulder.y - _lastLandmarks[PoseLandmarkType.rightShoulder]!.y)
-                .abs() >
+        (rightShoulder.y - previousRightShoulder.y).abs() >
             shoulderYMovementThreshold) {
       if (!_workoutStatus[WorkoutType.pullUp]!) {
         _workoutStatus[WorkoutType.pullUp] = true;
@@ -260,7 +275,89 @@ class WorkoutAnalyzer {
     }
   }
 
-  /// Detects the high knees workout based on the pose landmarks
+  /// Detects the good morning exercise pose
+  /// `pose` is the detected pose containing landmarks of the body.
+  /// Returns nothing.
+  void detectGoodMorning(Pose pose) {
+    final la = pose.landmarks[PoseLandmarkType.leftAnkle];
+    final ra = pose.landmarks[PoseLandmarkType.rightAnkle];
+    final lk = pose.landmarks[PoseLandmarkType.leftKnee];
+    final rk = pose.landmarks[PoseLandmarkType.rightKnee];
+    final lh = pose.landmarks[PoseLandmarkType.leftHip];
+    final rh = pose.landmarks[PoseLandmarkType.rightHip];
+    final ls = pose.landmarks[PoseLandmarkType.leftShoulder];
+    final rs = pose.landmarks[PoseLandmarkType.rightShoulder];
+
+    if (la == null ||
+        ra == null ||
+        lk == null ||
+        rk == null ||
+        lh == null ||
+        rh == null ||
+        ls == null ||
+        rs == null) {
+      return;
+    }
+    final leftHipAngle = calculateAngle(lk, lh, ls);
+    final rightHipAngle = calculateAngle(rk, rh, rs);
+    final leftKneeAngle = calculateAngle(la, lk, lh);
+    final rightKneeAngle = calculateAngle(ra, rk, rh);
+    const double downThreshold = 130;
+    const double upThreshold = 160;
+    const double kneeStraightThreshold = 160;
+
+    // Check if both hips are bent below the downThreshold. Legs should remain relatively straight.
+    // If both conditions are met, it indicates a good morning exercise.
+    if (leftHipAngle <= downThreshold &&
+        rightHipAngle <= downThreshold &&
+        leftKneeAngle >= kneeStraightThreshold &&
+        rightKneeAngle >= kneeStraightThreshold) {
+      if (!_workoutStatus[WorkoutType.goodMorning]!) {
+        _workoutStatus[WorkoutType.goodMorning] = true;
+      }
+    } else if (leftHipAngle >= upThreshold && rightHipAngle >= upThreshold) {
+      if (_workoutStatus[WorkoutType.goodMorning]!) {
+        incrementWorkoutCount(WorkoutType.goodMorning);
+        _workoutStatus[WorkoutType.goodMorning] = false;
+      }
+    }
+  }
+
+  void detectGluteBridge(Pose pose) {
+    final leftShoulder = pose.landmarks[PoseLandmarkType.leftShoulder];
+    final rightShoulder = pose.landmarks[PoseLandmarkType.rightShoulder];
+    final leftHip = pose.landmarks[PoseLandmarkType.leftHip];
+    final rightHip = pose.landmarks[PoseLandmarkType.rightHip];
+    final leftKnee = pose.landmarks[PoseLandmarkType.leftKnee];
+    final rightKnee = pose.landmarks[PoseLandmarkType.rightKnee];
+
+    if (!_visible(leftShoulder) ||
+        !_visible(rightShoulder) ||
+        !_visible(leftHip) ||
+        !_visible(rightHip) ||
+        !_visible(leftKnee) ||
+        !_visible(rightKnee)) {
+      return;
+    }
+
+    final leftHipAngle = calculateAngle(leftKnee!, leftHip!, leftShoulder!);
+    final rightHipAngle = calculateAngle(rightKnee!, rightHip!, rightShoulder!);
+    const double downThreshold = 130;
+    const double upThreshold = 145;
+
+    if (leftHipAngle <= downThreshold && rightHipAngle <= downThreshold) {
+      if (!_workoutStatus[WorkoutType.gluteBridge]!) {
+        _workoutStatus[WorkoutType.gluteBridge] = true;
+      }
+    } else if (leftHipAngle >= upThreshold && rightHipAngle >= upThreshold) {
+      if (_workoutStatus[WorkoutType.gluteBridge]!) {
+        incrementWorkoutCount(WorkoutType.gluteBridge);
+        _workoutStatus[WorkoutType.gluteBridge] = false;
+      }
+    }
+  }
+
+  /// Calculates the angle between three points (landmarks)
   ///
   /// `pose` is the detected pose containing landmarks of the body.
   ///
@@ -340,10 +437,19 @@ class WorkoutAnalyzer {
     return angle;
   }
 
+  bool _visible(PoseLandmark? landmark) =>
+      landmark != null && landmark.likelihood > 0.5;
+
+  /// Increments the count for the specified workout type
+  ///
+  /// `workoutType` is the type of workout for which the count should be incremented.
+  ///
+  /// Returns nothing.
   void incrementWorkoutCount(WorkoutType workoutType) {
+    final newCount = workoutCounts.value[workoutType]! + 1;
     workoutCounts.value = {
       ...workoutCounts.value,
-      workoutType: workoutCounts.value[workoutType]! + 1,
+      workoutType: newCount,
     };
   }
 

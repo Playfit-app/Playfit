@@ -559,56 +559,22 @@ class _CameraViewState extends State<CameraView> {
   }
 
   String _sanitizeRecognizedText(String text) {
-    final lower = text.toLowerCase();
-    final cleaned = lower
-        .replaceAll(RegExp(r"[^\p{L}\p{N}\s]", unicode: true), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
+    return text
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\w\s]'), '') // Supprime la ponctuation
+        .replaceAll(RegExp(r'\s+'), ' ') // Normalise les espaces
         .trim();
-    return cleaned;
   }
 
   bool _containsGoCommand(String text) {
-    if (text.isEmpty) {
-      return false;
-    }
-
-    final normalized = text
-        .toLowerCase()
-        .replaceAll("'", ' ')
-        .replaceAll('-', ' ')
-        .replaceAll('é', 'e')
-        .replaceAll('è', 'e')
-        .replaceAll('ê', 'e')
-        .trim();
-
-    debugPrint('Normalized: "$normalized"');
-
-    final goCommands = [
-      'cest parti',
-      'c est parti',
-      'ces parti',
-      'se parti',
-      'lets go',
-      'let go',
-      'letsgo',
+    final goKeywords = [
+      // English
+      'go', 'start', 'begin', 'ready',
+      // French
+      'vas-y', 'vasy', 'démarre', 'demarre', 'commence', 'prêt', 'pret',
+      'allons-y', 'allonsy', 'départ', 'depart', 'cest parti', 'partez'
     ];
-
-    for (final cmd in goCommands) {
-      if (normalized.contains(cmd)) {
-        debugPrint('Command "$cmd" detected');
-        return true;
-      }
-    }
-
-    final words = normalized.split(' ');
-    for (final word in words) {
-      if (word == 'go' || word == 'gau' || word == 'guo') {
-        return true;
-      }
-    }
-
-    debugPrint('No command detected');
-    return false;
+    return goKeywords.any((keyword) => text.contains(keyword));
   }
 }
 

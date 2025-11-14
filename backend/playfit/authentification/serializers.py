@@ -62,10 +62,11 @@ class CustomUserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = [
-            'username', 'first_name', 'last_name', 'height', 'weight',
+            'email', 'username', 'first_name', 'last_name', 'height', 'weight',
             'goals', 'gender', 'fitness_level', 'physical_particularities'
         ]
         extra_kwargs = {
+            'email': {'required': False},
             'username': {'required': False},
             'first_name': {'required': False},
             'last_name': {'required': False},
@@ -78,6 +79,11 @@ class CustomUserUpdateSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
+        if 'email' in data:
+            # Check if email is already in use by another user
+            email_hash_value = hash(data['email'])
+            if CustomUser.objects.filter(email_hash=email_hash_value).exclude(id=self.instance.id).exists():
+                raise serializers.ValidationError({'email': 'Email already exists'})
         if 'username' in data and CustomUser.objects.filter(username=data['username']).exclude(id=self.instance.id).exists():
             raise serializers.ValidationError({'username': 'Username already exists'})
         if 'height' in data and (data['height'] < 100 or data['height'] > 250):
@@ -93,6 +99,13 @@ class CustomUserUpdateSerializer(serializers.ModelSerializer):
         if 'physical_particularities' in data and data['physical_particularities'] and len(data['physical_particularities']) > 1000:
             raise serializers.ValidationError({'physical_particularities': 'Physical particularities must be less than 1000 characters'})
         return data
+
+    def update(self, instance, validated_data):
+        # If email is being updated, also update email_hash
+        if 'email' in validated_data:
+            instance.email_hash = hash(validated_data['email'])
+
+        return super().update(instance, validated_data)
 
 class CustomUserDeleteSerializer(serializers.Serializer):
     confirm = serializers.BooleanField(write_only=True)

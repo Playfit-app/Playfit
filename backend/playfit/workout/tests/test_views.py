@@ -559,6 +559,6 @@ class WorkoutSessionExerciseViewTests(APITestCase):
         self.assertEqual(len(advanced_exercises), 5)  # advanced should have 5 exercises
         exercise_names = [ex['name'] for ex in advanced_exercises]
         # Check that exercises are from the available list
-        available_exercises = ['squat', 'jumpingJack', 'pushUp', 'pullUp', 'goodMorning', 'gluteBridge']
+        available_exercises = ['squat', 'jumpingJack', 'pushUp', 'pullUp', 'goodMorning', 'gluteBridge', 'HighKnees']
         for name in exercise_names:
             self.assertIn(name, available_exercises)

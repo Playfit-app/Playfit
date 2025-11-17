@@ -197,7 +197,7 @@ def generate_workout_exercises(user, workout_session, difficulty='beginner'):
     # Note: pullUp temporarily excluded from upper_body_pull category
     EXERCISE_CATEGORIES = {
         'legs': ['squat', 'gluteBridge'],
-        'cardio': ['jumpingJack'],
+        'cardio': ['jumpingJack', 'HighKnees'],
         'upper_body_push': ['pushUp'],
         'upper_body_pull': [],  # pullUp temporarily excluded
         'posterior_chain': ['goodMorning']  # Back, hamstrings, glutes
@@ -225,21 +225,24 @@ def generate_workout_exercises(user, workout_session, difficulty='beginner'):
             'jumpingJack': 12,
             'pushUp': 5,
             'goodMorning': 6,
-            'gluteBridge': 10
+            'gluteBridge': 10,
+            'HighKnees': 15
         },
         'intermediate': {
             'squat': 12,
             'jumpingJack': 20,
             'pushUp': 8,
             'goodMorning': 10,
-            'gluteBridge': 15
+            'gluteBridge': 15,
+            'HighKnees': 25
         },
         'advanced': {
             'squat': 20,
             'jumpingJack': 30,
             'pushUp': 15,
             'goodMorning': 15,
-            'gluteBridge': 20
+            'gluteBridge': 20,
+            'HighKnees': 30
         }
     }
     

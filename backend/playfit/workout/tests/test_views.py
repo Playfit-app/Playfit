@@ -40,6 +40,10 @@ class ExerciseViewTests(APITestCase):
             name="jumpingJack",
             image=None
         )
+        self.exercise4 = Exercise.objects.create(
+            name="HighKnees",
+            image=None
+        )
         self.url = "/api/workout/get_exercises/"
 
     def test_get_all_exercises_authenticated(self):
@@ -48,11 +52,12 @@ class ExerciseViewTests(APITestCase):
         
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 3)
+        self.assertEqual(len(response.data), 4)
         exercise_names = [ex["name"] for ex in response.data]
         self.assertIn("pushUp", exercise_names)
         self.assertIn("squat", exercise_names)
         self.assertIn("jumpingJack", exercise_names)
+        self.assertIn("HighKnees", exercise_names)
 
     def test_get_exercises_filtered_by_name(self):
         token = Token.objects.create(user=self.regular_user)
@@ -76,7 +81,7 @@ class ExerciseViewTests(APITestCase):
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Exercise.objects.count(), 4)
+        self.assertEqual(Exercise.objects.count(), 5)
         self.assertEqual(response.data["name"], "New Exercise")
 
     def test_create_exercise_as_regular_user(self):
@@ -89,7 +94,7 @@ class ExerciseViewTests(APITestCase):
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(Exercise.objects.count(), 3)
+        self.assertEqual(Exercise.objects.count(), 4)
 
 
 class WorkoutSessionsViewTests(APITestCase):
@@ -294,10 +299,11 @@ class WorkoutSessionExerciseViewTests(APITestCase):
             city_level=1
         )
         
-        # Create all 6 exercises required by the algorithm
+        # Create all exercises required by the algorithm
         self.exercise_push = Exercise.objects.create(name="pushUp", image=None)
         self.exercise_squat = Exercise.objects.create(name="squat", image=None)
         self.exercise_jumping = Exercise.objects.create(name="jumpingJack", image=None)
+        self.exercise_highknees = Exercise.objects.create(name="HighKnees", image=None)
         self.exercise_pullup = Exercise.objects.create(name="pullUp", image=None)
         self.exercise_goodmorning = Exercise.objects.create(name="goodMorning", image=None)
         self.exercise_glutebridge = Exercise.objects.create(name="gluteBridge", image=None)
@@ -362,7 +368,7 @@ class WorkoutSessionExerciseViewTests(APITestCase):
         for difficulty in ['beginner', 'intermediate', 'advanced']:
             exercise_names = [ex['name'] for ex in response.data[difficulty]]
             # All exercise names should be from the available list
-            available_exercises = ['squat', 'jumpingJack', 'pushUp', 'pullUp', 'goodMorning', 'gluteBridge']
+            available_exercises = ['squat', 'jumpingJack', 'HighKnees', 'pushUp', 'pullUp', 'goodMorning', 'gluteBridge']
             for name in exercise_names:
                 self.assertIn(name, available_exercises)
 
@@ -515,7 +521,7 @@ class WorkoutSessionExerciseViewTests(APITestCase):
             # (should be default values since no history for other exercises)
             self.assertTrue(len(beginner_exercises) > 0)
             # Verify all exercise names are from available list
-            available_exercises = ['squat', 'jumpingJack', 'pushUp', 'pullUp', 'goodMorning', 'gluteBridge']
+            available_exercises = ['squat', 'jumpingJack', 'HighKnees', 'pushUp', 'pullUp', 'goodMorning', 'gluteBridge']
             for ex in beginner_exercises:
                 self.assertIn(ex['name'], available_exercises)
 
@@ -532,7 +538,7 @@ class WorkoutSessionExerciseViewTests(APITestCase):
         self.assertEqual(len(intermediate_exercises), 4)  # intermediate should have 4 exercises
         exercise_names = [ex['name'] for ex in intermediate_exercises]
         # Check that exercises are from the available list
-        available_exercises = ['squat', 'jumpingJack', 'pushUp', 'pullUp', 'goodMorning', 'gluteBridge']
+        available_exercises = ['squat', 'jumpingJack', 'HighKnees', 'pushUp', 'pullUp', 'goodMorning', 'gluteBridge']
         for name in exercise_names:
             self.assertIn(name, available_exercises)
         

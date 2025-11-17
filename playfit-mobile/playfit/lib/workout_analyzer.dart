@@ -8,6 +8,7 @@ enum WorkoutType {
   jumpingJack,
   pushUp,
   pullUp,
+  highKnees,
   goodMorning,
   gluteBridge,
 }
@@ -24,31 +25,23 @@ class WorkoutAnalyzer {
       mode: PoseDetectionMode.stream,
     ),
   );
-  // A ValueNotifier to hold the counts of each workout type
-  // This allows the UI to reactively update when the counts change
+
   ValueNotifier<Map<WorkoutType, int>> workoutCounts = ValueNotifier({
     WorkoutType.squat: 0,
     WorkoutType.jumpingJack: 0,
     WorkoutType.pushUp: 0,
     WorkoutType.pullUp: 0,
+    WorkoutType.highKnees: 0,
     WorkoutType.goodMorning: 0,
     WorkoutType.gluteBridge: 0,
   });
-  // A map to keep track of the status of each workout type
-  // This is used to determine if the user has completed a workout
+
   final Map<WorkoutType, bool> _workoutStatus = {
     for (var type in WorkoutType.values) type: false,
   };
+
   Map<PoseLandmarkType, PoseLandmark> _lastLandmarks = {};
 
-  /// Detects the workout type based on the input image and updates the workout counts
-  ///
-  /// `inputImage` is the image to be processed for pose detection.
-  /// `workout` is the type of workout to be detected.
-  ///
-  /// Returns a [Future] that completes when the detection is done.
-  /// If the pose detection fails or no poses are detected, it will return without updating the counts.
-  /// If a workout is detected, it will update the counts and reset the status for that workout type.
   Future<void> detectWorkout(InputImage inputImage, WorkoutType workout) async {
     try {
       final poses = await _poseDetector.processImage(inputImage);
@@ -70,6 +63,9 @@ class WorkoutAnalyzer {
           break;
         case WorkoutType.pullUp:
           detectPullUp(pose);
+          break;
+        case WorkoutType.highKnees:
+          detectHighKnees(pose);
           break;
         case WorkoutType.goodMorning:
           detectGoodMorning(pose);
@@ -363,9 +359,64 @@ class WorkoutAnalyzer {
 
   /// Calculates the angle between three points (landmarks)
   ///
-  /// `a`, `b`, and `c` are the three points representing the landmarks.
+  /// `pose` is the detected pose containing landmarks of the body.
   ///
-  /// Returns the angle in degrees between the vectors formed by these points.
+  /// High knees are detected when:
+  /// - A knee is raised above the hip
+  /// - The knee forms an acute angle (< 90 degrees)
+  /// - A repetition is counted each time a knee is raised then lowered
+  void detectHighKnees(Pose pose) {
+    final leftHip = pose.landmarks[PoseLandmarkType.leftHip];
+    final rightHip = pose.landmarks[PoseLandmarkType.rightHip];
+    final leftKnee = pose.landmarks[PoseLandmarkType.leftKnee];
+    final rightKnee = pose.landmarks[PoseLandmarkType.rightKnee];
+    final leftAnkle = pose.landmarks[PoseLandmarkType.leftAnkle];
+    final rightAnkle = pose.landmarks[PoseLandmarkType.rightAnkle];
+
+    if (leftHip == null ||
+        rightHip == null ||
+        leftKnee == null ||
+        rightKnee == null ||
+        leftAnkle == null ||
+        rightAnkle == null) {
+      return;
+    }
+
+    final leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
+    final rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
+
+    // Adjusted thresholds for better detection
+    const double kneeUpAngleThreshold = 110.0; // More flexible
+    const double kneeDownAngleThreshold = 130.0; // More flexible
+
+    final hipYAverage = (leftHip.y + rightHip.y) / 2;
+
+    // Vertical distance between knee and hip
+    final leftKneeDistance = hipYAverage - leftKnee.y;
+    final rightKneeDistance = hipYAverage - rightKnee.y;
+
+    // More flexible distance threshold (in pixels)
+    const double minKneeUpDistance = 50.0;
+
+    bool leftKneeUp = leftKneeDistance > minKneeUpDistance &&
+        leftKneeAngle < kneeUpAngleThreshold;
+    bool rightKneeUp = rightKneeDistance > minKneeUpDistance &&
+        rightKneeAngle < kneeUpAngleThreshold;
+    bool kneesDown = leftKneeAngle > kneeDownAngleThreshold &&
+        rightKneeAngle > kneeDownAngleThreshold;
+
+    if (leftKneeUp || rightKneeUp) {
+      if (!_workoutStatus[WorkoutType.highKnees]!) {
+        _workoutStatus[WorkoutType.highKnees] = true;
+      }
+    } else if (kneesDown) {
+      if (_workoutStatus[WorkoutType.highKnees]!) {
+        incrementWorkoutCount(WorkoutType.highKnees);
+        _workoutStatus[WorkoutType.highKnees] = false;
+      }
+    }
+  }
+
   double calculateAngle(PoseLandmark a, PoseLandmark b, PoseLandmark c) {
     final aPoint = Offset(a.x, a.y);
     final bPoint = Offset(b.x, b.y);
@@ -400,12 +451,8 @@ class WorkoutAnalyzer {
       ...workoutCounts.value,
       workoutType: newCount,
     };
-    // notifyListeners();
   }
 
-  /// Closes the pose detector to release resources
-  ///
-  /// Returns nothing.
   void dispose() {
     _poseDetector.close();
   }

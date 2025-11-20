@@ -23,7 +23,7 @@
         "invalid_email": "Please enter a valid email address.",
         "password": "Password",
         "empty_password": "Please enter a password.",
-        "invalid_password": "Password must be at least 8 characters long, contain an uppercase letter, a lowercase letter, and a number.",
+        "invalid_password": "Password needs 8+ chars plus upper, lower, number, and symbol.",
         "confirm_password": "Confirm password",
         "empty_confirm_password": "Please confirm your password.",
         "passwords_do_not_match": "Passwords do not match.",

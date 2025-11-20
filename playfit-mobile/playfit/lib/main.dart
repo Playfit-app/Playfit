@@ -25,6 +25,9 @@ void main() async {
   NotificationService().initFirebaseMessaging();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
+  // Initialize translations
+  LocaleSettings.useDeviceLocale();
+
   runApp(
     // DevicesPreview is only enabled in debug mode
     // It allows you to preview your app on different devices and screen sizes
@@ -43,20 +46,29 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Playfit',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const AuthGate(),
-      routes: {
-        '/register': (context) =>
-            const CreateAccountPage(), // Route to registration page
-        '/login': (context) => const LoginPage(), // Route to login page
-        '/home': (context) => HomePage(), // Route to home page
-        '/profile': (context) => const ProfilePage(), // Route to profile page
-        '/notifications': (context) => const NotificationPage(),
+    return Consumer<LanguageProvider>(
+      builder: (context, languageProvider, child) {
+        return TranslationProvider(
+          child: MaterialApp(
+            title: 'Playfit',
+            locale: languageProvider.currentLocale.flutterLocale,
+            supportedLocales: AppLocaleUtils.supportedLocales,
+            localizationsDelegates: GlobalMaterialLocalizations.delegates,
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+              useMaterial3: true,
+            ),
+            home: const AuthGate(),
+            routes: {
+              '/register': (context) =>
+                  const CreateAccountPage(), // Route to registration page
+              '/login': (context) => const LoginPage(), // Route to login page
+              '/home': (context) => HomePage(), // Route to home page
+              '/profile': (context) => const ProfilePage(), // Route to profile page
+              '/notifications': (context) => const NotificationPage(),
+            },
+          ),
+        );
       },
     );
   }

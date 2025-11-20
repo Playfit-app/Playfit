@@ -22,6 +22,8 @@ class _LoginPageState extends State<LoginPage> {
   bool _isGoogleSignInLoading = false;
   bool _isKeyboardVisible = false;
   bool _stayConnected = false;
+  bool _passwordVisible = false;
+  late final List<TextEditingController> _watchedControllers;
 
   /// Initializes the state of the widget and sets up a post-frame callback to determine
   /// if the keyboard is visible by checking the bottom inset of the current MediaQuery.
@@ -29,10 +31,30 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    _watchedControllers = [_loginController, _passwordController];
+    for (final controller in _watchedControllers) {
+      controller.addListener(_onTextChanged);
+    }
     _loadStayConnectedPreference();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
     });
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _watchedControllers) {
+      controller
+        ..removeListener(_onTextChanged)
+        ..dispose();
+    }
+    super.dispose();
+  }
+
+  void _onTextChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _loadStayConnectedPreference() async {
@@ -239,7 +261,7 @@ class _LoginPageState extends State<LoginPage> {
                                 horizontal: screenWidth * 0.2),
                             child: TextFormField(
                               controller: _passwordController,
-                              obscureText: true,
+                              obscureText: !_passwordVisible,
                               onTap: () {
                                 setState(() {
                                   _isKeyboardVisible = true;
@@ -251,13 +273,43 @@ class _LoginPageState extends State<LoginPage> {
                                 fillColor:
                                     const Color.fromARGB(255, 255, 233, 202),
                                 prefixIcon: const Icon(Icons.lock),
-                                suffixIcon: _passwordController.text.isNotEmpty
-                                    ? IconButton(
-                                        icon: const Icon(Icons.close),
-                                        onPressed: () =>
-                                            _passwordController.clear(),
-                                      )
-                                    : null,
+                                suffixIcon: SizedBox(
+                                  width: 88,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      if (_passwordController.text.isNotEmpty)
+                                        IconButton(
+                                          icon: const Icon(Icons.close),
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(
+                                            minWidth: 0,
+                                            minHeight: 0,
+                                          ),
+                                          iconSize: 20,
+                                          onPressed: () =>
+                                              _passwordController.clear(),
+                                        ),
+                                      IconButton(
+                                        icon: Icon(
+                                          _passwordVisible
+                                              ? Icons.visibility_off
+                                              : Icons.visibility,
+                                          size: 20,
+                                        ),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(
+                                          minWidth: 0,
+                                          minHeight: 0,
+                                        ),
+                                        onPressed: () => setState(
+                                            () => _passwordVisible =
+                                                !_passwordVisible),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10.0),
                                   borderSide: BorderSide.none,

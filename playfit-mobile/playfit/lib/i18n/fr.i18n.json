@@ -23,7 +23,7 @@
         "invalid_email": "Veuillez entrer une adresse e-mail valide.",
         "password": "Mot de passe",
         "empty_password": "Veuillez entrer un mot de passe.",
-        "invalid_password": "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre.",
+        "invalid_password": "8 caractères min. avec majuscule, minuscule, chiffre et symbole.",
         "confirm_password": "Confirmer le mot de passe",
         "empty_confirm_password": "Veuillez confirmer votre mot de passe.",
         "passwords_do_not_match": "Les mots de passe ne correspondent pas.",

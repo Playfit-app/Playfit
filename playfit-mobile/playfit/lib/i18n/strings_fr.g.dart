@@ -118,7 +118,7 @@ class _TranslationsRegisterFr extends TranslationsRegisterEn {
 	@override String get invalid_email => 'Veuillez entrer une adresse e-mail valide.';
 	@override String get password => 'Mot de passe';
 	@override String get empty_password => 'Veuillez entrer un mot de passe.';
-	@override String get invalid_password => 'Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre.';
+	@override String get invalid_password => '8 caractères min. avec majuscule, minuscule, chiffre et symbole.';
 	@override String get confirm_password => 'Confirmer le mot de passe';
 	@override String get empty_confirm_password => 'Veuillez confirmer votre mot de passe.';
 	@override String get passwords_do_not_match => 'Les mots de passe ne correspondent pas.';
@@ -420,7 +420,7 @@ extension on TranslationsFr {
 			case 'register.invalid_email': return 'Veuillez entrer une adresse e-mail valide.';
 			case 'register.password': return 'Mot de passe';
 			case 'register.empty_password': return 'Veuillez entrer un mot de passe.';
-			case 'register.invalid_password': return 'Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre.';
+			case 'register.invalid_password': return '8 caractères min. avec majuscule, minuscule, chiffre et symbole.';
 			case 'register.confirm_password': return 'Confirmer le mot de passe';
 			case 'register.empty_confirm_password': return 'Veuillez confirmer votre mot de passe.';
 			case 'register.passwords_do_not_match': return 'Les mots de passe ne correspondent pas.';

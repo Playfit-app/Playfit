@@ -192,8 +192,8 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
                 // - At least one lowercase letter
                 // - At least one uppercase letter
                 // - At least one digit
-                // - At least one special character from [@$!%*?&]
-              if (!RegExp(r"""^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[ !\"#$%&'()*+,\-.\/:;<=>?@[\\\]^_`{|}~]).{8,}$""")
+                // - At least one special character from the allowed punctuation set
+              if (!RegExp(r"""^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[ !\"#$%&'()*+,\-.\/:;<=>?@[\\\]^_`{|}~\-²&_]).{8,}$""")
                 .hasMatch(value)) {
                         return t.register.invalid_password;
                 }

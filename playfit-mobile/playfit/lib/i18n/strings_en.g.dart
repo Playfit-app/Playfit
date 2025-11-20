@@ -119,7 +119,7 @@ class TranslationsRegisterEn {
 	String get invalid_email => 'Please enter a valid email address.';
 	String get password => 'Password';
 	String get empty_password => 'Please enter a password.';
-	String get invalid_password => 'Password must be at least 8 characters long, contain an uppercase letter, a lowercase letter, and a number.';
+	String get invalid_password => 'Password needs 8+ chars plus upper, lower, number, and symbol.';
 	String get confirm_password => 'Confirm password';
 	String get empty_confirm_password => 'Please confirm your password.';
 	String get passwords_do_not_match => 'Passwords do not match.';
@@ -421,7 +421,7 @@ extension on Translations {
 			case 'register.invalid_email': return 'Please enter a valid email address.';
 			case 'register.password': return 'Password';
 			case 'register.empty_password': return 'Please enter a password.';
-			case 'register.invalid_password': return 'Password must be at least 8 characters long, contain an uppercase letter, a lowercase letter, and a number.';
+			case 'register.invalid_password': return 'Password needs 8+ chars plus upper, lower, number, and symbol.';
 			case 'register.confirm_password': return 'Confirm password';
 			case 'register.empty_confirm_password': return 'Please confirm your password.';
 			case 'register.passwords_do_not_match': return 'Passwords do not match.';

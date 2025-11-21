@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
   lint:
@@ -40,33 +37,15 @@ jobs:
       KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
       GH_PAT: ${{ secrets.GH_PAT }}
-
-  # build_ios:
-  #   needs: integration-tests
-  #   uses: ./.github/workflows/build_ios.yml
-  #   with:
-  #     ref: ${{ github.ref }}
-  #   secrets:
-  #     FLUTTER_GOOGLE_SERVICES: ${{ secrets.FLUTTER_GOOGLE_SERVICES }}
-  #     FLUTTER_GOOGLE_CLIENT_ID: ${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}
-  #     IOS_CERT_P12_BASE64: ${{ secrets.IOS_CERT_P12_BASE64 }}
-  #     IOS_CERT_PASSWORD: ${{ secrets.IOS_CERT_PASSWORD }}
-  #     IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
-  #     APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-
-  # deploy_ios:
-  #   needs: build_ios
-  #   uses: ./.github/workflows/deploy-ios.yml
-  #   with:
-  #     ref: ${{ github.ref }}
-  #     lane: "release"
-  #   secrets:
-  #     FLUTTER_GOOGLE_SERVICES: ${{ secrets.FLUTTER_GOOGLE_SERVICES }}
-  #     FLUTTER_GOOGLE_CLIENT_ID: ${{ secrets.FLUTTER_GOOGLE_CLIENT_ID }}
-  #     IOS_CERT_P12_BASE64: ${{ secrets.IOS_CERT_P12_BASE64 }}
-  #     IOS_CERT_PASSWORD: ${{ secrets.IOS_CERT_PASSWORD }}
-  #     IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
-  #     APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-  #     ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-  #     ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-  #     ASC_API_KEY_BASE64: ${{ secrets.ASC_API_KEY_BASE64 }}
+  
+  mirror-to-epitech:
+    name: Mirror to Epitech
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url: ${{ vars.EPITECH_REPO_URL }}
+          ssh_private_key: ${{ secrets.EPITECH_MIRROR_KEY }}

@@ -44,9 +44,6 @@ jobs:
       KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
       GH_PAT: ${{ secrets.GH_PAT }}
 
-  # ios:
-  #   uses: ./.github/workflows/build_ios.yml
-
   release:
     name: Create GitHub Release
     # needs: [android, ios]
@@ -92,4 +89,3 @@ jobs:
           artifacts: |
             ./artifacts/android-build/**/*.apk,
             ./artifacts/android-build/**/*.aab
-          # ./artifacts/ios-build/ios_build.tar.gz

@@ -146,6 +146,14 @@ class WorkoutSessionsView(APIView):
         workout_session_exercises = WorkoutSessionExercise.objects.filter(workout_session=workout_session).exclude(difficulty__in=difficulty)
         workout_session_exercises.delete()
 
+        # Capture position data before moving to next level for post creation
+        if wp.is_in_city():
+            completed_location = f"{wp.city.name}"
+            completed_level = wp.city_level
+        else:
+            completed_location = f"transition from {wp.transition_from.name} to {wp.transition_to.name}"
+            completed_level = wp.transition_level
+
         wp.move_to_next_level()
 
         # Update user progress
@@ -164,7 +172,7 @@ class WorkoutSessionsView(APIView):
         # Create a post for the workout session
         post = Post.objects.create(
             user=request.user,
-            content=f"I just completed level {wp.city_level} workout session in {wp.city.name if wp.is_in_city() else f'transition from {wp.transition_from.name} to {wp.transition_to.name}'} with difficulty {difficulty}!",
+            content=f"I just completed level {completed_level} workout session in {completed_location} with difficulty {difficulty}!",
         )
 
         # Send notification to the followers of the user

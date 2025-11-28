@@ -5,8 +5,15 @@ import 'package:badges/badges.dart' as badges;
 
 class TopBar extends StatefulWidget {
   final int currentStreak;
+  final int? coins;
+  final bool showCoins;
 
-  const TopBar({super.key, required this.currentStreak,});
+  const TopBar({
+    super.key,
+    required this.currentStreak,
+    this.coins,
+    this.showCoins = false,
+  });
 
   @override
   State<TopBar> createState() => _TopBarState();
@@ -15,9 +22,18 @@ class TopBar extends StatefulWidget {
 class _TopBarState extends State<TopBar> {
   @override
   Widget build(BuildContext context) {
+    // In the shop we only show the coins pill; elsewhere we show streak + notifications.
+    if (widget.showCoins && widget.coins != null) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          _buildCoinsPill(),
+        ],
+      );
+    }
+
     // Build a top bar with a streak badge and a notification icon with a badge.
-    // The streak badge shows the current streak count, and the notification icon
-    // shows the number of unread notifications.
+    // The streak badge shows the current streak count, and the notification icon shows unread notifications.
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
@@ -37,7 +53,7 @@ class _TopBarState extends State<TopBar> {
             size: 32,
           ),
         ),
-        Spacer(),
+        const Spacer(),
         // Notification icon with a badge showing the number of unread notifications.
         // The badge is shown only if there are unread notifications.
         Consumer<NotificationProvider>(
@@ -67,6 +83,38 @@ class _TopBarState extends State<TopBar> {
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildCoinsPill() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 255, 248, 225),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color.fromARGB(255, 249, 200, 99),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.monetization_on,
+            color: Color.fromARGB(255, 219, 176, 34),
+            size: 22,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '${widget.coins}',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color.fromARGB(255, 113, 93, 52),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

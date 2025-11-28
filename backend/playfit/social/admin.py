@@ -10,6 +10,7 @@ from .models import (
     DecorationImage,
     CityDecorationImage,
     MountainDecorationImage,
+    IntroductionCharacter,
     Post,
     Like,
     Comment,
@@ -24,6 +25,9 @@ class CountryAdmin(admin.ModelAdmin):
 
 class CityAdmin(admin.ModelAdmin):
     list_display = ['name', 'country', 'order']
+
+class IntroductionCharacterAdmin(admin.ModelAdmin):
+    list_display = ['name', 'image']
 
 
 admin.site.register(Continent, ContinentAdmin)
@@ -40,3 +44,4 @@ admin.site.register(Post)
 admin.site.register(Like)
 admin.site.register(Comment)
 admin.site.register(Follow)
+admin.site.register(IntroductionCharacter, IntroductionCharacterAdmin)

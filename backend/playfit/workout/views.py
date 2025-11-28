@@ -125,7 +125,7 @@ class WorkoutSessionsView(APIView):
             if wp.is_in_city():
                 workout_session = WorkoutSession.objects.get(user=request.user, city=wp.city, city_level=wp.city_level)
             elif wp.is_in_transition():
-                workout_session = WorkoutSession.objects.get(user=request.user, transition_from=wp.transition_from, transition_to=wp.transition_to)
+                workout_session = WorkoutSession.objects.get(user=request.user, transition_from=wp.transition_from, transition_to=wp.transition_to, transition_level=wp.transition_level)
 
         except WorkoutSession.DoesNotExist:
             return Response("Workout session not found", status=status.HTTP_404_NOT_FOUND)
@@ -368,8 +368,7 @@ class WorkoutSessionExerciseView(APIView):
             if wp.is_in_city():
                 workout_session = WorkoutSession.objects.get(user=request.user, city=wp.city, city_level=wp.city_level)
             elif wp.is_in_transition():
-                workout_session = WorkoutSession.objects.get(user=request.user, transition_from=wp.transition_from, transition_to=wp.transition_to)
-
+                workout_session = WorkoutSession.objects.get(user=request.user, transition_from=wp.transition_from, transition_to=wp.transition_to, transition_level=wp.transition_level)
         except WorkoutSession.DoesNotExist:
             pass
 
@@ -381,6 +380,7 @@ class WorkoutSessionExerciseView(APIView):
                 city_level=wp.city_level if wp.is_in_city() else None,
                 transition_from=wp.transition_from if wp.is_in_transition() else None,
                 transition_to=wp.transition_to if wp.is_in_transition() else None,
+                transition_level=wp.transition_level if wp.is_in_transition() else None,
                 creation_date=now().date(),
             )
             

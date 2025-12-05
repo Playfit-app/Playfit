@@ -343,8 +343,8 @@ class _CameraViewState extends State<CameraView> {
 
       await _speechToText.listen(
         onResult: _onSpeechResult,
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
+        listenFor: const Duration(seconds: 60),
+        pauseFor: const Duration(seconds: 5),
         partialResults: true,
         localeId: localeId,
         cancelOnError: false,
@@ -445,10 +445,10 @@ class _CameraViewState extends State<CameraView> {
       return;
     }
     _speechRestartTimer?.cancel();
-    // Longer delay to avoid issues on slower devices
-    _speechRestartTimer = Timer(const Duration(milliseconds: 1200), () {
+    // Redémarre rapidement pour une écoute quasi continue
+    _speechRestartTimer = Timer(const Duration(milliseconds: 500), () {
       if (mounted && _showStartButton && !_goTriggered && !_speechToText.isListening) {
-        debugPrint('Restarting speech recognition...');
+        debugPrint('Restarting speech recognition (continuous mode)...');
         unawaited(_startListeningForGo());
       }
     });
@@ -666,7 +666,6 @@ class _CameraViewState extends State<CameraView> {
                       ),
                       child: _VoiceStartCard(
                         onPressed: _handleWorkoutStartTrigger,
-                        onRestartListening: _startListeningForGo,
                         isListening: _isListeningForGo,
                         speechAvailable: _speechAvailable,
                         permissionDenied: _speechPermissionDenied,
@@ -785,7 +784,6 @@ class _CameraViewState extends State<CameraView> {
 class _VoiceStartCard extends StatefulWidget {
   const _VoiceStartCard({
     required this.onPressed,
-    required this.onRestartListening,
     required this.isListening,
     required this.speechAvailable,
     required this.permissionDenied,
@@ -794,7 +792,6 @@ class _VoiceStartCard extends StatefulWidget {
   });
 
   final VoidCallback onPressed;
-  final VoidCallback onRestartListening;
   final bool isListening;
   final bool speechAvailable;
   final bool permissionDenied;
@@ -978,7 +975,7 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
                 ),
               ),
             const SizedBox(height: 16),
-            // Affichage de ce que le téléphone a détecté + bouton relancer
+            // Affichage de ce que le téléphone a détecté
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
@@ -995,64 +992,33 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    widget.lastRecognizedPhrase != null && widget.lastRecognizedPhrase!.isNotEmpty
-                        ? Icons.chat_bubble_rounded
-                        : Icons.chat_bubble_outline_rounded,
-                    color: widget.lastRecognizedPhrase != null && widget.lastRecognizedPhrase!.isNotEmpty
-                        ? playfitOrangeDark
-                        : AppStyles.grey.withOpacity(0.5),
-                    size: 18,
+                  // Indicateur d'écoute animé
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: widget.isListening
+                          ? Colors.green.withOpacity(0.2)
+                          : AppStyles.grey.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      widget.isListening ? Icons.hearing_rounded : Icons.mic_rounded,
+                      color: widget.isListening ? Colors.green : AppStyles.grey.withOpacity(0.5),
+                      size: 16,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       widget.lastRecognizedPhrase != null && widget.lastRecognizedPhrase!.isNotEmpty
                           ? '"${widget.lastRecognizedPhrase}"'
-                          : 'Aucun mot détecté',
+                          : widget.isListening ? 'À l\'écoute...' : 'Aucun mot détecté',
                       style: GoogleFonts.amaranth(
                         color: widget.lastRecognizedPhrase != null && widget.lastRecognizedPhrase!.isNotEmpty
                             ? AppStyles.grey
                             : AppStyles.grey.withOpacity(0.5),
                         fontSize: 14,
                         fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Bouton pour relancer l'écoute
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: widget.onRestartListening,
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: widget.isListening
-                              ? Colors.green.withOpacity(0.2)
-                              : playfitOrange,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              widget.isListening ? Icons.hearing_rounded : Icons.mic_rounded,
-                              color: widget.isListening ? Colors.green : Colors.white,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              widget.isListening ? 'Écoute...' : 'Écouter',
-                              style: GoogleFonts.amaranth(
-                                color: widget.isListening ? Colors.green : Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                   ),

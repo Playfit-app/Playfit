@@ -29,6 +29,8 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>16</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSBonjourServices</key>
@@ -41,6 +43,8 @@
 	<string>Nous avons besoin d'accéder au réseau local pour détecter et communiquer avec les appareils à proximité.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Nous avons besoin d'accéder au microphone pour enregistrer l'audio.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Nous avons besoin d'accéder à la reconnaissance vocale pour transcrire votre discours.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -54,9 +58,5 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Nous avons besoin d'accéder à la reconnaissance vocale pour transcrire votre discours.</string>
 </dict>
 </plist>

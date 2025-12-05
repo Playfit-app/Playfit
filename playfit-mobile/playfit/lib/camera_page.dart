@@ -23,6 +23,7 @@ import 'package:playfit/components/camera/bottom_box_widget.dart';
 import 'package:playfit/components/camera/celebration_overlay.dart';
 import 'package:playfit/workout_progression_page.dart';
 import 'package:playfit/services/log_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 enum BoxType { left, bottom }
 
@@ -79,6 +80,7 @@ class _CameraViewState extends State<CameraView> {
   bool _speechPermissionDenied = false;
   String? _speechErrorMessage;
   String? _lastRecognizedPhrase;
+  String? _selectedLocaleId;
 
   WorkoutType workoutTypeFromName(String name) {
     switch (name.toLowerCase().replaceAll('-', '')) {
@@ -191,11 +193,18 @@ class _CameraViewState extends State<CameraView> {
   }
 
   Future<void> _initializeSpeechRecognition() async {
-    final available = await _speechToText.initialize(
-      onStatus: _onSpeechStatus,
-      onError: _onSpeechError,
-      debugLogging: true,
-    );
+    bool available = false;
+    
+    try {
+      available = await _speechToText.initialize(
+        onStatus: _onSpeechStatus,
+        onError: _onSpeechError,
+        debugLogging: true,
+      );
+    } catch (e) {
+      debugPrint('Speech recognition initialization error: $e');
+      available = false;
+    }
 
     var micStatus = await Permission.microphone.status;
 
@@ -214,7 +223,56 @@ class _CameraViewState extends State<CameraView> {
     final hasMic = micStatus.isGranted;
     final hasSpeechPermission = available;
 
+    // Pre-select the locale based on the user's language preference
+    if (available) {
+      try {
+        final locales = await _speechToText.locales();
+        debugPrint('Available locales: ${locales.map((l) => l.localeId).join(", ")}');
+        
+        // Get the user's selected language from settings
+        const storage = FlutterSecureStorage();
+        final userLocale = await storage.read(key: 'selected_locale');
+        debugPrint('User selected locale from settings: $userLocale');
+        
+        // Extract the language code (e.g., "fr" from "fr-FR" or "fr_FR")
+        String? userLangCode;
+        if (userLocale != null) {
+          userLangCode = userLocale.split(RegExp(r'[-_]')).first.toLowerCase();
+        }
+        
+        // Find the locale matching the user's language
+        if (userLangCode != null) {
+          final userPreferredLocale = locales
+              .where((l) => l.localeId.toLowerCase().startsWith(userLangCode!))
+              .toList();
+          
+          if (userPreferredLocale.isNotEmpty) {
+            _selectedLocaleId = userPreferredLocale.first.localeId;
+            debugPrint('Using user preferred locale: $_selectedLocaleId');
+          }
+        }
+        
+        // Fallback: French, then English, then first available
+        if (_selectedLocaleId == null) {
+          final frenchLocale = locales.where((l) => l.localeId.startsWith('fr')).toList();
+          final englishLocale = locales.where((l) => l.localeId.startsWith('en')).toList();
+          
+          if (frenchLocale.isNotEmpty) {
+            _selectedLocaleId = frenchLocale.first.localeId;
+          } else if (englishLocale.isNotEmpty) {
+            _selectedLocaleId = englishLocale.first.localeId;
+          } else if (locales.isNotEmpty) {
+            _selectedLocaleId = locales.first.localeId;
+          }
+          debugPrint('Using fallback locale: $_selectedLocaleId');
+        }
+      } catch (e) {
+        debugPrint('Error getting locales: $e');
+      }
+    }
+
     debugPrint('Platform: ${Platform.isAndroid ? "Android" : "iOS"}');
+    debugPrint('Speech available: $available, Mic granted: $hasMic');
 
     if (mounted) {
       setState(() {
@@ -237,34 +295,85 @@ class _CameraViewState extends State<CameraView> {
       return;
     }
 
-    final locales = await _speechToText.locales();
-
-    final frenchLocale = locales.firstWhere(
-      (l) => l.localeId.startsWith('fr'),
-      orElse: () => locales.first,
-    );
-
     _lastRecognizedPhrase = null;
     _speechErrorMessage = null;
 
-    await _speechToText.listen(
-      onResult: _onSpeechResult,
-      listenFor: const Duration(seconds: 10),
-      pauseFor: const Duration(seconds: 2),
-      partialResults: true,
-      localeId: frenchLocale.localeId,
-      cancelOnError: false,
-      listenMode: ListenMode.confirmation,
-    );
+    try {
+      // Use the pre-selected locale or find one based on user preferences
+      String? localeId = _selectedLocaleId;
+      
+      if (localeId == null) {
+        final locales = await _speechToText.locales();
+        if (locales.isNotEmpty) {
+          // Get the user's selected language
+          const storage = FlutterSecureStorage();
+          final userLocale = await storage.read(key: 'selected_locale');
+          String? userLangCode;
+          if (userLocale != null) {
+            userLangCode = userLocale.split(RegExp(r'[-_]')).first.toLowerCase();
+          }
+          
+          // Find the locale matching the user's language
+          if (userLangCode != null) {
+            final userPreferredLocale = locales
+                .where((l) => l.localeId.toLowerCase().startsWith(userLangCode!))
+                .toList();
+            if (userPreferredLocale.isNotEmpty) {
+              localeId = userPreferredLocale.first.localeId;
+            }
+          }
+          
+          // Fallback
+          if (localeId == null) {
+            final frenchLocale = locales.where((l) => l.localeId.startsWith('fr')).toList();
+            final englishLocale = locales.where((l) => l.localeId.startsWith('en')).toList();
+            
+            if (frenchLocale.isNotEmpty) {
+              localeId = frenchLocale.first.localeId;
+            } else if (englishLocale.isNotEmpty) {
+              localeId = englishLocale.first.localeId;
+            } else {
+              localeId = locales.first.localeId;
+            }
+          }
+        }
+      }
 
-    final isListening = _speechToText.isListening;
-    if (mounted) {
-      setState(() {
-        _isListeningForGo = isListening;
-      });
-    }
+      debugPrint('Starting speech recognition with locale: $localeId');
 
-    if (!_isListeningForGo) {
+      await _speechToText.listen(
+        onResult: _onSpeechResult,
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 3),
+        partialResults: true,
+        localeId: localeId,
+        cancelOnError: false,
+        listenMode: ListenMode.dictation,
+      );
+
+      // Small delay to let the listening start
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      final isListening = _speechToText.isListening;
+      debugPrint('Speech recognition started: $isListening');
+      
+      if (mounted) {
+        setState(() {
+          _isListeningForGo = isListening;
+        });
+      }
+
+      if (!isListening) {
+        _scheduleGoListeningRestart();
+      }
+    } catch (e) {
+      debugPrint('Error starting speech recognition: $e');
+      if (mounted) {
+        setState(() {
+          _isListeningForGo = false;
+          _speechErrorMessage = e.toString();
+        });
+      }
       _scheduleGoListeningRestart();
     }
   }
@@ -333,8 +442,10 @@ class _CameraViewState extends State<CameraView> {
       return;
     }
     _speechRestartTimer?.cancel();
-    _speechRestartTimer = Timer(const Duration(milliseconds: 700), () {
-      if (mounted && _showStartButton && !_goTriggered) {
+    // Longer delay to avoid issues on slower devices
+    _speechRestartTimer = Timer(const Duration(milliseconds: 1200), () {
+      if (mounted && _showStartButton && !_goTriggered && !_speechToText.isListening) {
+        debugPrint('Restarting speech recognition...');
         unawaited(_startListeningForGo());
       }
     });
@@ -628,20 +739,41 @@ class _CameraViewState extends State<CameraView> {
   String _sanitizeRecognizedText(String text) {
     return text
         .toLowerCase()
-        .replaceAll(RegExp(r'[^\w\s]'), '') // Supprime la ponctuation
-        .replaceAll(RegExp(r'\s+'), ' ') // Normalise les espaces
+        .replaceAll(RegExp(r'[^\w\s]'), '') // Remove punctuation
+        .replaceAll(RegExp(r'\s+'), ' ') // Normalize spaces
         .trim();
   }
 
   bool _containsGoCommand(String text) {
     final goKeywords = [
       // English
-      'go', 'start', 'begin', 'ready',
+      'go', 'start', 'begin', 'ready', 'let\'s go', 'lets go', 'let go',
       // French
-      'vas-y', 'vasy', 'démarre', 'demarre', 'commence', 'prêt', 'pret',
-      'allons-y', 'allonsy', 'départ', 'depart', 'cest parti', 'partez'
+      'vas-y', 'vasy', 'va si', 'démarre', 'demarre', 'commence', 'prêt', 'pret',
+      'allons-y', 'allonsy', 'allez', 'départ', 'depart', 'cest parti', 'c\'est parti',
+      'partez', 'parti', 'top', 'hop', 'ok', 'oui', 'yes', 'yeah',
+      // Common phonetic variations
+      'gaux', 'gauche', 'beau', 'gow',
     ];
-    return goKeywords.any((keyword) => text.contains(keyword));
+    
+    // Check exact keywords and variations
+    final words = text.split(' ');
+    for (final keyword in goKeywords) {
+      if (text.contains(keyword)) {
+        debugPrint('Go command detected: "$keyword" in "$text"');
+        return true;
+      }
+    }
+    
+    // Check if an individual word matches approximately
+    for (final word in words) {
+      if (word.length >= 2 && goKeywords.any((k) => k.startsWith(word) || word.startsWith(k))) {
+        debugPrint('Partial go command detected: "$word" in "$text"');
+        return true;
+      }
+    }
+    
+    return false;
   }
 }
 

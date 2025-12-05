@@ -382,14 +382,16 @@ class _CameraViewState extends State<CameraView> {
     final rawText = result.recognizedWords;
     final sanitized = _sanitizeRecognizedText(rawText);
 
-    if (sanitized.isEmpty) {
-      return;
-    }
+    debugPrint('Speech recognized - Raw: "$rawText" | Sanitized: "$sanitized" | Final: ${result.finalResult}');
 
     if (mounted) {
       setState(() {
-        _lastRecognizedPhrase = sanitized;
+        _lastRecognizedPhrase = rawText.isNotEmpty ? rawText : null;
       });
+    }
+
+    if (sanitized.isEmpty) {
+      return;
     }
 
     if (_containsGoCommand(sanitized) && !_goTriggered) {
@@ -399,6 +401,7 @@ class _CameraViewState extends State<CameraView> {
   }
 
   void _onSpeechStatus(String status) {
+    debugPrint('Speech status changed: $status');
     if (status == 'notListening') {
       if (mounted) {
         setState(() {
@@ -663,6 +666,7 @@ class _CameraViewState extends State<CameraView> {
                       ),
                       child: _VoiceStartCard(
                         onPressed: _handleWorkoutStartTrigger,
+                        onRestartListening: _startListeningForGo,
                         isListening: _isListeningForGo,
                         speechAvailable: _speechAvailable,
                         permissionDenied: _speechPermissionDenied,
@@ -781,6 +785,7 @@ class _CameraViewState extends State<CameraView> {
 class _VoiceStartCard extends StatefulWidget {
   const _VoiceStartCard({
     required this.onPressed,
+    required this.onRestartListening,
     required this.isListening,
     required this.speechAvailable,
     required this.permissionDenied,
@@ -789,6 +794,7 @@ class _VoiceStartCard extends StatefulWidget {
   });
 
   final VoidCallback onPressed;
+  final VoidCallback onRestartListening;
   final bool isListening;
   final bool speechAvailable;
   final bool permissionDenied;
@@ -821,14 +827,6 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
   @override
   Widget build(BuildContext context) {
     final cameraStrings = t.camera;
-
-    final statusText = !widget.speechAvailable || widget.permissionDenied
-        ? cameraStrings.voice_hint_permission
-        : widget.errorMessage != null
-            ? cameraStrings.voice_hint_error
-            : widget.isListening
-                ? cameraStrings.voice_hint_listening
-                : cameraStrings.voice_hint_tap;
 
     const playfitOrange = Color(0xFFF8871F);
     const playfitOrangeDark = Color(0xFFE57207);
@@ -980,93 +978,87 @@ class _VoiceStartCardState extends State<_VoiceStartCard> {
                 ),
               ),
             const SizedBox(height: 16),
+            // Affichage de ce que le téléphone a détecté + bouton relancer
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: widget.isListening
+                color: widget.lastRecognizedPhrase != null && widget.lastRecognizedPhrase!.isNotEmpty
                     ? playfitOrange.withOpacity(0.15)
-                    : AppStyles.grey.withOpacity(0.05),
+                    : AppStyles.grey.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: widget.isListening
+                  color: widget.lastRecognizedPhrase != null && widget.lastRecognizedPhrase!.isNotEmpty
                       ? playfitOrange.withOpacity(0.4)
-                      : AppStyles.grey.withOpacity(0.15),
+                      : AppStyles.grey.withOpacity(0.2),
                   width: 1.5,
                 ),
               ),
               child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: widget.isListening
-                          ? playfitOrange.withOpacity(0.2)
-                          : AppStyles.grey.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      widget.isListening
-                          ? Icons.hearing_rounded
-                          : Icons.mic_off_rounded,
-                      color: widget.isListening
-                          ? playfitOrangeDark
-                          : AppStyles.grey,
-                      size: 16,
-                    ),
+                  Icon(
+                    widget.lastRecognizedPhrase != null && widget.lastRecognizedPhrase!.isNotEmpty
+                        ? Icons.chat_bubble_rounded
+                        : Icons.chat_bubble_outline_rounded,
+                    color: widget.lastRecognizedPhrase != null && widget.lastRecognizedPhrase!.isNotEmpty
+                        ? playfitOrangeDark
+                        : AppStyles.grey.withOpacity(0.5),
+                    size: 18,
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      statusText,
+                      widget.lastRecognizedPhrase != null && widget.lastRecognizedPhrase!.isNotEmpty
+                          ? '"${widget.lastRecognizedPhrase}"'
+                          : 'Aucun mot détecté',
                       style: GoogleFonts.amaranth(
-                        color: AppStyles.grey,
+                        color: widget.lastRecognizedPhrase != null && widget.lastRecognizedPhrase!.isNotEmpty
+                            ? AppStyles.grey
+                            : AppStyles.grey.withOpacity(0.5),
                         fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Bouton pour relancer l'écoute
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: widget.onRestartListening,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: widget.isListening
+                              ? Colors.green.withOpacity(0.2)
+                              : playfitOrange,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              widget.isListening ? Icons.hearing_rounded : Icons.mic_rounded,
+                              color: widget.isListening ? Colors.green : Colors.white,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              widget.isListening ? 'Écoute...' : 'Écouter',
+                              style: GoogleFonts.amaranth(
+                                color: widget.isListening ? Colors.green : Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            if (widget.lastRecognizedPhrase != null &&
-                widget.lastRecognizedPhrase!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: playfitOrange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: playfitOrange.withOpacity(0.3),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.chat_bubble_outline_rounded,
-                        color: playfitOrangeDark,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          cameraStrings.voice_hint_last_heard(
-                            phrase: widget.lastRecognizedPhrase!,
-                          ),
-                          style: GoogleFonts.amaranth(
-                            color: AppStyles.grey.withOpacity(0.85),
-                            fontSize: 13,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
           ],
         ),
       ),

@@ -284,11 +284,6 @@ class _BoutiquePage extends State<BoutiquePage> {
       return null;
     }
     final baseUrl = dotenv.env['SERVER_BASE_URL'] ?? '';
-    if (rawUrl.startsWith('http://your-domain.com') ||
-        rawUrl.startsWith('https://your-domain.com')) {
-      final uri = Uri.parse(rawUrl);
-      return '$baseUrl${uri.path}';
-    }
     if (rawUrl.startsWith('http')) {
       return rawUrl;
     }

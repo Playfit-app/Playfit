@@ -11,6 +11,7 @@ import 'profile_page.dart';
 import 'package:playfit/social_page.dart';
 import 'components/top_bar.dart';
 import 'package:playfit/providers/language_provider.dart';
+import 'boutique_page.dart';
 
 class HomePage extends StatefulWidget {
   final bool firstLogin;
@@ -37,6 +38,7 @@ class _HomePageState extends State<HomePage> {
   late int currentStreak;
   late Future<void> _userProgressFuture;
   bool _anecdoteSeen = false;
+  int _coinsBalance = 0;
 
   /// Fetches the user's progress from the server.
   /// This method retrieves the current streak of the user
@@ -73,6 +75,8 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     currentStreak = 0;
     _userProgressFuture = _fetchUserProgress();
+    // TODO: Wire this to the backend once a coin balance endpoint exists.
+    _coinsBalance = 1250;
 
     // Request notification permissions if it's the user's first login
     // and get the notification token.
@@ -85,6 +89,12 @@ class _HomePageState extends State<HomePage> {
         await service.getToken();
       });
     }
+  }
+
+  void _updateCoins(int newCoins) {
+    setState(() {
+      _coinsBalance = newCoins;
+    });
   }
 
   // Future<void> refreshStreakAfterWorkout() async {
@@ -126,8 +136,11 @@ class _HomePageState extends State<HomePage> {
             // moveCharacter: widget.workoutDone,
             // completedDifficulty: widget.completedDifficulty,
           ),
-          // const MissionsPage(),
-          // const BoutiquePage(),
+          // Shop tab gives access to in-app purchases without leaving main navigation.
+          BoutiquePage(
+            coins: _coinsBalance,
+            onCoinsChange: _updateCoins,
+          ),
           const SocialPage(),
           const ProfilePage(),
         ];
@@ -137,11 +150,15 @@ class _HomePageState extends State<HomePage> {
       extendBody: true,
       // The app bar is hidden for the Social and Profile pages
       // to provide a full-screen experience for those pages.
-      appBar: _currentIndex == 1 || _currentIndex == 2
+      appBar: _currentIndex == 2 || _currentIndex == 3
           ? null
           : AppBar(
               backgroundColor: Colors.transparent,
-              title: TopBar(currentStreak: currentStreak),
+              title: TopBar(
+                currentStreak: currentStreak,
+                coins: _coinsBalance,
+                showCoins: _currentIndex == 1,
+              ),
               automaticallyImplyLeading: false,
             ),
       // The body of the home page is a FutureBuilder that waits for the user progress data to load.
@@ -188,10 +205,9 @@ class _HomePageState extends State<HomePage> {
                 showUnselectedLabels: false,
                 items: [
                   _buildNavBarItem(Icons.fitness_center, 0),
-                  // _buildNavBarItem(Icons.list_alt, 1),
-                  // _buildNavBarItem(Icons.shopping_cart, 2),
-                  _buildNavBarItem(Icons.group, 1),
-                  _buildNavBarItem(Icons.person, 2),
+                  _buildNavBarItem(Icons.shopping_cart, 1),
+                  _buildNavBarItem(Icons.group, 2),
+                  _buildNavBarItem(Icons.person, 3),
                 ],
               ),
             ),

@@ -17,6 +17,7 @@ class WorkoutSession(models.Model):
     city_level = models.PositiveIntegerField(null=True, blank=True)
     transition_from = models.ForeignKey(City, related_name='+', on_delete=models.SET_NULL, null=True, blank=True)
     transition_to = models.ForeignKey(City, related_name='+', on_delete=models.SET_NULL, null=True, blank=True)
+    transition_level = models.PositiveIntegerField(null=True, blank=True)
 
     duration = models.DurationField(default=timedelta(minutes=0, seconds=0))
     creation_date = models.DateField()

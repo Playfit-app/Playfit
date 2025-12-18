@@ -257,6 +257,7 @@ class WorkoutSessionsViewTests(APITestCase):
             user=self.user,
             transition_from=self.city,
             transition_to=city2,
+            transition_level=1,
             creation_date=datetime.date.today(),
             duration=datetime.timedelta(minutes=30)
         )

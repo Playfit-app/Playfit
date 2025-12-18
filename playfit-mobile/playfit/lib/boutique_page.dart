@@ -67,12 +67,14 @@ class _BoutiquePage extends State<BoutiquePage> {
       final itemsData = (data['items'] as List<dynamic>? ?? []);
       final items = itemsData.map((raw) {
         final baseCharacter = raw['base_character'] as Map<String, dynamic>?;
+        final rawImage =
+            raw['preview_image'] ?? raw['image'] ?? baseCharacter?['image'];
         return _ShopItem(
           id: raw['id'] as int,
           name: raw['name'] ?? '',
           tone: baseCharacter != null ? baseCharacter['name'] ?? '' : '',
           price: raw['price'] ?? 0,
-          imageUrl: raw['preview_image'] ?? raw['image'],
+          imageUrl: _resolveImageUrl(rawImage?.toString()),
           purchased: raw['purchased'] ?? false,
           baseCharacterName: baseCharacter?['name'],
         );
@@ -276,6 +278,25 @@ class _BoutiquePage extends State<BoutiquePage> {
       }
     });
   }
+
+  String? _resolveImageUrl(String? rawUrl) {
+    if (rawUrl == null || rawUrl.isEmpty) {
+      return null;
+    }
+    final baseUrl = dotenv.env['SERVER_BASE_URL'] ?? '';
+    if (rawUrl.startsWith('http://your-domain.com') ||
+        rawUrl.startsWith('https://your-domain.com')) {
+      final uri = Uri.parse(rawUrl);
+      return '$baseUrl${uri.path}';
+    }
+    if (rawUrl.startsWith('http')) {
+      return rawUrl;
+    }
+    if (rawUrl.startsWith('/')) {
+      return '$baseUrl$rawUrl';
+    }
+    return '$baseUrl/$rawUrl';
+  }
 }
 
 class _ShopCard extends StatelessWidget {
@@ -362,20 +383,7 @@ class _ShopCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              Text(
-                item.name,
-                style: AppStyles.bodyBold.copyWith(fontSize: 18),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                item.tone,
-                style: AppStyles.bodyRegular.copyWith(
-                  fontSize: 14,
-                  color: AppStyles.grey.withOpacity(0.7),
-                ),
-              ),
+              
               const SizedBox(height: 8),
               Row(
                 children: [

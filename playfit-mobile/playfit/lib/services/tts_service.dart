@@ -12,11 +12,23 @@ Future<void> configureTtsLanguage(FlutterTts flutterTts) async {
   const storage = FlutterSecureStorage();
   String? locale = await storage.read(key: 'selected_locale');
 
+  // FlutterTts expects a full language tag (e.g. en-US, fr-FR).
+  // Map short or underscored codes that we persist to a supported tag.
+  String normalizedLocale;
   if (locale != null) {
-    await flutterTts.setLanguage(locale);
+    final cleaned = locale.replaceAll('_', '-').toLowerCase();
+    if (cleaned.startsWith('fr')) {
+      normalizedLocale = 'fr-FR';
+    } else if (cleaned.startsWith('en')) {
+      normalizedLocale = 'en-US';
+    } else {
+      normalizedLocale = cleaned;
+    }
   } else {
-    await flutterTts.setLanguage('en-US'); // Default to English if no locale is set
+    normalizedLocale = 'en-US'; // Default to English if no locale is set
   }
+
+  await flutterTts.setLanguage(normalizedLocale);
 
   await flutterTts.setPitch(1.0);
   await flutterTts.setSpeechRate(0.5);

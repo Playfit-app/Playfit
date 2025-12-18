@@ -128,6 +128,20 @@ class _IntroductionPageState extends State<IntroductionPage> {
   late FlutterTts _flutterTts;
   bool _isSpeaking = false;
 
+  void _handleNext(BuildContext context) {
+    setState(() {
+      _textIndex += 1;
+      if (_textIndex >= texts.length - 1) {
+        _navigateToHome(context);
+        return;
+      }
+      if (_textIndex >= 3 && _imageIndex == 0) {
+        _imageIndex = 1;
+      }
+    });
+    _speakCurrentText();
+  }
+
   void _navigateToHome(BuildContext context) {
     Navigator.pushReplacement(
       context,
@@ -138,18 +152,25 @@ class _IntroductionPageState extends State<IntroductionPage> {
   Future<void> _speakCurrentText() async {
     if (_isSpeaking) return; // Prevent multiple calls while already speaking
     _isSpeaking = true;
-    await _flutterTts.stop(); // Stop any previous speech
-    await _flutterTts.speak(texts[_textIndex]);
-    _isSpeaking = false;
+    try {
+      await _flutterTts.stop(); // Stop any previous speech
+      await _flutterTts.speak(texts[_textIndex]);
+    } finally {
+      _isSpeaking = false;
+    }
   }
 
+  Future<void> _initTts() async {
+    await configureTtsLanguage(_flutterTts);
+    if (!mounted) return;
+    await _speakCurrentText();
+  }
 
   @override
   void initState() {
     super.initState();
     _flutterTts = FlutterTts();
-    configureTtsLanguage(_flutterTts);
-    _speakCurrentText();
+    _initTts();
   }
 
   @override
@@ -213,42 +234,19 @@ class _IntroductionPageState extends State<IntroductionPage> {
               child: Container(
                 width: screenWidth * 0.8,
                 child: Center(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _textIndex += 1;
-                        if (_textIndex >= texts.length - 1) {
-                          _navigateToHome(context);
-                          return;
-                        }
-                        if (_textIndex >= 3 && _imageIndex == 0) {
-                          _imageIndex = 1;
-                        }
-                      });
-                      _speakCurrentText();
-                    },
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          texts[_textIndex],
-                          style: TextStyle(
-                            fontSize: 17,
-                            color: Colors.black,
-                          ),
-                          textAlign: TextAlign.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        texts[_textIndex],
+                        style: TextStyle(
+                          fontSize: 17,
+                          color: Colors.black,
                         ),
-                        const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.bottomRight,
-                          child: Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            size: 20,
-                            color: Colors.black.withValues(alpha: 0.6),
-                          ),
-                        ),
-                      ],
-                    ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                   ),
                 ),
               ),
@@ -256,10 +254,12 @@ class _IntroductionPageState extends State<IntroductionPage> {
           )
         else ...[
           Positioned.fill(
-            child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                color: Colors.transparent,
+            child: IgnorePointer(
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  color: Colors.transparent,
+                ),
               ),
             ),
           ),
@@ -280,59 +280,63 @@ class _IntroductionPageState extends State<IntroductionPage> {
             left: 0,
             right: 0,
             child: Center(
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _textIndex += 1;
-                    if (_textIndex >= texts.length - 1) {
-                      _navigateToHome(context);
-                      return;
-                    }
-                    if (_textIndex >= 3 && _imageIndex == 0) {
-                      _imageIndex = 1;
-                    }
-                  });
-                  _speakCurrentText();
-                },
-                child: CustomPaint(
-                  painter: SpeechBubblePainter(borderColor: Colors.orange),
-                  child: ClipPath(
-                    clipper: SpeechBubbleClipper(),
-                    child: Container(
-                      width: screenWidth * 0.8,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 30),
-                      child: Stack(
-                        children: [
-                          Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              texts[_textIndex],
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black,
-                              ),
-                              textAlign: TextAlign.center,
+              child: CustomPaint(
+                painter: SpeechBubblePainter(borderColor: Colors.orange),
+                child: ClipPath(
+                  clipper: SpeechBubbleClipper(),
+                  child: Container(
+                    width: screenWidth * 0.8,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                    child: Stack(
+                      children: [
+                        Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            texts[_textIndex],
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
                             ),
+                            textAlign: TextAlign.center,
                           ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Icon(
-                              Icons.arrow_forward_ios_rounded,
-                              size: 20,
-                              color: Colors.black.withValues(alpha: 0.6),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
           )
-        ]
+        ],
+        // Global next button
+        Positioned(
+          bottom: screenHeight * 0.08,
+          right: screenWidth * 0.08,
+          child: GestureDetector(
+            onTap: () => _handleNext(context),
+            child: Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.orange,
+                size: 22,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

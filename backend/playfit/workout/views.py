@@ -1,4 +1,5 @@
 from django.utils.timezone import now
+from django.core.exceptions import ValidationError
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -159,6 +160,18 @@ class WorkoutSessionsView(APIView):
         # Update user progress
         user_progress = UserProgress.objects.get(user=request.user)
         user_progress.update_after_workout()
+
+        coin_reward_map = {
+            "beginner": 20,
+            "intermediate": 30,
+            "advanced": 40,
+        }
+        reward = coin_reward_map.get(difficulty, 0)
+        try:
+            if reward:
+                user_progress.add_coins(reward)
+        except ValidationError:
+            pass
 
         # Retrieve all user achievements
         user_achievements = UserAchievement.objects.filter(user=request.user)

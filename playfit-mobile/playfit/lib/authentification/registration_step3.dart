@@ -79,6 +79,9 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
     final outfits = characterData[color] as List<dynamic>;
 
     for (final outfit in outfits) {
+      if (outfit is Map && outfit.containsKey('owned') && outfit['owned'] == false) {
+        continue;
+      }
       outfitImages.add(
         "${dotenv.env['SERVER_BASE_URL']}${outfit['image']}",
       );

@@ -15,6 +15,8 @@ from .models import (
     Like,
     Comment,
     Follow,
+    ShopItem,
+    ShopPurchase,
 )
 
 class ContinentAdmin(admin.ModelAdmin):
@@ -44,4 +46,18 @@ admin.site.register(Post)
 admin.site.register(Like)
 admin.site.register(Comment)
 admin.site.register(Follow)
+class ShopItemAdmin(admin.ModelAdmin):
+    list_display = ['base_character', 'price', 'is_active', 'created_at']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['base_character__name']
+    readonly_fields = ['created_at']
+
+class ShopPurchaseAdmin(admin.ModelAdmin):
+    list_display = ['user', 'item', 'purchased_at']
+    list_filter = ['purchased_at']
+    search_fields = ['user__username', 'item__base_character__name']
+    readonly_fields = ['purchased_at']
+
 admin.site.register(IntroductionCharacter, IntroductionCharacterAdmin)
+admin.site.register(ShopItem, ShopItemAdmin)
+admin.site.register(ShopPurchase, ShopPurchaseAdmin)

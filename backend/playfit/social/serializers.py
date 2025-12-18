@@ -10,6 +10,7 @@ from .models import (
     BaseCharacter,
     CustomizationItem,
     Customization,
+    ShopItem,
 )
 
 User = get_user_model()
@@ -53,6 +54,21 @@ class CustomizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customization
         fields = ["base_character", "hat", "backpack", "shirt", "pants", "shoes", "gloves"]
+
+class ShopItemSerializer(serializers.ModelSerializer):
+    base_character = BaseCharacterSerializer()
+    purchased = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ShopItem
+        fields = ["id", "price", "base_character", "purchased", "is_active"]
+
+    def get_purchased(self, obj):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated:
+            return obj.purchases.filter(user=user).exists()
+        return False
 
 class GCMDeviceSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

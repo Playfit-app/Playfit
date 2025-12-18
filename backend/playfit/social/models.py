@@ -20,6 +20,10 @@ def mountain_decoration_image_path(instance, filename):
     filename_without_ext = filename.split('.')[0]
     return f'decorations/mountains/{filename_without_ext}.webp'
 
+def shop_item_image_path(instance, filename):
+    filename_without_ext = filename.split('.')[0]
+    return f'shop/items/{filename_without_ext}.webp'
+
 class CustomizationItem(models.Model):
     CATEGORY_CHOICES = [
         ('hat', 'Hat'),
@@ -79,6 +83,33 @@ class Customization(models.Model):
 
     def __str__(self):
         return f"{self.user}'s customizations ({self.base_character}) - ({self.hat}, {self.backpack}, {self.shirt}, {self.pants}, {self.shoes}, {self.gloves})"
+
+class ShopItem(models.Model):
+    """Represents a purchasable outfit skin in the shop.
+    Each shop item is linked to a BaseCharacter (outfit).
+    """
+    base_character = models.OneToOneField(
+        BaseCharacter,
+        related_name='shop_item',
+        on_delete=models.CASCADE
+    )
+    price = models.PositiveIntegerField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.base_character.name} - {self.price} coins"
+
+class ShopPurchase(models.Model):
+    user = models.ForeignKey(User, related_name='shop_purchases', on_delete=models.CASCADE)
+    item = models.ForeignKey(ShopItem, related_name='purchases', on_delete=models.CASCADE)
+    purchased_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "item")
+
+    def __str__(self):
+        return f"{self.user} bought {self.item}"
 
 class Follow(models.Model):
     follower = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE)

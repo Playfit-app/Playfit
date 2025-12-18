@@ -86,6 +86,7 @@ class RegisterView(APIView):
                     user=user,
                     longest_streak=0,
                     current_streak=0,
+                    coins=1000,
                 )
                 return Response({
                     'user': {

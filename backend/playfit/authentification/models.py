@@ -261,6 +261,7 @@ class UserProgress(models.Model):
 
     level = models.PositiveIntegerField(default=1)
     xp = models.PositiveIntegerField(default=0)
+    coins = models.PositiveIntegerField(default=1000)
 
     def __str__(self):
         return f"Stats for {self.user.username}"
@@ -298,3 +299,17 @@ class UserProgress(models.Model):
 
     def required_xp_for_next_level(self):
         return 100 * (self.level ** 2) + 100 * self.level
+
+    def add_coins(self, amount: int):
+        if amount < 0:
+            raise ValidationError("Cannot add a negative amount of coins")
+        self.coins += amount
+        self.save(update_fields=['coins'])
+
+    def spend_coins(self, amount: int):
+        if amount < 0:
+            raise ValidationError("Cannot spend a negative amount of coins")
+        if self.coins < amount:
+            raise ValidationError("Not enough coins")
+        self.coins -= amount
+        self.save(update_fields=['coins'])

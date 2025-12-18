@@ -589,11 +589,18 @@ class CustomizationUpdateView(APIView):
             base_character_name = request.data['base_character']
             base_character = get_object_or_404(BaseCharacter, name=base_character_name)
 
-            # If the outfit is tied to a shop item, ensure the user owns it
-            has_shop_entry = ShopItem.objects.filter(base_character=base_character, is_active=True).exists()
-            has_purchase = ShopPurchase.objects.filter(user=user, item__base_character=base_character).exists()
-            if has_shop_entry and not has_purchase:
-                return Response({"detail": "You need to buy this outfit in the shop first"}, status=status.HTTP_403_FORBIDDEN)
+            # Check if the outfit is locked behind a shop item
+            try:
+                shop_item = ShopItem.objects.get(base_character=base_character, is_active=True)
+                # Outfit is in shop, verify user has purchased it
+                if not ShopPurchase.objects.filter(user=user, item=shop_item).exists():
+                    return Response(
+                        {"detail": "You need to buy this outfit in the shop first"},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+            except ShopItem.DoesNotExist:
+                # Outfit is free, no purchase needed
+                pass
 
             customization.base_character = base_character
             customization.save()
@@ -753,16 +760,35 @@ class GetCharacterImagesView(APIView):
 
     def get_customization_images(self, user: CustomUser) -> dict:
         """Retrieve images for character customization.
+        Only returns characters that the user can access:
+        - Free characters (not in shop)
+        - Characters the user has purchased
+
         Returns:
-            dict: A dictionary containing character images categorized by character and color.
+            dict: A dictionary containing accessible character images categorized by character and color.
         """
-        base_characters = BaseCharacter.objects.all()
-        purchased_base_ids = set(
-            ShopPurchase.objects.filter(user=user).values_list('item__base_character_id', flat=True)
-        )
+        from django.db.models import Q
+
+        # Get IDs of characters that are locked behind shop
         shop_locked_base_ids = set(
-            ShopItem.objects.filter(base_character__isnull=False, is_active=True).values_list('base_character_id', flat=True)
+            ShopItem.objects.filter(is_active=True)
+            .values_list('base_character_id', flat=True)
         )
+
+        # Get IDs of characters the user has purchased
+        purchased_base_ids = set(
+            ShopPurchase.objects.filter(user=user)
+            .values_list('item__base_character_id', flat=True)
+        )
+
+        # Filter to only include:
+        # 1. Characters NOT in shop (free characters)
+        # 2. Characters the user has purchased
+        accessible_characters = BaseCharacter.objects.filter(
+            Q(id__in=purchased_base_ids) |  # Purchased characters
+            ~Q(id__in=shop_locked_base_ids)  # Free characters (not in shop)
+        )
+
         data = {
             'character1': {
                 'white': [],
@@ -782,18 +808,16 @@ class GetCharacterImagesView(APIView):
             },
         }
 
-        for character in base_characters:
+        for character in accessible_characters:
             parts = character.name.split("-")
             if len(parts) < 3:
                 continue
             key, color, _ = parts
             if key in data and color in data[key]:
-                owned = character.id not in shop_locked_base_ids or character.id in purchased_base_ids
                 data[key][color].append({
                     'id': character.id,
                     'name': character.name,
                     'image': character.image.url,
-                    'owned': owned,
                 })
         return data
 

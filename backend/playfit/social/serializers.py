@@ -56,14 +56,12 @@ class CustomizationSerializer(serializers.ModelSerializer):
         fields = ["base_character", "hat", "backpack", "shirt", "pants", "shoes", "gloves"]
 
 class ShopItemSerializer(serializers.ModelSerializer):
-    base_character = BaseCharacterSerializer(allow_null=True)
+    base_character = BaseCharacterSerializer()
     purchased = serializers.SerializerMethodField()
-    image = serializers.ImageField(use_url=True, allow_null=True, required=False)
-    preview_image = serializers.SerializerMethodField()
 
     class Meta:
         model = ShopItem
-        fields = ["id", "name", "price", "image", "preview_image", "base_character", "purchased"]
+        fields = ["id", "price", "base_character", "purchased", "is_active"]
 
     def get_purchased(self, obj):
         request = self.context.get("request")
@@ -71,13 +69,6 @@ class ShopItemSerializer(serializers.ModelSerializer):
         if user and user.is_authenticated:
             return obj.purchases.filter(user=user).exists()
         return False
-
-    def get_preview_image(self, obj):
-        if obj.image:
-            return obj.image.url
-        if obj.base_character and obj.base_character.image:
-            return obj.base_character.image.url
-        return None
 
 class GCMDeviceSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

@@ -85,24 +85,20 @@ class Customization(models.Model):
         return f"{self.user}'s customizations ({self.base_character}) - ({self.hat}, {self.backpack}, {self.shirt}, {self.pants}, {self.shoes}, {self.gloves})"
 
 class ShopItem(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    """Represents a purchasable outfit skin in the shop.
+    Each shop item is linked to a BaseCharacter (outfit).
+    """
+    base_character = models.OneToOneField(
+        BaseCharacter,
+        related_name='shop_item',
+        on_delete=models.CASCADE
+    )
     price = models.PositiveIntegerField()
-    image = models.ImageField(upload_to=shop_item_image_path, null=True, blank=True)
-    base_character = models.ForeignKey(BaseCharacter, related_name='shop_items', on_delete=models.SET_NULL, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.name} - {self.price} coins"
-
-    def save(self, *args, **kwargs):
-        if self.image:
-            ext = self.image.name.split('.')[-1].lower()
-            if ext == 'png':
-                self.image = convert_to_webp(self.image)
-            elif ext != 'webp':
-                raise ValidationError("The image must be a PNG or WebP file")
-        super().save(*args, **kwargs)
+        return f"{self.base_character.name} - {self.price} coins"
 
 class ShopPurchase(models.Model):
     user = models.ForeignKey(User, related_name='shop_purchases', on_delete=models.CASCADE)

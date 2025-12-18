@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 import 'package:playfit/i18n/strings.g.dart';
 import 'package:playfit/styles/styles.dart';
 
@@ -17,207 +21,157 @@ class BoutiquePage extends StatefulWidget {
 }
 
 class _BoutiquePage extends State<BoutiquePage> {
-  // Static catalog so we can group skins per character and keep the UI simple for now.
-  final Map<String, List<_ShopItem>> _catalog = {
-    'Character 1': const [
-      _ShopItem(
-        name: 'Obsidian Outfit 5',
-        tone: 'Black variant',
-        price: 450,
-        assetPath: 'assets/Shop_temp/character1-black-outfit5.webp',
-      ),
-      _ShopItem(
-        name: 'Obsidian Outfit 6',
-        tone: 'Black variant',
-        price: 520,
-        assetPath: 'assets/Shop_temp/character1-black-outfit6.webp',
-      ),
-      _ShopItem(
-        name: 'Ivory Outfit 5',
-        tone: 'White variant',
-        price: 460,
-        assetPath: 'assets/Shop_temp/character1-white-outfit5.webp',
-      ),
-      _ShopItem(
-        name: 'Ivory Outfit 6',
-        tone: 'White variant',
-        price: 540,
-        assetPath: 'assets/Shop_temp/character1-white-outfit6.webp',
-      ),
-    ],
-    'Character 2': const [
-      _ShopItem(
-        name: 'Crimson Outfit 5',
-        tone: 'Black variant',
-        price: 470,
-        assetPath: 'assets/Shop_temp/character2-black-outfit5.webp',
-      ),
-      _ShopItem(
-        name: 'Crimson Outfit 6',
-        tone: 'Black variant',
-        price: 540,
-        assetPath: 'assets/Shop_temp/character2-black-outfit6.webp',
-      ),
-      _ShopItem(
-        name: 'Pearl Outfit 5',
-        tone: 'White variant',
-        price: 480,
-        assetPath: 'assets/Shop_temp/character2-white-outfit5.webp',
-      ),
-      _ShopItem(
-        name: 'Pearl Outfit 6',
-        tone: 'White variant',
-        price: 550,
-        assetPath: 'assets/Shop_temp/character2-white-outfit6.webp',
-      ),
-    ],
-    'Character 3': const [
-      _ShopItem(
-        name: 'Slate Outfit 5',
-        tone: 'Black variant',
-        price: 430,
-        assetPath: 'assets/Shop_temp/character3-black-outfit5.webp',
-      ),
-      _ShopItem(
-        name: 'Slate Outfit 6',
-        tone: 'Black variant',
-        price: 510,
-        assetPath: 'assets/Shop_temp/character3-black-outfit6.webp',
-      ),
-      _ShopItem(
-        name: 'Frost Outfit 5',
-        tone: 'White variant',
-        price: 440,
-        assetPath: 'assets/Shop_temp/character3-white-outfit5.webp',
-      ),
-      _ShopItem(
-        name: 'Frost Outfit 6',
-        tone: 'White variant',
-        price: 520,
-        assetPath: 'assets/Shop_temp/character3-white-outfit6.webp',
-      ),
-    ],
-    'Character 4': const [
-      _ShopItem(
-        name: 'Shadow Outfit 5',
-        tone: 'Black variant',
-        price: 490,
-        assetPath: 'assets/Shop_temp/character4-black-outfit5.webp',
-      ),
-      _ShopItem(
-        name: 'Shadow Outfit 6',
-        tone: 'Black variant',
-        price: 560,
-        assetPath: 'assets/Shop_temp/character4-black-outfit6.webp',
-      ),
-      _ShopItem(
-        name: 'Light Outfit 5',
-        tone: 'White variant',
-        price: 500,
-        assetPath: 'assets/Shop_temp/character4-white-outfit5.webp',
-      ),
-      _ShopItem(
-        name: 'Light Outfit 6',
-        tone: 'White variant',
-        price: 570,
-        assetPath: 'assets/Shop_temp/character4-white-outfit6.webp',
-      ),
-    ],
-  };
+  final _storage = const FlutterSecureStorage();
+  List<_ShopItem> _items = [];
+  bool _loading = true;
+  String? _error;
+  late int _coins;
+
+  @override
+  void initState() {
+    super.initState();
+    _coins = widget.coins;
+    _loadShop();
+  }
+
+  @override
+  void didUpdateWidget(covariant BoutiquePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.coins != widget.coins) {
+      setState(() {
+        _coins = widget.coins;
+      });
+    }
+  }
+
+  Future<void> _loadShop() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final token = await _storage.read(key: 'token');
+      final url = '${dotenv.env['SERVER_BASE_URL']}/api/social/shop/items/';
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Authorization': 'Token $token'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to load shop (${response.statusCode})');
+      }
+
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      final coins = data['coins'] ?? _coins;
+      final itemsData = (data['items'] as List<dynamic>? ?? []);
+      final items = itemsData.map((raw) {
+        final baseCharacter = raw['base_character'] as Map<String, dynamic>?;
+        return _ShopItem(
+          id: raw['id'] as int,
+          name: raw['name'] ?? '',
+          tone: baseCharacter != null ? baseCharacter['name'] ?? '' : '',
+          price: raw['price'] ?? 0,
+          imageUrl: raw['preview_image'] ?? raw['image'],
+          purchased: raw['purchased'] ?? false,
+          baseCharacterName: baseCharacter?['name'],
+        );
+      }).toList();
+
+      setState(() {
+        _items = items;
+        _coins = coins;
+      });
+      widget.onCoinsChange(coins);
+    } catch (e) {
+      setState(() {
+        _error = 'Unable to load shop. Pull to retry.';
+      });
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppStyles.backgroundColor,
-      body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+    final body = _loading
+        ? const Center(child: CircularProgressIndicator())
+        : _error != null
+            ? Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      t.shop.title,
-                      style: AppStyles.titleBold.copyWith(fontSize: 30),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Skins curated per character so you can swap looks in the profile page.',
-                      style: AppStyles.bodyRegular.copyWith(
-                        fontSize: 16,
-                        color: AppStyles.grey.withOpacity(0.7),
-                      ),
+                    Text(_error!, style: AppStyles.bodyRegular),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: _loadShop,
+                      child: const Text('Retry'),
                     ),
                   ],
                 ),
-              ),
-            ),
-            ..._catalog.entries.map(
-              (entry) => SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
-                sliver: SliverToBoxAdapter(
-                  child: _buildCharacterSection(entry.key, entry.value),
+              )
+            : RefreshIndicator(
+                onRefresh: _loadShop,
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              t.shop.title,
+                              style:
+                                  AppStyles.titleBold.copyWith(fontSize: 30),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Buy outfits with your coins. Purchases are locked to your account.',
+                              style: AppStyles.bodyRegular.copyWith(
+                                fontSize: 16,
+                                color: AppStyles.grey.withOpacity(0.7),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
+                      sliver: SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: 0.78,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            return _ShopCard(
+                              item: _items[index],
+                              coins: _coins,
+                              onBuy: _handlePurchase,
+                            );
+                          },
+                          childCount: _items.length,
+                        ),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 24),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 24),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+              );
 
-  // Builds one section per character with a grid of purchasable skins.
-  Widget _buildCharacterSection(String title, List<_ShopItem> items) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              title,
-              style: AppStyles.titleBold.copyWith(fontSize: 24),
-            ),
-            const SizedBox(width: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppStyles.grey.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '${items.length} skins',
-                style: AppStyles.bodyRegular.copyWith(
-                  fontSize: 12,
-                  color: AppStyles.grey.withOpacity(0.7),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: items.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 0.78,
-          ),
-          itemBuilder: (context, index) => _ShopCard(
-            item: items[index],
-            coins: widget.coins,
-            onBuy: _handlePurchase,
-          ),
-        ),
-      ],
+    return Scaffold(
+      backgroundColor: AppStyles.backgroundColor,
+      body: SafeArea(child: body),
     );
   }
 
@@ -226,24 +180,68 @@ class _BoutiquePage extends State<BoutiquePage> {
     BuildContext viewContext, {
     BuildContext? sheetContext,
   }) {
-    if (widget.coins < item.price) {
-      _showTimedDialog(
-        viewContext,
-        'Not enough coins to buy ${item.name}.',
-      );
+    _purchase(item, viewContext, sheetContext: sheetContext);
+  }
+
+  Future<void> _purchase(
+    _ShopItem item,
+    BuildContext viewContext, {
+    BuildContext? sheetContext,
+  }) async {
+    if (item.purchased) {
+      _showTimedDialog(viewContext, '${item.name} is already owned.');
       return;
     }
 
-    widget.onCoinsChange(widget.coins - item.price);
-    ScaffoldMessenger.of(viewContext).showSnackBar(
-      SnackBar(
-        content: Text('${item.name} purchased!'),
-        backgroundColor: Colors.green,
-      ),
-    );
+    if (_coins < item.price) {
+      _showTimedDialog(viewContext, 'Not enough coins to buy ${item.name}.');
+      return;
+    }
 
-    if (sheetContext != null) {
-      Navigator.of(sheetContext).pop();
+    try {
+      final token = await _storage.read(key: 'token');
+      final url =
+          '${dotenv.env['SERVER_BASE_URL']}/api/social/shop/purchase/';
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Token $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'item_id': item.id}),
+      );
+
+      if (response.statusCode != 200) {
+        final detail = jsonDecode(response.body)['detail'] ??
+            'Purchase failed (${response.statusCode})';
+        _showTimedDialog(viewContext, detail.toString());
+        return;
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final updatedCoins = data['coins'] ?? _coins;
+
+      setState(() {
+        _coins = updatedCoins;
+        _items = _items
+            .map((it) =>
+                it.id == item.id ? it.copyWith(purchased: true) : it)
+            .toList();
+      });
+      widget.onCoinsChange(updatedCoins);
+
+      ScaffoldMessenger.of(viewContext).showSnackBar(
+        SnackBar(
+          content: Text('${item.name} purchased!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      if (sheetContext != null) {
+        Navigator.of(sheetContext).pop();
+      }
+    } catch (e) {
+      _showTimedDialog(viewContext, 'Purchase failed. Please try again.');
     }
   }
 
@@ -330,9 +328,35 @@ class _ShopCard extends StatelessWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(14),
-                    child: Image.asset(
-                      item.assetPath,
-                      fit: BoxFit.contain,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: item.imageUrl != null
+                              ? Image.network(
+                                  item.imageUrl!,
+                                  fit: BoxFit.contain,
+                                )
+                              : const Icon(Icons.image_not_supported),
+                        ),
+                        if (item.purchased)
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade600,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'Owned',
+                                style: AppStyles.bodyBold
+                                    .copyWith(color: Colors.white, fontSize: 10),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ),
@@ -385,11 +409,15 @@ class _ShopCard extends StatelessWidget {
                   ),
                   const Spacer(),
                   ElevatedButton(
-                  onPressed: () => onBuy(item, outerContext),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppStyles.red,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
+                    onPressed: item.purchased
+                        ? null
+                        : () => onBuy(item, outerContext),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: item.purchased
+                          ? Colors.grey.shade400
+                          : AppStyles.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 14,
                         vertical: 10,
                       ),
@@ -398,7 +426,7 @@ class _ShopCard extends StatelessWidget {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text('Buy'),
+                    child: Text(item.purchased ? 'Owned' : 'Buy'),
                   ),
                 ],
               ),
@@ -471,10 +499,12 @@ class _ShopCard extends StatelessWidget {
                       color: AppStyles.grey.withOpacity(0.05),
                       child: AspectRatio(
                         aspectRatio: 1,
-                        child: Image.asset(
-                          item.assetPath,
-                          fit: BoxFit.contain,
-                        ),
+                        child: item.imageUrl != null
+                            ? Image.network(
+                                item.imageUrl!,
+                                fit: BoxFit.contain,
+                              )
+                            : const Icon(Icons.image_not_supported),
                       ),
                     ),
                   ),
@@ -512,13 +542,17 @@ class _ShopCard extends StatelessWidget {
                       const Spacer(),
                       ElevatedButton(
                         // Replace with purchase flow once available.
-                        onPressed: () => onBuy(
-                          item,
-                          outerContext,
-                          sheetContext: sheetContext,
-                        ),
+                        onPressed: item.purchased
+                            ? null
+                            : () => onBuy(
+                                  item,
+                                  outerContext,
+                                  sheetContext: sheetContext,
+                                ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppStyles.red,
+                          backgroundColor: item.purchased
+                              ? Colors.grey.shade400
+                              : AppStyles.red,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 22,
@@ -529,7 +563,7 @@ class _ShopCard extends StatelessWidget {
                           ),
                           elevation: 0,
                         ),
-                        child: const Text('Buy now'),
+                        child: Text(item.purchased ? 'Owned' : 'Buy now'),
                       ),
                     ],
                   ),
@@ -545,14 +579,34 @@ class _ShopCard extends StatelessWidget {
 
 class _ShopItem {
   const _ShopItem({
+    required this.id,
     required this.name,
     required this.tone,
     required this.price,
-    required this.assetPath,
+    required this.imageUrl,
+    required this.purchased,
+    this.baseCharacterName,
   });
 
+  final int id;
   final String name;
   final String tone;
   final int price;
-  final String assetPath;
+  final String? imageUrl;
+  final bool purchased;
+  final String? baseCharacterName;
+
+  _ShopItem copyWith({
+    bool? purchased,
+  }) {
+    return _ShopItem(
+      id: id,
+      name: name,
+      tone: tone,
+      price: price,
+      imageUrl: imageUrl,
+      purchased: purchased ?? this.purchased,
+      baseCharacterName: baseCharacterName,
+    );
+  }
 }

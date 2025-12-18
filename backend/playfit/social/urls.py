@@ -21,6 +21,9 @@ from .views import (
     GetCharacterImagesView,
     GetDecorationImagesView,
     UserSearchView,
+    ShopItemListView,
+    ShopPurchaseView,
+    UserWalletView,
 )
 
 urlpatterns = [
@@ -44,6 +47,9 @@ urlpatterns = [
     path("customization-items/<str:category>/", CustomizationItemByCategoryListView.as_view(), name="customization_items_by_category"),
     path("update-customization/", CustomizationUpdateView.as_view(), name="update_customization"),
     path("customization/", CustomizationView.as_view(), name="customization"),
+    path("shop/items/", ShopItemListView.as_view(), name="shop_items"),
+    path("shop/purchase/", ShopPurchaseView.as_view(), name="shop_purchase"),
+    path("wallet/", UserWalletView.as_view(), name="user_wallet"),
     path("get-character-images/", GetCharacterImagesView.as_view(), name="get_character_images"),
     path("get-decoration-images/<str:country>/", GetDecorationImagesView.as_view(), name="get_decoration_images"),
     path("search-users/", UserSearchView.as_view(), name="user_search"),

@@ -15,6 +15,8 @@ from .models import (
     Like,
     Comment,
     Follow,
+    ShopItem,
+    ShopPurchase,
 )
 
 class ContinentAdmin(admin.ModelAdmin):
@@ -45,3 +47,5 @@ admin.site.register(Like)
 admin.site.register(Comment)
 admin.site.register(Follow)
 admin.site.register(IntroductionCharacter, IntroductionCharacterAdmin)
+admin.site.register(ShopItem)
+admin.site.register(ShopPurchase)

@@ -74,9 +74,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     currentStreak = 0;
-    _userProgressFuture = _fetchUserProgress();
-    // TODO: Wire this to the backend once a coin balance endpoint exists.
-    _coinsBalance = 1250;
+    _userProgressFuture = _loadInitialData();
 
     // Request notification permissions if it's the user's first login
     // and get the notification token.
@@ -95,6 +93,39 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _coinsBalance = newCoins;
     });
+  }
+
+  Future<void> _loadInitialData() async {
+    await Future.wait([
+      _fetchUserProgress(),
+      _fetchWallet(),
+    ]);
+  }
+
+  Future<void> _fetchWallet() async {
+    const storage = FlutterSecureStorage();
+    final token = await storage.read(key: 'token');
+    final url = "${dotenv.env['SERVER_BASE_URL']}/api/social/wallet/";
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': "Token $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final coins = data['coins'] ?? 0;
+        setState(() {
+          _coinsBalance = coins;
+        });
+      }
+    } catch (_) {
+      // Keep existing balance on failure to avoid blocking the UI.
+    }
   }
 
   // Future<void> refreshStreakAfterWorkout() async {

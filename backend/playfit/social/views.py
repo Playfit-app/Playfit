@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 from rest_framework import status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -30,6 +31,8 @@ from .models import (
     CityDecorationImage,
     BaseCharacter,
     IntroductionCharacter,
+    ShopItem,
+    ShopPurchase,
 )
 from .serializers import (
     UserSerializer,
@@ -43,6 +46,7 @@ from .serializers import (
     CustomizationItemSerializer,
     CustomizationSerializer,
     UserSearchSerializer,
+    ShopItemSerializer,
 )
 from .utils import send_notification
 
@@ -582,13 +586,18 @@ class CustomizationUpdateView(APIView):
         # return Response(serializer.data)
 
         if 'base_character' in request.data:
-            base_character = request.data['base_character']
-            try:
-                customization.base_character = get_object_or_404(BaseCharacter, name=base_character)
-                customization.save()
-                return Response({"detail": "Customization updated"}, status=status.HTTP_200_OK)
-            except BaseCharacter.DoesNotExist:
-                return Response({"detail": "Base character not found"}, status=status.HTTP_404_NOT_FOUND)
+            base_character_name = request.data['base_character']
+            base_character = get_object_or_404(BaseCharacter, name=base_character_name)
+
+            # If the outfit is tied to a shop item, ensure the user owns it
+            has_shop_entry = ShopItem.objects.filter(base_character=base_character, is_active=True).exists()
+            has_purchase = ShopPurchase.objects.filter(user=user, item__base_character=base_character).exists()
+            if has_shop_entry and not has_purchase:
+                return Response({"detail": "You need to buy this outfit in the shop first"}, status=status.HTTP_403_FORBIDDEN)
+
+            customization.base_character = base_character
+            customization.save()
+            return Response({"detail": "Customization updated"}, status=status.HTTP_200_OK)
         else:
             return Response({"detail": "Invalid data"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -600,6 +609,82 @@ class CustomizationView(APIView):
         customization = Customization.objects.get(user=user)
         serializer = CustomizationSerializer(customization)
         return Response(serializer.data)
+
+class ShopItemListView(ListAPIView):
+    serializer_class = ShopItemSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = ShopItem.objects.filter(is_active=True)
+    pagination_class = None
+
+    def list(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_queryset(), many=True, context={'request': request})
+        progress = getattr(request.user, "progress", None)
+        coins = progress.coins if progress else 0
+        return Response({"coins": coins, "items": serializer.data}, status=status.HTTP_200_OK)
+
+class ShopPurchaseView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Purchase an item from the shop",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'item_id': openapi.Schema(type=openapi.TYPE_INTEGER, description="ID of the shop item"),
+            },
+            required=['item_id'],
+        ),
+        responses={
+            200: openapi.Response(
+                description="Purchase successful",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'detail': openapi.Schema(type=openapi.TYPE_STRING),
+                        'coins': openapi.Schema(type=openapi.TYPE_INTEGER),
+                    },
+                ),
+            ),
+            400: openapi.Response("Bad request"),
+            403: openapi.Response("Forbidden"),
+            404: openapi.Response("Not found"),
+        }
+    )
+    def post(self, request):
+        user = request.user
+        item_id = request.data.get("item_id")
+        if not item_id:
+            return Response({"detail": "item_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        progress = getattr(user, "progress", None)
+        if progress is None:
+            return Response({"detail": "User progress not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        item = get_object_or_404(ShopItem, id=item_id, is_active=True)
+
+        if ShopPurchase.objects.filter(user=user, item=item).exists():
+            return Response({"detail": "Item already purchased"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            progress.spend_coins(item.price)
+        except ValidationError as e:
+            message = e.messages[0] if hasattr(e, "messages") and e.messages else str(e)
+            return Response({"detail": message}, status=status.HTTP_400_BAD_REQUEST)
+
+        ShopPurchase.objects.create(user=user, item=item)
+        item_data = ShopItemSerializer(item, context={'request': request}).data
+        return Response(
+            {"detail": "Purchase successful", "coins": progress.coins, "item": item_data},
+            status=status.HTTP_200_OK,
+        )
+
+class UserWalletView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        progress = getattr(request.user, "progress", None)
+        coins = progress.coins if progress else 0
+        return Response({"coins": coins}, status=status.HTTP_200_OK)
 
 class GetCharacterImagesView(APIView):
     permission_classes = []
@@ -646,7 +731,10 @@ class GetCharacterImagesView(APIView):
         }
 
         for character in base_characters:
-            key, color, _ = character.name.split("-")
+            parts = character.name.split("-")
+            if len(parts) < 3:
+                continue
+            key, color, _ = parts
             if key in data and color in data[key]:
                 data[key][color].append({
                     'id': character.id,
@@ -663,12 +751,18 @@ class GetCharacterImagesView(APIView):
                     })
         return data
 
-    def get_customization_images(self) -> dict:
+    def get_customization_images(self, user: CustomUser) -> dict:
         """Retrieve images for character customization.
         Returns:
             dict: A dictionary containing character images categorized by character and color.
         """
         base_characters = BaseCharacter.objects.all()
+        purchased_base_ids = set(
+            ShopPurchase.objects.filter(user=user).values_list('item__base_character_id', flat=True)
+        )
+        shop_locked_base_ids = set(
+            ShopItem.objects.filter(base_character__isnull=False, is_active=True).values_list('base_character_id', flat=True)
+        )
         data = {
             'character1': {
                 'white': [],
@@ -689,12 +783,17 @@ class GetCharacterImagesView(APIView):
         }
 
         for character in base_characters:
-            key, color, _ = character.name.split("-")
+            parts = character.name.split("-")
+            if len(parts) < 3:
+                continue
+            key, color, _ = parts
             if key in data and color in data[key]:
+                owned = character.id not in shop_locked_base_ids or character.id in purchased_base_ids
                 data[key][color].append({
                     'id': character.id,
                     'name': character.name,
                     'image': character.image.url,
+                    'owned': owned,
                 })
         return data
 
@@ -710,7 +809,7 @@ class GetCharacterImagesView(APIView):
                     {"detail": "Authentication required for customization images"},
                     status=status.HTTP_401_UNAUTHORIZED
                 )
-            data = self.get_customization_images()
+            data = self.get_customization_images(request.user)
 
         return Response(data, status=status.HTTP_200_OK)
 

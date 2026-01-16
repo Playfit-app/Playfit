@@ -15,6 +15,7 @@ import 'package:playfit/authentification/registration_page.dart';
 import 'package:playfit/home_page.dart';
 import 'package:playfit/profile_page.dart';
 import 'package:playfit/notification_page.dart';
+import 'package:playfit/route_observer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,6 +55,7 @@ class MyApp extends StatelessWidget {
             locale: languageProvider.currentLocale.flutterLocale,
             supportedLocales: AppLocaleUtils.supportedLocales,
             localizationsDelegates: GlobalMaterialLocalizations.delegates,
+            navigatorObservers: [routeObserver],
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
               useMaterial3: true,

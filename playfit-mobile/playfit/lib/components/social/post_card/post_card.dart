@@ -48,7 +48,13 @@ class _PostCardState extends State<PostCard> {
             showAllComments: widget.showAllComments,
           ),
           if (widget.showAllComments) ...[
-            PostCardCommentInput(storage: storage, post: widget.post),
+            PostCardCommentInput(
+              storage: storage,
+              post: widget.post,
+              onCommentsChanged: () {
+                setState(() {});
+              },
+            ),
           ],
           PostCardComments(
             storage: storage,

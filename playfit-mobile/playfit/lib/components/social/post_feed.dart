@@ -7,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:playfit/components/social/post_detail_page.dart';
 import 'package:playfit/components/social/post_card/post_card.dart';
 import 'package:playfit/i18n/strings.g.dart';
+import 'package:playfit/route_observer.dart';
 
 class PostFeed extends StatefulWidget {
   const PostFeed({super.key});
@@ -15,14 +16,38 @@ class PostFeed extends StatefulWidget {
   State<PostFeed> createState() => _PostFeedState();
 }
 
-class _PostFeedState extends State<PostFeed> {
+class _PostFeedState extends State<PostFeed> with RouteAware {
   final FlutterSecureStorage storage = const FlutterSecureStorage();
   List<Map<String, dynamic>> _posts = [];
   bool _loading = true;
+  bool _isSubscribed = false;
 
   @override
   void initState() {
     super.initState();
+    _loadPosts();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute && !_isSubscribed) {
+      routeObserver.subscribe(this, route);
+      _isSubscribed = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_isSubscribed) {
+      routeObserver.unsubscribe(this);
+    }
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
     _loadPosts();
   }
 

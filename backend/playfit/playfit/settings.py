@@ -219,7 +219,13 @@ REDIS_DB = os.getenv('REDIS_DB')
 
 # Push notifications settings
 PUSH_NOTIFICATIONS_SETTINGS = {
-    "FCM_API_KEY": os.getenv('FCM_API_KEY'),
+    # "FCM_API_KEY": os.getenv('FCM_API_KEY'),
+    "FCM_USE_HTTP_V1": True,
+    "APPLICATIONS": {
+        "playfit": {
+            "PLATFORM": "FCM",
+        }
+    },
     "APNS_CERTIFICATE": os.getenv('APNS_CERTIFICATE'),
     "APNS_TOPIC": os.getenv('APNS_TOPIC'),
     "APNS_USE_SANDBOX": True,

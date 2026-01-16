@@ -174,6 +174,9 @@ class NotificationService {
       bool notificationsEnabled) async {
     final storage = FlutterSecureStorage();
     await storage.write(key: 'notifications_enabled', value: notificationsEnabled.toString());
+    if (notificationsEnabled) {
+      await getToken();
+    }
   }
 
   Future<bool> loadNotificationSettings() async {

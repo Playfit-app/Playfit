@@ -8,11 +8,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class PostCardCommentInput extends StatefulWidget {
   final FlutterSecureStorage storage;
   final Map<String, dynamic> post;
+  final VoidCallback onCommentsChanged;
 
   const PostCardCommentInput({
     super.key,
     required this.storage,
     required this.post,
+    required this.onCommentsChanged,
   });
 
   @override
@@ -35,6 +37,21 @@ class _PostCardCommentInputState extends State<PostCardCommentInput> {
 
     if (content.isEmpty) return;
     setState(() => _isSubmitting = true);
+    final tempId = -DateTime.now().microsecondsSinceEpoch;
+    final optimisticComment = {
+      "id": tempId,
+      "content": content,
+      "user": {
+        "id": 0,
+        "username": "Me",
+        "base_character": null,
+      },
+      "created_at": DateTime.now().toIso8601String(),
+    };
+    widget.post['comments'] ??= [];
+    widget.post['comments'].insert(0, optimisticComment);
+    widget.onCommentsChanged();
+
     final url = Uri.parse(
         "${dotenv.env['SERVER_BASE_URL']}/api/social/posts/${widget.post['id']}/comment/");
     final token = await widget.storage.read(key: "token");
@@ -57,18 +74,27 @@ class _PostCardCommentInputState extends State<PostCardCommentInput> {
         "user": {
           "id": data['user']['id'],
           "username": data['user']['username'],
+          "base_character": data['user']['base_character'],
         },
         "created_at": data['created_at'],
       };
 
       setState(() {
+        widget.post['comments']
+            .removeWhere((comment) => comment['id'] == tempId);
         widget.post['comments'].insert(0, newComment);
         _commentController.clear();
         _isSubmitting = false;
       });
+      widget.onCommentsChanged();
     } else {
       print("Failed to comment: ${response.statusCode}");
-      setState(() => _isSubmitting = false);
+      setState(() {
+        widget.post['comments']
+            .removeWhere((comment) => comment['id'] == tempId);
+        _isSubmitting = false;
+      });
+      widget.onCommentsChanged();
     }
   }
 

@@ -28,7 +28,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>16</string>
+	<string>22</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSBonjourServices</key>
@@ -36,11 +36,11 @@
 		<string>_http._tcp</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>Nous avons besoin d'accéder à la caméra pour capturer des photos et vidéos.</string>
+	<string>La caméra sert à détecter vos mouvements et compter les répétitions en temps réel, localement sur l’appareil.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Nous avons besoin d'accéder au réseau local pour détecter et communiquer avec les appareils à proximité.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Nous avons besoin d'accéder au microphone pour enregistrer l'audio.</string>
+	<string>Le micro sert à détecter des commandes vocales (« go », « start ») pour démarrer l’exercice, sans envoi audio.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
